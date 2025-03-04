@@ -3,9 +3,12 @@ using BookShop.Data.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace BookShop.Data;
+
 public class LibraryContext : DbContext
 {
-    public LibraryContext(DbContextOptions<LibraryContext> ops) : base(ops) { }
+    public LibraryContext(DbContextOptions<LibraryContext> ops) : base(ops)
+    {
+    }
 
     public DbSet<Book> Books { get; set; }
     public DbSet<Genre> Genres { get; set; }
@@ -22,8 +25,7 @@ public class LibraryContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.ApplyConfiguration(new BookAttributeValueConfig());
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(LibraryContext).Assembly);
         base.OnModelCreating(modelBuilder);
     }
-
 }
