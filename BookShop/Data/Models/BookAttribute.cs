@@ -2,9 +2,8 @@ namespace BookShop.Data.Models;
 
 public class BookAttribute
 {
-    public Guid Id { get; set; } = Guid.NewGuid(); // Идентификатор атрибута
-    public string Name { get; set; } // Название атрибута
+    public Guid Id { get; set; } = Guid.NewGuid();
+    public string Name { get; set; } = string.Empty;
 
-    // Навигационное свойство для связи с BookAttributeValue
     public ICollection<BookAttributeValue> BookAttributeValues { get; set; } = new List<BookAttributeValue>();
 }

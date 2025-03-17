@@ -2,13 +2,11 @@
 
 public class UserRole
 {
-    public Guid UserRoleId { get; set; } = new Guid();
+    public int Id { get; set; } 
+    public int UserId { get; set; } 
+    public string RoleName { get; set; } = string.Empty;
+    public int RoleId { get; set; }
 
-    public string UserNameRef { get; set; } 
-
-    public string RoleNameRef { get; set; } 
-
-    public  Role RoleNameRefNavigation { get; set; } 
-
-    public  User UserNameRefNavigation { get; set; } 
+    public Role Role { get; set; } = null!;
+    public User User { get; set; } = null!;
 }
