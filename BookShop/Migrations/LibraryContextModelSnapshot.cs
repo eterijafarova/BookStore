@@ -39,6 +39,10 @@ namespace BookShop.Migrations
                     b.Property<Guid>("GenreId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("GenreName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("ImageUrl")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -48,6 +52,10 @@ namespace BookShop.Migrations
 
                     b.Property<Guid?>("PublisherId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("PublisherName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Stock")
                         .HasColumnType("int");
@@ -348,6 +356,11 @@ namespace BookShop.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -356,12 +369,18 @@ namespace BookShop.Migrations
                     b.Property<bool>("IsEmailConfirmed")
                         .HasColumnType("bit");
 
-                    b.Property<string>("Password")
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("PasswordSalt")
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
                     b.Property<Guid>("RefreshToken")
+                        .HasMaxLength(512)
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("RefreshTokenExpiration")
@@ -479,7 +498,8 @@ namespace BookShop.Migrations
                 {
                     b.HasOne("BookShop.Data.Models.Genre", "ParentGenre")
                         .WithMany("SubGenres")
-                        .HasForeignKey("ParentGenreId");
+                        .HasForeignKey("ParentGenreId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("ParentGenre");
                 });

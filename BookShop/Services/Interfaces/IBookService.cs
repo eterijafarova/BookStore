@@ -1,13 +1,17 @@
-using Shared.DTO.Response;
-using System.Threading.Tasks;
-using System.Collections.Generic;
 using BookShop.Shared.DTO.Requests;
+using BookShop.Shared.DTO.Response;
 
-namespace BookShop.Services.Interfaces;
-
-public interface IBookService
+namespace BookShop.Services.Interfaces
 {
-    Task<BookResponseDTO> CreateBookAsync(CreateBookDTO dto);
-    Task<BookResponseDTO> GetBookByIdAsync(Guid id);
-    Task<IEnumerable<BookResponseDTO>> GetBooksAsync(int page = 1, int pageSize = 20);
+    public interface IBookService
+    {
+        
+        
+        public Task<BookResponseDTO> CreateProductAsync(CreateBookDTO dto);
+        public Task<IEnumerable<BookResponseDTO>> GetProductAsync(string name);
+        public Task<IEnumerable<BookResponseDTO>> GetProductsAsync(int page = 1, int pageSize = 20);
+        
+        
+    }
+    
 }

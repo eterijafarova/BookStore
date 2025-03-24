@@ -9,9 +9,12 @@ public class Book
     public int Stock { get; set; }
     public string Description { get; set; } = string.Empty;
     public string ImageUrl { get; set; } = string.Empty;
-    
+
     public Guid GenreId { get; set; } 
     public Guid? PublisherId { get; set; }
+    
+    public string GenreName { get; set; }
+    public string PublisherName { get; set; }
 
     public Genre Genre { get; set; } = null!;
     public Publisher? Publisher { get; set; } = null!;

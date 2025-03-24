@@ -14,14 +14,24 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .IsRequired()
             .HasMaxLength(100);
 
-        builder.Property(u => u.Password)
+        builder.Property(u => u.PasswordHash)
             .IsRequired()
             .HasMaxLength(255);
-
+        
+        builder.Property(u => u.RefreshToken)
+            .HasMaxLength(512);
+        
+        builder.Property(u => u.PasswordSalt)
+            .IsRequired()
+            .HasMaxLength(255);
+        
         builder.Property(u => u.Email)
             .IsRequired()
             .HasMaxLength(255);
         
+        builder.Property(u => u.CreatedAt)
+            .HasDefaultValueSql("GETUTCDATE()");
+            
         builder.HasIndex(u => u.Email).IsUnique();
         builder.HasIndex(u => u.UserName).IsUnique();
     }

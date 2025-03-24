@@ -5,46 +5,117 @@ using BookShop.Services.Interfaces;
 using BookShop.Shared.DTO.Requests;
 using BookShop.Shared.DTO.Response;
 
-namespace BookShop.Services.Implementations;
-
-public class GenreService : IGenreService
+namespace BookShop.Services.Implementations
 {
-    private readonly LibraryContext _context;
-
-    public GenreService(LibraryContext context)
+    public class GenreService : IGenreService
     {
-        _context = context;
-    }
+        private readonly LibraryContext _context;
 
-    public async Task<GenreResponseDTO> CreateGenreAsync(CreateGenreDTO dto)
-    {
-        var newGenre = new Genre
+        public GenreService(LibraryContext context)
         {
-            Name = dto.Name,
-            ParentGenreId = dto.ParentGenreId
-        };
+            _context = context;
+        }
+        // Создание жанра
+        public async Task<GenreResponseDTO> CreateGenreAsync(CreateGenreDTO dto)
+        {
+            var genre = new Genre
+            {
+                Name = dto.Name,
+                ParentGenreId = dto.ParentGenreId
+            };
 
-        _context.Genres.Add(newGenre);
-        await _context.SaveChangesAsync();
+            _context.Genres.Add(genre);
+            await _context.SaveChangesAsync();
+            
+            string? parentGenreName = null;
+            if (genre.ParentGenreId.HasValue)
+            {
+                var parentGenre = await _context.Genres
+                    .FirstOrDefaultAsync(g => g.Id == genre.ParentGenreId.Value);
+                parentGenreName = parentGenre?.Name;
+            }
+            
+            var subGenres = await _context.Genres
+                .Where(g => g.ParentGenreId == genre.Id)
+                .Select(sg => new GenreSubGenreDTO(sg.Id, sg.Name))
+                .ToListAsync();
 
-        return new GenreResponseDTO(newGenre.Id, newGenre.Name, newGenre.ParentGenreId);
-    }
+            return new GenreResponseDTO(
+                genre.Id,
+                genre.Name,
+                genre.ParentGenreId,
+                parentGenreName,
+                subGenres
+            );
+        }
+        
+        public async Task<GenreResponseDTO> GetGenreAsync(string name)
+        {
+            var genre = await _context.Genres
+                .FirstOrDefaultAsync(g => g.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
 
-    public async Task<GenreResponseDTO> GetGenreAsync(Guid id)
-    {
-        var genre = await _context.Genres.FindAsync(id);
-        if (genre == null)
-            throw new KeyNotFoundException("Genre not found");
+            if (genre == null)
+                throw new Exception("Genre not found");
 
-        return new GenreResponseDTO(genre.Id, genre.Name, genre.ParentGenreId);
-    }
+            // Получение имени родительского жанра
+            string? parentGenreName = null;
+            if (genre.ParentGenreId.HasValue)
+            {
+                var parentGenre = await _context.Genres
+                    .FirstOrDefaultAsync(g => g.Id == genre.ParentGenreId.Value);
+                parentGenreName = parentGenre?.Name;
+            }
 
-    public async Task<PaginatedResponse<GenreResponseDTO>> GetGenresAsync(int page = 1, int pageSize = 20)
-    {
-        var genresQuery = _context.Genres
-            .Select(g => new GenreResponseDTO(g.Id, g.Name, g.ParentGenreId))
-            .AsNoTracking();
+            // Получение поджанров
+            var subGenres = await _context.Genres
+                .Where(g => g.ParentGenreId == genre.Id)
+                .Select(sg => new GenreSubGenreDTO(sg.Id, sg.Name))
+                .ToListAsync();
 
-        return await PaginatedResponse<GenreResponseDTO>.CreateAsync(genresQuery, page, pageSize);
+            return new GenreResponseDTO(
+                genre.Id,
+                genre.Name,
+                genre.ParentGenreId,
+                parentGenreName,
+                subGenres
+            );
+        }
+        
+        public async Task<IEnumerable<GenreResponseDTO>> GetGenresAsync(int page = 1, int pageSize = 20)
+        {
+            var genres = await _context.Genres
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            // Для каждого жанра получаем родительский жанр и поджанры
+            var genreResponses = new List<GenreResponseDTO>();
+
+            foreach (var genre in genres)
+            {
+                string? parentGenreName = null;
+                if (genre.ParentGenreId.HasValue)
+                {
+                    var parentGenre = await _context.Genres
+                        .FirstOrDefaultAsync(g => g.Id == genre.ParentGenreId.Value);
+                    parentGenreName = parentGenre?.Name;
+                }
+                
+                var subGenres = await _context.Genres
+                    .Where(g => g.ParentGenreId == genre.Id)
+                    .Select(sg => new GenreSubGenreDTO(sg.Id, sg.Name))
+                    .ToListAsync();
+
+                genreResponses.Add(new GenreResponseDTO(
+                    genre.Id,
+                    genre.Name,
+                    genre.ParentGenreId,
+                    parentGenreName,
+                    subGenres
+                ));
+            }
+
+            return genreResponses;
+        }
     }
 }
