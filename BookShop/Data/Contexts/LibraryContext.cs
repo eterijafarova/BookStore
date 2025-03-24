@@ -1,4 +1,3 @@
-using BookShop.Data.FluentConfigs;
 using BookShop.Data.Models;
 using Microsoft.EntityFrameworkCore;
 

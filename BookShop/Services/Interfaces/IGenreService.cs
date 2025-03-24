@@ -1,11 +1,14 @@
 using BookShop.Shared.DTO.Requests;
 using BookShop.Shared.DTO.Response;
 
-namespace BookShop.Services.Interfaces;
-
-public interface IGenreService
+namespace BookShop.Services.Interfaces
 {
-    Task<GenreResponseDTO> CreateGenreAsync(CreateGenreDTO dto);
-    Task<GenreResponseDTO> GetGenreAsync(Guid id);
-    Task<PaginatedResponse<GenreResponseDTO>> GetGenresAsync(int page = 1, int pageSize = 20);
+    public interface IGenreService
+    {
+        Task<GenreResponseDTO> CreateGenreAsync(CreateGenreDTO dto);
+        
+        Task<GenreResponseDTO> GetGenreAsync(string name);
+        
+        Task<IEnumerable<GenreResponseDTO>> GetGenresAsync(int page = 1, int pageSize = 20);
+    }
 }

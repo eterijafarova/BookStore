@@ -5,9 +5,12 @@ public class User
     public int Id { get; set; } 
 
     public string UserName { get; set; } = string.Empty;
-    public string Password { get; set; } = string.Empty;
+    public string PasswordHash { get; set; } = string.Empty;
+    public string PasswordSalt { get; set; } = string.Empty;
+
     public string Email { get; set; } = string.Empty;
     public bool IsEmailConfirmed { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow; 
     public Guid RefreshToken { get; set; }
     public DateTime RefreshTokenExpiration { get; set; } = DateTime.Now.AddDays(7);
 
