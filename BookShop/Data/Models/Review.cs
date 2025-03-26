@@ -3,7 +3,7 @@
 public class Review
 {
     public Guid Id { get; set; } = Guid.NewGuid();
-    public int UserId { get; set; }
+    public Guid UserId { get; set; }
     public Guid BookId { get; set; }
     public int Rating { get; set; } //нужно добавить ограничение, 1-5
     public string Comment { get; set; }
