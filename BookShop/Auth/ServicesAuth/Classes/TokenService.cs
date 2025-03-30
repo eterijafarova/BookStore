@@ -22,48 +22,53 @@ public class TokenService : ITokenService
     // Получаем имя пользователя из токена
     public async Task<string> GetNameFromToken(string token)
     {
-        var tokenHandler = new JwtSecurityTokenHandler();
-        var securityToken = tokenHandler.ReadToken(token) as JwtSecurityToken;
+        try
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["JWT:Key"]));
 
-        if (securityToken == null)
+            var principal = tokenHandler.ValidateToken(token, new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = securityKey,
+                ValidateIssuer = true,
+                ValidIssuer = _config["JWT:Issuer"],
+                ValidateAudience = true,
+                ValidAudience = _config["JWT:Audience"],
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.Zero
+            }, out var validatedToken);
+
+            return principal.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Name)?.Value
+                   ?? throw new SecurityTokenException("Username not found in token");
+        }
+        catch (Exception)
+        {
             throw new SecurityTokenException("Invalid token");
-
-        var username = securityToken.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Name);
-
-        return username?.Value;
+        }
     }
 
     // Создание токена для пользователя
     public async Task<string> CreateTokenAsync(string username)
     {
-        // Получаем пользователя по имени
-        var user = await _context.Users
-            .Where(u => u.UserName == username)
-            .FirstOrDefaultAsync();
-
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == username);
         if (user == null)
-            throw new UnauthorizedAccessException("Invalid username");
+            throw new SecurityTokenException("Invalid username");
 
-        // Получаем роли пользователя
-        var userRoles = _context.UserRoles
-            .Where(u => u.UserId == user.Id)  // Используем Id пользователя для связи с ролями
-            .Select(u => u.Role.RoleName)  // Предположим, что у Role есть свойство Name
+        var userRoles = await _context.UserRoles
+            .Where(u => u.UserId == user.Id)
+            .Select(u => u.Role.RoleName)
             .AsNoTracking()
-            .ToList();
+            .ToListAsync();
 
-        var claims = new List<Claim>
-        {
-            new Claim(ClaimTypes.Name, username),
-        };
+        var claims = new List<Claim> { new Claim(ClaimTypes.Name, username) };
+        claims.AddRange(userRoles.Select(role => new Claim(ClaimTypes.Role, role)));
 
-        // Добавляем роли в claims
-        foreach (var role in userRoles)
-        {
-            claims.Add(new Claim(ClaimTypes.Role, role));
-        }
+        var jwtKey = _config["JWT:Key"];
+        if (string.IsNullOrEmpty(jwtKey))
+            throw new InvalidOperationException("JWT:Key is not configured");
 
-        // Генерация токена
-        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["JWT:Key"]));
+        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
         var signingCred = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256Signature);
 
         var securityToken = new JwtSecurityToken(
