@@ -1,4 +1,4 @@
-namespace BookShop.Data.Models
+namespace BookShop.Auth.ModelsAuth
 {
     public class UserRole
     {

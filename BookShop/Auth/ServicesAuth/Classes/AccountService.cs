@@ -1,5 +1,6 @@
 using AutoMapper;
 using BookShop.Auth.DTOAuth.Requests;
+using BookShop.Auth.ModelsAuth;
 using BookShop.Auth.ServicesAuth.Interfaces;
 using BookShop.Data;
 using BookShop.Data.Models;
@@ -7,6 +8,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace BookShop.Auth.ServicesAuth.Classes;
+
 
 public class AccountService : IAccountService
 {
