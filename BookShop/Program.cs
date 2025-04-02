@@ -1,11 +1,16 @@
 using System.Text;
 using System.Globalization;
+using BookShop.ADMIN.ServicesAdmin.AdminServices;
+using BookShop.ADMIN.ServicesAdmin.ReviewServices;
+using BookShop.ADMIN.ServicesAdmin.WarehouseServices;
 using BookShop.Auth.JWT;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using BookShop.Data;
+using BookShop.Services.Implementations;
+using BookShop.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,6 +24,19 @@ builder.Services.AddDbContext<LibraryContext>(options =>
 builder.Services.AddControllers();
 
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
+//orderService
+builder.Services.AddScoped<IOrderService, OrderService>();
+//userService
+builder.Services.AddScoped<IUserService, UserService>();
+//warehouseService
+builder.Services.AddScoped<IWarehouseService, WarehouseService>();
+//reviewService
+builder.Services.AddScoped<IReviewService, ReviewService>();
+//adminService
+builder.Services.AddScoped<IAdminService, AdminService>();
+
+
+
 
 // Настройка CORS - будем работать при добавдении фронта
 builder.Services.AddCors(options =>
@@ -26,7 +44,8 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowFrontend",
         policy =>
         {
-            policy.WithOrigins("http://localhost:3000") // Адрес фронтенда
+            policy.WithOrigins("http://localhost:3000", "http://localhost:<portSwagger>")
+                 // Адрес фронтенда
                   .AllowAnyMethod()
                   .AllowAnyHeader()
                   .AllowCredentials(); // Разрешает отправку куков с токенами
