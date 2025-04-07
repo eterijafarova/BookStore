@@ -1,10 +1,24 @@
-namespace BookShop.ADMIN.DTOs;
-
-public class UserDto
+namespace BookShop.Auth.DTOAuth.Responses
 {
-    public Guid Id { get; set; }
-    public string UserName { get; set; } = null!;
-    public string Email { get; set; } = null!;
-    public bool IsEmailConfirmed { get; set; }
-    public DateTime CreatedAt { get; set; }
+    public class UserDto
+    {
+        public Guid Id { get; set; }
+        public string UserName { get; set; }
+        public string Email { get; set; }
+        public bool IsEmailConfirmed { get; set; }
+        public DateTime CreatedAt { get; set; }
+    }
+
+    public class CreateUserDto
+    {
+        public string UserName { get; set; }
+        public string Password { get; set; }
+        public string Email { get; set; }
+    }
+
+    public class UpdateUserDto
+    {
+        public string UserName { get; set; }
+        public string Email { get; set; }
+    }
 }

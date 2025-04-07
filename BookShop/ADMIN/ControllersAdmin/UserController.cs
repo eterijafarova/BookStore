@@ -1,39 +1,52 @@
+using BookShop.Auth.DTOAuth.Responses;
 using BookShop.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
-namespace BookShop.ADMIN.ControllersAdmin;
-
-[ApiController]
-[Route("api/[controller]")]
-public class UsersController : ControllerBase
+namespace BookShop.ADMIN.ControllersAdmin
 {
-    private readonly IUserService _userService;
-
-    public UsersController(IUserService userService)
+    [Route("api/v1/[controller]")]
+    [ApiController]
+    public class UserController : ControllerBase
     {
-        _userService = userService;
-    }
+        private readonly IUserService _userService;
 
-    [HttpGet]
-    public async Task<IActionResult> GetAll()
-    {
-        var users = await _userService.GetAllAsync();
-        return Ok(users);
-    }
+        public UserController(IUserService userService)
+        {
+            _userService = userService;
+        }
 
-    [HttpGet("{id}")]
-    public async Task<IActionResult> GetById(Guid id)
-    {
-        var user = await _userService.GetByIdAsync(id);
-        if (user == null) return NotFound();
-        return Ok(user);
-    }
+        // GET: api/users
+        [HttpGet]
+        public async Task<ActionResult<List<UserDto>>> GetUsers()
+        {
+            var users = await _userService.GetAllAsync();
+            return Ok(users);
+        }
 
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> Delete(Guid id)
-    {
-        var deleted = await _userService.DeleteAsync(id);
-        if (!deleted) return NotFound();
-        return Ok("User has been deleted");
+        // GET: api/users/{id}
+        [HttpGet("{id}")]
+        public async Task<ActionResult<UserDto>> GetUser(Guid id)
+        {
+            var user = await _userService.GetByIdAsync(id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(user);
+        }
+
+        // DELETE: api/users/{id}
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteUser(Guid id)
+        {
+            var success = await _userService.DeleteAsync(id);
+            if (!success)
+            {
+                return NotFound();
+            }
+
+            return NoContent();
+        }
     }
 }

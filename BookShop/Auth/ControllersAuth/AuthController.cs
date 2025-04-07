@@ -4,94 +4,108 @@ using BookShop.Auth.ServicesAuth.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace BookShop.Auth.ControllersAuth;
 
-[ApiController]
-[Route("api/v1/[controller]")]
-public class AuthController : ControllerBase
+namespace BookShop.Auth.ControllersAuth
 {
-    private readonly IAuthService _authService;
-    private readonly ITokenService _tokenService;
-
-    public AuthController(IAuthService authService, ITokenService tokenService)
+    [ApiController]
+    [Route("api/v1/[controller]")]
+    public class AuthController : ControllerBase
     {
-        _tokenService = tokenService;
-        _authService = authService;
-    }
+        private readonly IAuthService _authService;
+        private readonly ITokenService _tokenService;
 
-    [HttpPost("Login")]
-    public async Task<IActionResult> Login([FromBody] LoginRequest request)
-    {
-        var response = await _authService.LoginAsync(request);
-
-        if (response == null)
+        public AuthController(IAuthService authService, ITokenService tokenService)
         {
-            return Unauthorized(new { message = "Invalid credentials" });
+            _tokenService = tokenService;
+            _authService = authService;
         }
 
-        Response.Cookies.Append("accessToken", response.AccessToken, new CookieOptions
+        // Login
+        [HttpPost("Login")]
+        public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
-            HttpOnly = true,
-            Secure = true,
-            SameSite = SameSiteMode.Strict
-        });
+            try
+            {
+                var response = await _authService.LoginAsync(request);
 
-        Response.Cookies.Append("refreshToken", response.RefreshToken, new CookieOptions
-        {
-            HttpOnly = true,
-            Secure = true,
-            SameSite = SameSiteMode.Strict
-        });
+                if (response == null)
+                {
+                    return Unauthorized(new { message = "Invalid credentials" });
+                }
 
-        return Ok(new Result<LoginResponse>(true, response, "Successfully logged in"));
-    }
+                // Set cookies securely
+                SetTokensInCookies(response.AccessToken, response.RefreshToken);
 
-    [HttpPost("Refresh")]
-    public async Task<IActionResult> Refresh()
-    {
-        var refreshToken = Request.Cookies["refreshToken"];
-        var accessToken = Request.Cookies["accessToken"];
-
-        if (string.IsNullOrEmpty(refreshToken) || string.IsNullOrEmpty(accessToken))
-        {
-            return Unauthorized(new { message = "Invalid tokens" });
+                return Ok(new Result<LoginResponse>(true, response, "Successfully logged in"));
+            }
+            catch (Exception)
+            {
+                return BadRequest(new { message = "An error occurred during login" });
+            }
         }
 
-        var request = new RefreshTokenRequest(await _tokenService.GetNameFromToken(accessToken), refreshToken);
-        var newTokens = await _authService.RefreshTokenAsync(request);
-
-        Response.Cookies.Append("accessToken", newTokens.AccessToken, new CookieOptions
+        // Refresh Token
+        [HttpPost("Refresh")]
+        public async Task<IActionResult> Refresh()
         {
-            HttpOnly = true,
-            Secure = true,
-            SameSite = SameSiteMode.Strict
-        });
+            var refreshToken = Request.Cookies["refreshToken"];
+            var accessToken = Request.Cookies["accessToken"];
 
-        Response.Cookies.Append("refreshToken", newTokens.RefreshToken, new CookieOptions
+            if (string.IsNullOrEmpty(refreshToken) || string.IsNullOrEmpty(accessToken))
+            {
+                return Unauthorized(new { message = "Invalid tokens" });
+            }
+
+            try
+            {
+                var request = new RefreshTokenRequest(await _tokenService.GetNameFromToken(accessToken), refreshToken);
+                var newTokens = await _authService.RefreshTokenAsync(request);
+
+                SetTokensInCookies(newTokens.AccessToken, newTokens.RefreshToken);
+
+                return Ok(new Result<RefreshTokenResponse>(true, newTokens, "Successfully refreshed token"));
+            }
+            catch (Exception)
+            {
+                return Unauthorized(new { message = "Invalid refresh token" });
+            }
+        }
+
+        // Logout
+        [HttpPost("Logout")]
+        [Authorize]
+        public IActionResult Logout()
         {
-            HttpOnly = true,
-            Secure = true,
-            SameSite = SameSiteMode.Strict
-        });
+            Response.Cookies.Delete("accessToken");
+            Response.Cookies.Delete("refreshToken");
 
-        return Ok(new Result<RefreshTokenResponse>(true, newTokens, "Successfully refreshed token"));
-    }
+            return Ok(new { message = "Successfully logged out" });
+        }
 
-    [HttpPost("Test")]
-    [Authorize(Policy = "AdminPolicy")]
-    public IActionResult Test()
-    {
-        return Ok("Test successful");
-    }
+        // Test
+        [HttpPost("Test")]
+        [Authorize(Policy = "AdminPolicy")]
+        public IActionResult Test()
+        {
+            return Ok("Test successful");
+        }
 
-    [HttpPost("Logout")]
-    [Authorize]
-    public IActionResult Logout()
-    {
-        Response.Cookies.Delete("accessToken");
-        Response.Cookies.Delete("refreshToken");
+        // Helper method to set tokens in cookies
+        private void SetTokensInCookies(string accessToken, string refreshToken)
+        {
+            Response.Cookies.Append("accessToken", accessToken, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict
+            });
 
-        return Ok(new { message = "Successfully logged out" });
+            Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict
+            });
+        }
     }
 }
-               

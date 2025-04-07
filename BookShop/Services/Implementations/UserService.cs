@@ -1,55 +1,66 @@
-using BookShop.ADMIN.DTOs;
 using BookShop.Data;
-using BookShop.Services.Interfaces;
+using BookShop.Data.Models;
+using BookShop.ADMIN.DTOs;
+using BookShop.Auth.DTOAuth.Responses;
 using Microsoft.EntityFrameworkCore;
+using BookShop.Services.Interfaces;
 
-namespace BookShop.Services.Implementations;
-
-public class UserService : IUserService
+namespace BookShop.Services
 {
-    private readonly LibraryContext _context;
-
-    public UserService(LibraryContext context)
+    public class UserService : IUserService
     {
-        _context = context;
-    }
+        private readonly LibraryContext _context;
 
-    public async Task<List<UserDto>> GetAllAsync()
-    {
-        return await _context.Users
-            .Select(u => new UserDto
-            {
-                Id = u.Id,
-                UserName = u.UserName,
-                Email = u.Email,
-                IsEmailConfirmed = u.IsEmailConfirmed,
-                CreatedAt = u.CreatedAt
-            })
-            .ToListAsync();
-    }
-
-    public async Task<UserDto?> GetByIdAsync(Guid id)
-    {
-        var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
-        if (user == null) return null;
-
-        return new UserDto
+        public UserService(LibraryContext context)
         {
-            Id = user.Id,
-            UserName = user.UserName,
-            Email = user.Email,
-            IsEmailConfirmed = user.IsEmailConfirmed,
-            CreatedAt = user.CreatedAt
-        };
-    }
+            _context = context;
+        }
 
-    public async Task<bool> DeleteAsync(Guid id)
-    {
-        var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
-        if (user == null) return false;
+        // Получить список всех пользователей
+        public async Task<List<UserDto>> GetAllAsync()
+        {
+            return await _context.Users
+                .Select(u => new UserDto
+                {
+                    Id = u.Id,
+                    UserName = u.UserName,
+                    Email = u.Email,
+                    IsEmailConfirmed = u.IsEmailConfirmed,
+                    CreatedAt = u.CreatedAt
+                })
+                .ToListAsync();
+        }
 
-        _context.Users.Remove(user);
-        await _context.SaveChangesAsync();
-        return true;
+        // Получить пользователя по ID
+        public async Task<UserDto?> GetByIdAsync(Guid id)
+        {
+            var user = await _context.Users
+                .Where(u => u.Id == id)
+                .Select(u => new UserDto
+                {
+                    Id = u.Id,
+                    UserName = u.UserName,
+                    Email = u.Email,
+                    IsEmailConfirmed = u.IsEmailConfirmed,
+                    CreatedAt = u.CreatedAt
+                })
+                .FirstOrDefaultAsync();
+
+            return user;
+        }
+
+        // Удалить пользователя по ID
+        public async Task<bool> DeleteAsync(Guid id)
+        {
+            var user = await _context.Users.FindAsync(id);
+            if (user == null)
+            {
+                return false;
+            }
+
+            _context.Users.Remove(user);
+            await _context.SaveChangesAsync();
+            return true;
+        }
     }
 }
