@@ -4,6 +4,8 @@ using BookShop.ADMIN.ServicesAdmin.AdminServices;
 using BookShop.ADMIN.ServicesAdmin.ReviewServices;
 using BookShop.ADMIN.ServicesAdmin.WarehouseServices;
 using BookShop.Auth.JWT;
+using BookShop.Auth.ServicesAuth.Classes;
+using BookShop.Auth.ServicesAuth.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -11,48 +13,60 @@ using Microsoft.OpenApi.Models;
 using BookShop.Data;
 using BookShop.Services.Implementations;
 using BookShop.Services.Interfaces;
+using AutoMapper;
+using BookShop.Auth.ServicesAuth;
+using BookShop.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Локализация
 var culture = builder.Configuration.GetValue<string>("Culture") ?? "en-US";
 CultureInfo.DefaultThreadCurrentCulture = new CultureInfo(culture);
 CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo(culture);
 
+// AutoMapper
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
+// DB Context
 builder.Services.AddDbContext<LibraryContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddControllers();
-
-builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
-//orderService
-builder.Services.AddScoped<IOrderService, OrderService>();
-//userService
-builder.Services.AddScoped<IUserService, UserService>();
-//warehouseService
-builder.Services.AddScoped<IWarehouseService, WarehouseService>();
-//reviewService
-builder.Services.AddScoped<IReviewService, ReviewService>();
-//adminService
-builder.Services.AddScoped<IAdminService, AdminService>();
-
-
-
-
-// Настройка CORS - будем работать при добавдении фронта
-builder.Services.AddCors(options =>
+// Контроллеры с настройкой сериализации
+builder.Services.AddControllers().AddJsonOptions(options =>
 {
-    options.AddPolicy("AllowFrontend",
-        policy =>
-        {
-            policy.WithOrigins("http://localhost:3000", "http://localhost:<portSwagger>")
-                 // Адрес фронтенда
-                  .AllowAnyMethod()
-                  .AllowAnyHeader()
-                  .AllowCredentials(); // Разрешает отправку куков с токенами
-        });
+    options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
 });
 
-// Настройка аутентификации JWT
+// JWT конфигурация
+builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
+
+// DI сервисов
+builder.Services.AddScoped<IAccountService, AccountService>();
+builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IWarehouseService, WarehouseService>();
+builder.Services.AddScoped<IReviewService, ReviewService>();
+builder.Services.AddScoped<IAdminService, AdminService>();
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IEmailService, EmailService>(); 
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+
+
+// CORS для Swagger + фронта
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:3000", "https://localhost:44308") // React + Swagger
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
+
+// JWT аутентификация
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]);
 
@@ -71,12 +85,26 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
+// ДОБАВЛЯЕМ UserPolicy
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("UserPolicy", policy =>
+    {
+        policy.RequireRole("User");
+    });
+
+    options.AddPolicy("AdminPolicy", policy =>
+    {
+        policy.RequireRole("Admin");
+    });
+});
+
+// Swagger + JWT
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "BookShop API", Version = "v1" });
 
-    // Добавляем поддержку JWT в Swagger
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -105,6 +133,7 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
+// Swagger UI
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -116,10 +145,11 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseCors("AllowFrontend"); // Применяем CORS
+app.UseCors("AllowFrontend"); // Включаем CORS
 
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
 app.Run();
