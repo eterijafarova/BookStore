@@ -11,6 +11,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using BookShop.Auth.DTOAuth.Responses;
+using BookShop.Data.Contexts;
 
 namespace BookShop.Auth.ServicesAuth.Classes
 {
@@ -32,38 +33,47 @@ namespace BookShop.Auth.ServicesAuth.Classes
         // Метод для регистрации пользователя
         public async Task<Result<string>> RegisterAsync(RegisterRequest request)
         {
-            // Проверка на уникальность имени пользователя и email
-            if (await _context.Users.AnyAsync(u => u.UserName == request.Username))
+            try
             {
-                return Result<string>.Error(null, "Username already exists");
+                // Проверка на уникальность имени пользователя и email
+                if (await _context.Users.AnyAsync(u => u.UserName == request.Username))
+                {
+                    return Result<string>.Error(null, "Username already exists");
+                }
+
+                if (await _context.Users.AnyAsync(u => u.Email == request.Email))
+                {
+                    return Result<string>.Error(null, "Email already exists");
+                }
+
+                var user = new User
+                {
+                    UserName = request.Username,
+                    Email = request.Email,
+                    PasswordHash = HashPassword(request.Password),
+                };
+
+                // Добавление пользователя в базу данных
+                _context.Users.Add(user);
+                await _context.SaveChangesAsync();
+
+                var claims = new List<Claim>
+                {
+                    new Claim(ClaimTypes.Name, user.UserName),
+                    new Claim(ClaimTypes.Role, "User")
+                };
+
+                var token = await _tokenService.CreateTokenAsync(claims);
+
+                return Result<string>.Success(token, "Successfully registered");
             }
-
-            if (await _context.Users.AnyAsync(u => u.Email == request.Email))
+            catch (Exception ex)
             {
-                return Result<string>.Error(null, "Email already exists");
+                // Логирование ошибки для подробного анализа
+                // Логируем исключение, чтобы выявить проблему
+                Console.WriteLine($"Error during registration: {ex.Message}");
+                return Result<string>.Error(null, $"Error during registration: {ex.Message}");
             }
-
-            var user = new User
-            {
-                UserName = request.Username,
-                Email = request.Email,
-                PasswordHash = HashPassword(request.Password),
-            };
-
-            // Добавление пользователя в базу данных
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
-
-            // Генерация токена
-            var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.Name, user.UserName),
-                new Claim(ClaimTypes.Role, "User")
-            };
-
-            var token = await _tokenService.CreateTokenAsync(claims);
-
-            return Result<string>.Success(token, "Successfully registered");
         }
 
         // Метод для хэширования пароля

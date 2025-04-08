@@ -14,7 +14,7 @@ using BookShop.Data;
 using BookShop.Services.Implementations;
 using BookShop.Services.Interfaces;
 using AutoMapper;
-using BookShop.Auth.ServicesAuth;
+using BookShop.Data.Contexts;
 using BookShop.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -37,7 +37,7 @@ builder.Services.AddControllers().AddJsonOptions(options =>
     options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
 });
 
-// JWT конфигурация
+
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
 
 // DI сервисов
@@ -51,10 +51,11 @@ builder.Services.AddScoped<IAdminService, AdminService>();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IEmailService, EmailService>(); 
-builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings")); // Регистрация конфигурации
 
 
-// CORS для Swagger + фронта
+
+// CORS 
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>

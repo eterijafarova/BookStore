@@ -6,6 +6,7 @@ using BookShop.Auth.ServicesAuth.Interfaces;
 using BookShop.Data;
 using Microsoft.EntityFrameworkCore;
 using System;
+using BookShop.Data.Contexts;
 
 namespace BookShop.Auth.ServicesAuth.Classes
 {
