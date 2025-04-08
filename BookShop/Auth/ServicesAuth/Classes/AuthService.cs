@@ -6,6 +6,7 @@ using BookShop.Auth.ModelsAuth;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using BookShop.Auth.ServicesAuth.Interfaces;
+using BookShop.Data.Contexts;
 using Microsoft.EntityFrameworkCore;
 
 namespace BookShop.Auth.ServicesAuth.Classes

@@ -1,126 +1,87 @@
 using BookShop.ADMIN.DTOs;
-using BookShop.Data;
-using BookShop.Data.Models;
+using BookShop.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
-namespace BookShop.ADMIN.ControllersAdmin
+namespace BookShop.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/v1/[controller]")]
     [ApiController]
     public class PromoCodeController : ControllerBase
     {
-        private readonly LibraryContext _context;
+        private readonly IPromoCodeService _promoCodeService;
 
-        public PromoCodeController(LibraryContext context)
+        public PromoCodeController(IPromoCodeService promoCodeService)
         {
-            _context = context;
+            _promoCodeService = promoCodeService;
         }
 
-        // GET: api/promocodes
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<PromoCodeDto>>> GetPromoCodes()
+        // Create a new promo code
+        [HttpPost("Create")]
+        public async Task<IActionResult> CreatePromoCode([FromBody] CreatePromoCodeDTO dto)
         {
-            var promoCodes = await _context.PromoCodes
-                .Select(p => new PromoCodeDto
-                {
-                    Id = p.Id,
-                    Code = p.Code,
-                    Discount = p.Discount,
-                    ExpiryDate = p.ExpiryDate,
-                    IsActive = p.IsActive
-                })
-                .ToListAsync();
-
-            return Ok(promoCodes);
+            try
+            {
+                var promoCode = await _promoCodeService.CreatePromoCodeAsync(dto);
+                return Ok(promoCode);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
-        // GET: api/promocodes/{id}
-        [HttpGet("{id}")]
-        public async Task<ActionResult<PromoCodeDto>> GetPromoCode(Guid id)
+        // Get a promo code by code
+        [HttpGet("Get/{code}")]
+        public async Task<IActionResult> GetPromoCode(string code)
         {
-            var promoCode = await _context.PromoCodes
-                .Where(p => p.Id == id)
-                .Select(p => new PromoCodeDto
-                {
-                    Id = p.Id,
-                    Code = p.Code,
-                    Discount = p.Discount,
-                    ExpiryDate = p.ExpiryDate,
-                    IsActive = p.IsActive
-                })
-                .FirstOrDefaultAsync();
+            var promoCode = await _promoCodeService.GetPromoCodeAsync(code);
 
             if (promoCode == null)
-            {
-                return NotFound();
-            }
+                return NotFound(new { message = "Promo code not found" });
 
             return Ok(promoCode);
         }
 
-        // POST: api/promocodes
-        [HttpPost]
-        public async Task<ActionResult<PromoCodeDto>> CreatePromoCode([FromBody] CreatePromoCodeDto dto)
+        // Apply a promo code to an order (simplified)
+        [HttpPost("Apply")]
+        public async Task<IActionResult> ApplyPromoCode([FromBody] ApplyPromoCodeRequest request)
         {
-            var promoCode = new PromoCode
-            {
-                Code = dto.Code,
-                Discount = dto.Discount,
-                ExpiryDate = dto.ExpiryDate,
-                IsActive = dto.IsActive
-            };
+            var isApplied = await _promoCodeService.ApplyPromoCodeAsync(request.Code, request.UserId);
 
-            _context.PromoCodes.Add(promoCode);
-            await _context.SaveChangesAsync();
+            if (!isApplied)
+                return BadRequest(new { message = "Invalid or expired promo code" });
 
-            var createdPromoCodeDto = new PromoCodeDto
-            {
-                Id = promoCode.Id,
-                Code = promoCode.Code,
-                Discount = promoCode.Discount,
-                ExpiryDate = promoCode.ExpiryDate,
-                IsActive = promoCode.IsActive
-            };
-
-            return CreatedAtAction(nameof(GetPromoCode), new { id = promoCode.Id }, createdPromoCodeDto);
+            return Ok(new { message = "Promo code applied successfully" });
         }
 
-        // PUT: api/promocodes/{id}
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdatePromoCode(Guid id, [FromBody] UpdatePromoCodeDto dto)
+        // Deactivate a promo code
+        [HttpPost("Deactivate/{promoCodeId}")]
+        public async Task<IActionResult> DeactivatePromoCode(int promoCodeId)
         {
-            var promoCode = await _context.PromoCodes.FindAsync(id);
+            var result = await _promoCodeService.DeactivatePromoCodeAsync(promoCodeId);
 
-            if (promoCode == null)
-            {
-                return NotFound();
-            }
+            if (!result)
+                return NotFound(new { message = "Promo code not found" });
 
-            promoCode.Code = dto.Code;
-            promoCode.Discount = dto.Discount;
-            promoCode.ExpiryDate = dto.ExpiryDate;
-            promoCode.IsActive = dto.IsActive;
-
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            return Ok(new { message = "Promo code deactivated successfully" });
         }
 
-        // DELETE: api/promocodes/{id}
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeletePromoCode(Guid id)
+        // Delete a promo code
+        [HttpDelete("Delete/{promoCodeId}")]
+        public async Task<IActionResult> DeletePromoCode(int promoCodeId)
         {
-            var promoCode = await _context.PromoCodes.FindAsync(id);
-            if (promoCode == null)
-            {
-                return NotFound();
-            }
+            var result = await _promoCodeService.DeletePromoCodeAsync(promoCodeId);
 
-            _context.PromoCodes.Remove(promoCode);
-            await _context.SaveChangesAsync();
+            if (!result)
+                return NotFound(new { message = "Promo code not found" });
 
-            return NoContent();
+            return Ok(new { message = "Promo code deleted successfully" });
         }
+    }
+
+    public class ApplyPromoCodeRequest
+    {
+        public string Code { get; set; }
+        public int UserId { get; set; }
     }
 }

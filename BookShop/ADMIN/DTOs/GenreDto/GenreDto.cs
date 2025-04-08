@@ -6,5 +6,5 @@ public class GenreDto
     public string GenreName { get; set; }
     public int? ParentGenreId { get; set; }
     public List<GenreDto> SubGenres { get; set; }
-    public List<UpdateBookDto> Books { get; set; }  // Если книги нужны
+    public List<UpdateBookDto> Books { get; set; }  
 }

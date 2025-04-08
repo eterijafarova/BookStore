@@ -5,6 +5,7 @@ using BookShop.Data.Models;
 using BookShop.ADMIN.DTOs.GenreDto;
 using Microsoft.Extensions.Logging;
 using AutoMapper;
+using BookShop.Data.Contexts;
 
 namespace BookShop.Controllers
 {

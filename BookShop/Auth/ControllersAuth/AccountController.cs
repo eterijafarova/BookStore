@@ -2,6 +2,7 @@ using BookShop.Auth.DTOAuth.Requests;
 using BookShop.Auth.DTOAuth.Responses;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 
@@ -32,6 +33,7 @@ namespace BookShop.Auth.ControllersAuth
                     return BadRequest(new Result<string>(false, null, result.Message));  // Возвращаем ошибку с сообщением
                 }
 
+                Debug.Assert(result.Data != null, "result.Data != null");
                 return Ok(Result<string>.Success(result.Data, "Successfully registered"));
             }
             catch (Exception ex)
@@ -87,12 +89,12 @@ namespace BookShop.Auth.ControllersAuth
         }
 
         // Сброс пароля
-        [HttpPost("ResetPassword")]
-        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
+        [HttpPost("ResetPassword/{token}")] // Используем параметр {token}
+        public async Task<IActionResult> ResetPassword([FromRoute] string token, [FromBody] ResetPasswordRequest request)
         {
             try
             {
-                await _accountService.ResetPasswordAsync(request.Token, request.NewPassword);
+                await _accountService.ResetPasswordAsync(token, request.NewPassword);
                 return Ok(new Result<string>(true, null, "Password successfully reset"));
             }
             catch (Exception ex)
@@ -102,11 +104,6 @@ namespace BookShop.Auth.ControllersAuth
         }
 
         // Сброс пароля (не реализован)
-        [HttpPost("ResetPassword")]
-        public async Task<IActionResult> ResetPasswordAsync()
-        {
-            // Вернуть ошибку с четким сообщением, что функциональность не реализована
-            return StatusCode(501, new Result<string>(false, null, "Reset password functionality is not implemented yet"));
-        }
+        // Этот метод больше не нужен, так как мы изменили маршрут выше.
     }
 }

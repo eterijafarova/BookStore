@@ -7,4 +7,5 @@ namespace BookShop.Auth.ServicesAuth.Classes
         public string EmailAddress { get; set; }
         public string EmailPassword { get; set; }
     }
+
 }

@@ -1,9 +1,15 @@
+using System.Security.Claims;
+using System.Security.Cryptography;
 using BookShop.Auth.DTOAuth.Requests;
 using BookShop.Auth.DTOAuth.Responses;
+using BookShop.Auth.ModelsAuth;
 using BookShop.Auth.ServicesAuth.Interfaces;
+using BookShop.Data;
+using BookShop.Data.Contexts;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-
+using Microsoft.EntityFrameworkCore;
 
 namespace BookShop.Auth.ControllersAuth
 {
@@ -13,35 +19,47 @@ namespace BookShop.Auth.ControllersAuth
     {
         private readonly IAuthService _authService;
         private readonly ITokenService _tokenService;
+        private readonly LibraryContext _context;  
 
-        public AuthController(IAuthService authService, ITokenService tokenService)
+        public AuthController(IAuthService authService, ITokenService tokenService, LibraryContext context)
         {
             _tokenService = tokenService;
             _authService = authService;
+            _context = context; 
         }
 
         // Login
         [HttpPost("Login")]
-        public async Task<IActionResult> Login([FromBody] LoginRequest request)
+        public async Task<LoginResponse> LoginAsync(LoginRequest request)
         {
-            try
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.UserName == request.Username);
+            if (user == null)
             {
-                var response = await _authService.LoginAsync(request);
-
-                if (response == null)
-                {
-                    return Unauthorized(new { message = "Invalid credentials" });
-                }
-
-                // Set cookies securely
-                SetTokensInCookies(response.AccessToken, response.RefreshToken);
-
-                return Ok(new Result<LoginResponse>(true, response, "Successfully logged in"));
+                throw new Exception("Invalid username or password");
             }
-            catch (Exception)
+
+            var passwordHasher = new PasswordHasher<User>();
+            var result = passwordHasher.VerifyHashedPassword(user, user.PasswordHash, request.Password);
+
+            if (result == PasswordVerificationResult.Failed)
             {
-                return BadRequest(new { message = "An error occurred during login" });
+                throw new Exception("Invalid username or password");
             }
+
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, request.Username)
+            };
+
+            var accessToken = await _tokenService.CreateTokenAsync(claims);
+            var refreshToken = GenerateRefreshToken();  // Генерация нового refresh токена
+
+            user.RefreshToken = refreshToken;
+            user.RefreshTokenExpiration = DateTime.Now.AddDays(7);
+
+            await _context.SaveChangesAsync();
+
+            return new LoginResponse(accessToken, refreshToken);  // Используем record для возвращаемого значения
         }
 
         // Refresh Token
@@ -107,5 +125,16 @@ namespace BookShop.Auth.ControllersAuth
                 SameSite = SameSiteMode.Strict
             });
         }
+
+        // Метод для генерации refresh токена
+        private string GenerateRefreshToken()
+        {
+            var randomNumber = new byte[32]; 
+            using (var rng = RandomNumberGenerator.Create()) 
+            {
+                rng.GetBytes(randomNumber);
+            }
+            return Convert.ToBase64String(randomNumber); // Генерируем refresh token в виде Base64 строки
+        }//заменить потом на ша 256
     }
 }

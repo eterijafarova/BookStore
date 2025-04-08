@@ -1,30 +1,60 @@
 using AutoMapper;
 using BookShop.ADMIN.DTOs;
-using BookShop.Data.Models;
-using BookShop.ADMIN.DTOs.GenreDto;
-using static BookShop.ADMIN.DTOs.PublisherDto;
 
 namespace BookShop.Mappings
 {
-    public class GenreProfile : Profile
+    public class MappingProfile : Profile
     {
-        public GenreProfile()
+        public MappingProfile()
         {
-            // Маппинг из Genre в GenreDto
-            CreateMap<Genre, GenreDto>()
-                .ForMember(dest => dest.SubGenres, opt => opt.MapFrom(src => src.SubGenres));
-
-            // Маппинг из CreateGenreDto в Genre
-            CreateMap<CreateGenreDto, Genre>()
-                .ForMember(dest => dest.GenreName, opt => opt.MapFrom(src => src.Name));
-
-            // Маппинг из CreateSubGenreDto в Genre
-            CreateMap<CreateSubGenreDto, Genre>()
-                .ForMember(dest => dest.GenreName, opt => opt.MapFrom(src => src.Name));
-
-            // Добавляем маппинг из Publisher в PublisherDto
+            // Маппинг Publisher
             CreateMap<Publisher, PublisherDto>()
-                .ForMember(dest => dest.Books, opt => opt.MapFrom(src => src.Books));
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
+                .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Address))
+                .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber));
+
+            CreateMap<CreatePublisherDto, Publisher>()
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
+                .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Address))
+                .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber));
+
+            CreateMap<UpdatePublisherDto, Publisher>()
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
+                .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Address))
+                .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber));
+
+            // Маппинг Book
+            CreateMap<Book, BookDto>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Title))
+                .ForMember(dest => dest.Author, opt => opt.MapFrom(src => src.Author))
+                .ForMember(dest => dest.Price, opt => opt.MapFrom(src => src.Price))
+                .ForMember(dest => dest.Stock, opt => opt.MapFrom(src => src.Stock))
+                .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description))
+                .ForMember(dest => dest.ImageUrl, opt => opt.MapFrom(src => src.ImageUrl))
+                .ForMember(dest => dest.GenreName, opt => opt.MapFrom(src => src.Genre.GenreName)) // Маппинг для жанра
+                .ForMember(dest => dest.PublisherName, opt => opt.MapFrom(src => src.Publisher.Name)); // Маппинг для издателя
+
+            CreateMap<CreateBookDto, Book>()
+                .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Title))
+                .ForMember(dest => dest.Author, opt => opt.MapFrom(src => src.Author))
+                .ForMember(dest => dest.Price, opt => opt.MapFrom(src => src.Price))
+                .ForMember(dest => dest.Stock, opt => opt.MapFrom(src => src.Stock))
+                .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description))
+                .ForMember(dest => dest.ImageUrl, opt => opt.MapFrom(src => src.ImageUrl))
+                .ForMember(dest => dest.GenreId, opt => opt.MapFrom(src => src.GenreId))
+                .ForMember(dest => dest.PublisherId, opt => opt.MapFrom(src => src.PublisherId));
+
+            CreateMap<UpdateBookDto, Book>()
+                .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Title))
+                .ForMember(dest => dest.Author, opt => opt.MapFrom(src => src.Author))
+                .ForMember(dest => dest.Price, opt => opt.MapFrom(src => src.Price))
+                .ForMember(dest => dest.Stock, opt => opt.MapFrom(src => src.Stock))
+                .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description))
+                .ForMember(dest => dest.ImageUrl, opt => opt.MapFrom(src => src.ImageUrl))
+                .ForMember(dest => dest.GenreId, opt => opt.MapFrom(src => src.GenreId))
+                .ForMember(dest => dest.PublisherId, opt => opt.MapFrom(src => src.PublisherId));
         }
     }
 }
