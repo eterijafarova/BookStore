@@ -1,10 +1,10 @@
 using BookShop.Auth.DTOAuth.Requests;
 using BookShop.Auth.DTOAuth.Responses;
 using Microsoft.AspNetCore.Mvc;
-using System;
 using System.Diagnostics;
-using System.Threading.Tasks;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
+using BookShop.Auth.ServicesAuth.Interfaces.BookShop.Auth.ServicesAuth.Interfaces;
 
 namespace BookShop.Auth.ControllersAuth
 {
@@ -13,28 +13,48 @@ namespace BookShop.Auth.ControllersAuth
     public class AccountController : ControllerBase
     {
         private readonly IAccountService _accountService;
+        private readonly ITokenService _tokenService;
 
-        public AccountController(IAccountService accountService)
+        public AccountController(IAccountService accountService, ITokenService tokenService)
         {
             _accountService = accountService;
+            _tokenService = tokenService;
         }
 
         // Регистрация пользователя
         [HttpPost("Register")]
-        public async Task<IActionResult> Register([FromBody] RegisterRequest request)
+        public async Task<IActionResult> Register([FromBody] RegisterRequest? request)
         {
             try
             {
-                var result = await _accountService.RegisterAsync(request);
+                if (request == null)
+                {
+                    return BadRequest(new Result<string>(false, null, "Request data is invalid"));
+                }
 
-                // Проверка результата
+                var result = await _accountService.RegisterAsync(request); // Регистрация
+
                 if (!result.IsSuccess)
                 {
-                    return BadRequest(new Result<string>(false, null, result.Message));  // Возвращаем ошибку с сообщением
+                    return BadRequest(new Result<string>(false, null, result.Message));
                 }
 
                 Debug.Assert(result.Data != null, "result.Data != null");
-                return Ok(Result<string>.Success(result.Data, "Successfully registered"));
+
+                var claims = new List<Claim>
+                {
+                    new Claim(ClaimTypes.Name, request.UserName)
+                };
+
+                var accessToken = await _tokenService.CreateTokenAsync(claims, expirationMinutes: 15);
+                var refreshToken = await _tokenService.CreateTokenAsync(claims, expirationMinutes: 60);
+
+                // Вернем оба токена
+                return Ok(new
+                {
+                    AccessToken = accessToken,
+                    RefreshToken = refreshToken
+                });
             }
             catch (Exception ex)
             {
@@ -42,29 +62,20 @@ namespace BookShop.Auth.ControllersAuth
             }
         }
 
-        // Подтверждение email по токену
-        [HttpGet("ConfirmEmail")]
-        public async Task<IActionResult> ConfirmEmailAsync([FromQuery] string token)
-        {
-            try
-            {
-                await _accountService.VerifyEmailAsync(token);
-                return Ok(new Result<string>(true, null, "Email successfully confirmed"));
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new Result<string>(false, null, $"Error during email confirmation: {ex.Message}"));
-            }
-        }
-
-        // Отправка ссылки для подтверждения email
-        [Authorize] // Защищаем метод
+        // Подтверждение email
+        [Authorize]
         [HttpPost("ConfirmEmail")]
-        public async Task<IActionResult> ConfirmEmailAsync([FromBody] ConfirmRequest request)
+        public async Task<IActionResult> ConfirmEmailAsync([FromBody] ConfirmRequest? request)
         {
             try
             {
+                if (request == null || string.IsNullOrEmpty(request.Username))
+                {
+                    return BadRequest(new Result<string>(false, null, "Invalid email confirmation request"));
+                }
+
                 await _accountService.ConfirmEmailAsync(request);
+
                 return Ok(Result<string>.Success(request.Username, "Email confirmation link sent"));
             }
             catch (Exception ex)
@@ -79,7 +90,13 @@ namespace BookShop.Auth.ControllersAuth
         {
             try
             {
+                if (string.IsNullOrEmpty(email))
+                {
+                    return BadRequest(new Result<string>(false, null, "Email is required for password reset"));
+                }
+
                 await _accountService.RequestPasswordResetAsync(email);
+
                 return Ok(new Result<string>(true, null, "Password reset link sent to your email"));
             }
             catch (Exception ex)
@@ -90,11 +107,17 @@ namespace BookShop.Auth.ControllersAuth
 
         // Сброс пароля
         [HttpPost("ResetPassword/{token}")] // Используем параметр {token}
-        public async Task<IActionResult> ResetPassword([FromRoute] string token, [FromBody] ResetPasswordRequest request)
+        public async Task<IActionResult> ResetPassword([FromRoute] string token, [FromBody] ResetPasswordRequest? request)
         {
             try
             {
+                if (string.IsNullOrEmpty(token) || request == null || string.IsNullOrEmpty(request.NewPassword))
+                {
+                    return BadRequest(new Result<string>(false, null, "Invalid token or password"));
+                }
+
                 await _accountService.ResetPasswordAsync(token, request.NewPassword);
+
                 return Ok(new Result<string>(true, null, "Password successfully reset"));
             }
             catch (Exception ex)
@@ -102,8 +125,5 @@ namespace BookShop.Auth.ControllersAuth
                 return BadRequest(new Result<string>(false, null, $"Error during password reset: {ex.Message}"));
             }
         }
-
-        // Сброс пароля (не реализован)
-        // Этот метод больше не нужен, так как мы изменили маршрут выше.
     }
 }

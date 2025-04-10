@@ -1,16 +1,13 @@
-using AutoMapper;
+using System.Diagnostics;
 using BookShop.Auth.DTOAuth.Requests;
-using BookShop.Auth.ModelsAuth;
 using BookShop.Auth.ServicesAuth.Interfaces;
-using BookShop.Data;
-using BookShop.Data.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Linq;
 using System.Security.Claims;
-using System.Threading.Tasks;
+using System.Security.Cryptography;
+using System.Text;
 using BookShop.Auth.DTOAuth.Responses;
+using BookShop.Auth.ServicesAuth.Interfaces.BookShop.Auth.ServicesAuth.Interfaces;
 using BookShop.Data.Contexts;
 
 namespace BookShop.Auth.ServicesAuth.Classes
@@ -20,7 +17,8 @@ namespace BookShop.Auth.ServicesAuth.Classes
         private readonly LibraryContext _context;
         private readonly ITokenService _tokenService;
         private readonly IConfiguration _config;
-        private readonly IEmailService _emailService; // Для отправки email
+        private readonly IEmailService _emailService;
+        private IAccountService _accountServiceImplementation;
 
         public AccountService(LibraryContext context, ITokenService tokenService, IConfiguration config, IEmailService emailService)
         {
@@ -31,59 +29,84 @@ namespace BookShop.Auth.ServicesAuth.Classes
         }
 
         // Метод для регистрации пользователя
-        public async Task<Result<string>> RegisterAsync(RegisterRequest request)
+public async Task<Result<RegistrationResponse>> RegisterAsync(RegisterRequest? request)
+{
+    try
+    {
+        // Проверка на наличие пользователя с таким же именем или email
+        if (await _context.Users.AnyAsync(u => request != null && u.UserName == request.UserName))
         {
-            try
-            {
-                // Проверка на уникальность имени пользователя и email
-                if (await _context.Users.AnyAsync(u => u.UserName == request.Username))
-                {
-                    return Result<string>.Error(null, "Username already exists");
-                }
-
-                if (await _context.Users.AnyAsync(u => u.Email == request.Email))
-                {
-                    return Result<string>.Error(null, "Email already exists");
-                }
-
-                var user = new User
-                {
-                    UserName = request.Username,
-                    Email = request.Email,
-                    PasswordHash = HashPassword(request.Password),
-                };
-
-                // Добавление пользователя в базу данных
-                _context.Users.Add(user);
-                await _context.SaveChangesAsync();
-
-                var claims = new List<Claim>
-                {
-                    new Claim(ClaimTypes.Name, user.UserName),
-                    new Claim(ClaimTypes.Role, "User")
-                };
-
-                var token = await _tokenService.CreateTokenAsync(claims);
-
-                return Result<string>.Success(token, "Successfully registered");
-            }
-            catch (Exception ex)
-            {
-                // Логирование ошибки для подробного анализа
-                // Логируем исключение, чтобы выявить проблему
-                Console.WriteLine($"Error during registration: {ex.Message}");
-                return Result<string>.Error(null, $"Error during registration: {ex.Message}");
-            }
+            return Result<RegistrationResponse>.Error(null, "Username already exists");
         }
 
-        // Метод для хэширования пароля
+        if (await _context.Users.AnyAsync(u => request != null && u.Email == request.Email))
+        {
+            return Result<RegistrationResponse>.Error(null, "Email already exists");
+        }
+
+        // Генерация нового Refresh Token
+        var refreshToken = Guid.NewGuid().ToString();
+
+        // Создание нового пользователя
+        Debug.Assert(request != null, nameof(request) + " != null");
+        var user = new User
+        {
+            UserName = request.UserName,
+            Email = request.Email,
+            PasswordHash = HashPassword(request.Password),  // Хэшируем пароль с использованием SHA-256
+            RefreshToken = refreshToken, // Сохраняем Refresh Token
+            RefreshTokenExpiration = DateTime.UtcNow.AddDays(7) // Устанавливаем срок действия Refresh Token
+        };
+
+        // Сохранение нового пользователя в базу данных
+        _context.Users.Add(user);
+        await _context.SaveChangesAsync();
+
+        // Создание списка заявок (claims)
+        var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.Name, user.UserName),
+            new Claim(ClaimTypes.Role, "User") // Можно добавить другие claims, если нужно
+        };
+
+        // Генерация JWT Access Token
+        var accessToken = await _tokenService.CreateTokenAsync(claims);
+
+        // Возвращаем оба токена в ответе
+        var response = new RegistrationResponse
+        {
+            AccessToken = accessToken,
+            RefreshToken = refreshToken
+        };
+
+        return Result<RegistrationResponse>.Success(response, "Successfully registered");
+    }
+    catch (Exception ex)
+    {
+        // Логируем ошибку для подробного анализа
+        Console.WriteLine($"Error during registration: {ex.Message}");
+        return Result<RegistrationResponse>.Error(null, $"Error during registration: {ex.Message}");
+    }
+}
+
+
+
         public string HashPassword(string password)
         {
-            var passwordHasher = new PasswordHasher<User>();
-            return passwordHasher.HashPassword(null, password);
+            if (string.IsNullOrEmpty(password))
+            {
+                throw new ArgumentException("Password cannot be null or empty", nameof(password));
+            }
+
+            using (var sha256 = SHA256.Create())
+            {
+                var passwordBytes = Encoding.UTF8.GetBytes(password);
+                var hashedBytes = sha256.ComputeHash(passwordBytes);
+                return Convert.ToBase64String(hashedBytes);  
+            }
         }
 
-        // Метод для запроса сброса пароля
+        
         public async Task RequestPasswordResetAsync(string email)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
@@ -91,23 +114,19 @@ namespace BookShop.Auth.ServicesAuth.Classes
             {
                 throw new Exception("User not found");
             }
-
-            // Генерация токена для сброса пароля
+            
             var token = Guid.NewGuid().ToString();
-
-            // Отправка email с ссылкой для сброса пароля
+            
             var resetLink = $"{_config["AppUrl"]}/reset-password?token={token}";
             await _emailService.SendEmailAsync(user.Email, "Password Reset Request", 
                 $"Please click the following link to reset your password: {resetLink}");
-
-            // Сохранение токена в базе данных
+            
             user.RefreshToken = token;
-            user.RefreshTokenExpiration = DateTime.Now.AddHours(1); // Токен действителен 1 час
+            user.RefreshTokenExpiration = DateTime.Now.AddHours(1); 
             await _context.SaveChangesAsync();
         }
-
-        // Метод для сброса пароля
-        public async Task ResetPasswordAsync(string token, string newPassword)
+        
+        public async Task ResetPasswordAsync(string token, string? newPassword)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.RefreshToken == token);
             if (user == null || user.RefreshTokenExpiration < DateTime.Now)
@@ -116,36 +135,33 @@ namespace BookShop.Auth.ServicesAuth.Classes
             }
 
             var passwordHasher = new PasswordHasher<User>();
+            Debug.Assert(newPassword != null, nameof(newPassword) + " != null");
             user.PasswordHash = passwordHasher.HashPassword(user, newPassword);
 
-            // Обновляем информацию о пользователе
+     
             user.RefreshToken = null;
-            user.RefreshTokenExpiration = DateTime.Now.AddMinutes(-1); // Устанавливаем истекший токен
+            user.RefreshTokenExpiration = DateTime.Now.AddMinutes(-1); 
             await _context.SaveChangesAsync();
 
         }
 
         // Метод для подтверждения email
-        public async Task ConfirmEmailAsync(ConfirmRequest request)
+        public async Task ConfirmEmailAsync(ConfirmRequest? request)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == request.Username);
+            var user = await _context.Users.FirstOrDefaultAsync(u => request != null && u.UserName == request.Username);
             if (user == null)
             {
                 throw new Exception("User not found");
             }
 
-            // Генерация уникального токена для подтверждения email
             var token = Guid.NewGuid().ToString();
-
-            // Сохранение токена в базе данных (например, в поле RefreshToken)
+            
             user.RefreshToken = token;
-            user.RefreshTokenExpiration = DateTime.Now.AddHours(1);  // Время жизни токена — 1 час
+            user.RefreshTokenExpiration = DateTime.Now.AddHours(1);  
             await _context.SaveChangesAsync();
-
-            // Формирование ссылки для подтверждения
+            
             var confirmationLink = $"{_config["AppUrl"]}/confirm-email?token={token}";
-
-            // Отправка email с подтверждением
+            
             await _emailService.SendEmailAsync(user.Email, "Confirm your email", 
                 $"Please click the following link to confirm your email: <a href='{confirmationLink}'>Confirm Email</a>");
         }
@@ -167,8 +183,8 @@ namespace BookShop.Auth.ServicesAuth.Classes
 
             // Подтверждаем email пользователя
             user.IsEmailConfirmed = true;
-            user.RefreshToken = null;  // Убираем токен после подтверждения
-            user.RefreshTokenExpiration = DateTime.Now.AddMinutes(-1); // Устанавливаем истекший токен
+            user.RefreshToken = null;  
+            user.RefreshTokenExpiration = DateTime.Now.AddMinutes(-1); 
           
 
             await _context.SaveChangesAsync();

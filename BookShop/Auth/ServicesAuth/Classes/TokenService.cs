@@ -3,10 +3,9 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using BookShop.Auth.ServicesAuth.Interfaces;
-using BookShop.Data;
-using Microsoft.EntityFrameworkCore;
-using System;
 using BookShop.Data.Contexts;
+using System.Threading.Tasks;
+using BookShop.Auth.ServicesAuth.Interfaces.BookShop.Auth.ServicesAuth.Interfaces;
 
 namespace BookShop.Auth.ServicesAuth.Classes
 {
@@ -17,8 +16,8 @@ namespace BookShop.Auth.ServicesAuth.Classes
 
         public TokenService(IConfiguration config, LibraryContext context)
         {
-            _config = config;
-            _context = context;
+            _config = config ?? throw new ArgumentNullException(nameof(config));
+            _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
         // Метод для создания токена с возможностью настройки времени жизни
@@ -33,13 +32,13 @@ namespace BookShop.Auth.ServicesAuth.Classes
 
             var securityToken = new JwtSecurityToken(
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(expirationMinutes), // Используем параметр для времени истечения
+                expires: DateTime.UtcNow.AddMinutes(expirationMinutes),
                 issuer: _config["JWT:Issuer"],
                 audience: _config["JWT:Audience"],
                 signingCredentials: signingCred
             );
 
-            return await Task.FromResult(new JwtSecurityTokenHandler().WriteToken(securityToken));  // Возвращаем токен
+            return await Task.FromResult(new JwtSecurityTokenHandler().WriteToken(securityToken));
         }
 
         // Метод для получения имени пользователя из токена
@@ -59,23 +58,41 @@ namespace BookShop.Auth.ServicesAuth.Classes
                     ValidateAudience = true,
                     ValidAudience = _config["JWT:Audience"],
                     ValidateLifetime = true,
-                    ClockSkew = TimeSpan.Zero  // Без допуска по времени для истечения токена
+                    ClockSkew = TimeSpan.Zero
                 }, out var validatedToken);
-
-                // Извлекаем имя пользователя
+                
                 var username = principal.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Name)?.Value;
                 if (string.IsNullOrEmpty(username))
                 {
                     throw new SecurityTokenException("Username not found in token");
                 }
-                
-                return username;
+
+                return await Task.FromResult(username);
+            }
+            catch (SecurityTokenException ex)
+            {
+                // Уточняем сообщение ошибки для пользователей
+                throw new SecurityTokenException($"Token validation failed: {ex.Message}");
             }
             catch (Exception ex)
             {
-                // Логируем или обрабатываем ошибку по вашему усмотрению
-                throw new SecurityTokenException($"Invalid token: {ex.Message}");
+                // Общая обработка ошибок
+                throw new Exception($"An error occurred while validating the token: {ex.Message}");
             }
+        }
+
+        // Метод для обновления access token с использованием refresh token
+        public async Task<string> RefreshAccessTokenAsync(string refreshToken)
+        {
+            // Логика для обновления access token с использованием refreshToken
+            // Например, проверить refreshToken, получить новые claims, создать новый токен
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, "user") // Пример, обновите в зависимости от вашего случая
+            };
+
+            // Здесь добавьте логику для создания нового access токена
+            return await CreateTokenAsync(claims, expirationMinutes: 15);
         }
     }
 }

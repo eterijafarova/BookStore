@@ -13,7 +13,7 @@ public class UserProfile : Profile
         CreateMap<RegisterRequest, User>()
             // Маппим поле Username из RegisterRequest в UserName в модели User
             .ForMember(dest => dest.UserName, opt =>
-                opt.MapFrom(src => src.Username))
+                opt.MapFrom(src => src.UserName))
             // Маппим поле Email в модели User
             .ForMember(dest => dest.Email, opt =>
                 opt.MapFrom(src => src.Email))

@@ -1,11 +1,10 @@
 using Microsoft.AspNetCore.Identity;
-using BookShop.Data;
 using BookShop.Auth.DTOAuth.Requests;
 using BookShop.Auth.DTOAuth.Responses;
-using BookShop.Auth.ModelsAuth;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using BookShop.Auth.ServicesAuth.Interfaces;
+using BookShop.Auth.ServicesAuth.Interfaces.BookShop.Auth.ServicesAuth.Interfaces;
 using BookShop.Data.Contexts;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,10 +15,31 @@ namespace BookShop.Auth.ServicesAuth.Classes
         private readonly LibraryContext _context;
         private readonly ITokenService _tokenService;
 
+        
         public AuthService(LibraryContext context, ITokenService tokenService)
         {
             _context = context;
             _tokenService = tokenService;
+        }
+
+        // Метод для аутентификации пользователя
+        public async Task<User> AuthenticateAsync(string username, string password)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.UserName == username);
+            if (user == null)
+            {
+                throw new Exception("Invalid username or password");
+            }
+
+            var passwordHasher = new PasswordHasher<User>();
+            var result = passwordHasher.VerifyHashedPassword(user, user.PasswordHash, password);
+
+            if (result == PasswordVerificationResult.Failed)
+            {
+                throw new Exception("Invalid username or password");
+            }
+
+            return user; // Возвращаем пользователя
         }
 
         // Метод для регистрации пользователя
@@ -27,7 +47,7 @@ namespace BookShop.Auth.ServicesAuth.Classes
         {
             var user = new User
             {
-                UserName = request.Username,
+                UserName = request.UserName,
                 Email = request.Email,
             };
 
@@ -39,37 +59,25 @@ namespace BookShop.Auth.ServicesAuth.Classes
             await _context.SaveChangesAsync();
         }
 
-        // Метод для входа (логина) пользователя
+        // Метод для входа (логина) пользователя с созданием токенов
         public async Task<LoginResponse> LoginAsync(LoginRequest request)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(x => x.UserName == request.Username);
-            if (user == null)
-            {
-                throw new Exception("Invalid username or password");
-            }
-
-            var passwordHasher = new PasswordHasher<User>();
-            var result = passwordHasher.VerifyHashedPassword(user, user.PasswordHash, request.Password);
-
-            if (result == PasswordVerificationResult.Failed)
-            {
-                throw new Exception("Invalid username or password");
-            }
+            var user = await AuthenticateAsync(request.UserName, request.Password); // Получаем пользователя
 
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.Name, request.Username)
+                new Claim(ClaimTypes.Name, request.UserName)
             };
 
             var accessToken = await _tokenService.CreateTokenAsync(claims);
-            var refreshToken = GenerateRefreshToken();  // Генерация нового refresh токена
+            var refreshToken = GenerateRefreshToken(); 
 
-            user.RefreshToken = refreshToken;  // Сохраняем как строку
+            user.RefreshToken = refreshToken;
             user.RefreshTokenExpiration = DateTime.Now.AddDays(7);
 
             await _context.SaveChangesAsync();
 
-            return new LoginResponse(accessToken, refreshToken);  // Возвращаем строковые токены
+            return new LoginResponse(accessToken, refreshToken);
         }
 
         // Метод для обновления refresh токена
@@ -101,19 +109,18 @@ namespace BookShop.Auth.ServicesAuth.Classes
 
             await _context.SaveChangesAsync();
 
-            // Возвращаем новые токены
             return new RefreshTokenResponse(newAccessToken, newRefreshToken);
         }
 
         // Метод для генерации случайного и безопасного refresh токена
-        private string GenerateRefreshToken()
+        private string? GenerateRefreshToken()
         {
-            var randomNumber = new byte[32]; // 256 бит
-            using (var rng = RandomNumberGenerator.Create()) // Используем RandomNumberGenerator
+            var randomNumber = new byte[32];
+            using (var rng = RandomNumberGenerator.Create())
             {
                 rng.GetBytes(randomNumber);
             }
-            return Convert.ToBase64String(randomNumber); // Генерируем refresh token в виде Base64 строки
+            return Convert.ToBase64String(randomNumber);
         }
     }
 }

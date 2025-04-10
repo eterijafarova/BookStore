@@ -1,12 +1,9 @@
-using BookShop.Shared.DTO.Requests;
-using BookShop.Shared.DTO.Response;
-using BookShop.Services.Interfaces;
-using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
 using BookShop.ADMIN.DTOs.OrderDto;
 using BookShop.Data.Models;
+using BookShop.Services.Interfaces;
+using Microsoft.AspNetCore.Mvc;
 
-namespace BookShop.Controllers
+namespace BookShop.ADMIN.ControllersAdmin
 {
     [Route("api/v1/[controller]")]
     [ApiController]
@@ -21,14 +18,14 @@ namespace BookShop.Controllers
 
         // Создание нового заказа
         [HttpPost("CreateOrder")]
-        public async Task<IActionResult> CreateOrderAsync([FromBody] CreateOrderDTO createOrderDTO)
+        public async Task<IActionResult> CreateOrderAsync([FromBody] CreateOrderDTO createOrderDto)
         {
-            if (createOrderDTO == null)
+            if (createOrderDto == null)
             {
                 return BadRequest("Invalid order data.");
             }
 
-            var order = await _orderService.CreateOrderAsync(createOrderDTO);
+            var order = await _orderService.CreateOrderAsync(createOrderDto);
             return CreatedAtAction(nameof(GetOrderByIdAsync), new { orderId = order.Id }, order);
         }
 
