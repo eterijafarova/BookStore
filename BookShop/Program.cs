@@ -14,6 +14,7 @@ using BookShop.Data;
 using BookShop.Services.Implementations;
 using BookShop.Services.Interfaces;
 using AutoMapper;
+using BookShop.Auth.ServicesAuth.Interfaces.BookShop.Auth.ServicesAuth.Interfaces;
 using BookShop.Data.Contexts;
 using BookShop.Services;
 
@@ -60,7 +61,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins("http://localhost:3000", "https://localhost:44308") // React + Swagger
+        policy.WithOrigins("http://localhost:3000", "https://localhost:44308", "http://localhost:5173") // React + Swagger
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
@@ -131,6 +132,7 @@ builder.Services.AddSwaggerGen(c =>
         }
     });
 });
+
 
 var app = builder.Build();
 

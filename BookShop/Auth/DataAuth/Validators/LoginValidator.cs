@@ -9,10 +9,10 @@ public class LoginValidator : AbstractValidator<LoginRequest>
     public LoginValidator()
     {
         // Валидация имени пользователя
-        RuleFor(x => x.Username)
+        RuleFor(x => x.UserName)
             .NotEmpty()
             .WithMessage("Username is required") // Проверка на пустое значение
-            .Matches(RegexPattern.Username)
+            .Matches(RegexPattern.UserName)
             .WithMessage("Username must be at least 6 characters long and contain only letters, numbers, underscores, and hyphens");
 
         // Валидация пароля

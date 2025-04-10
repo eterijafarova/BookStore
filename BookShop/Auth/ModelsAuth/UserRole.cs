@@ -2,12 +2,12 @@ namespace BookShop.Auth.ModelsAuth
 {
     public class UserRole
     {
-        public int UserRoleId { get; set; }  // Идентификатор роли пользователя
+        public int UserRoleId { get; set; }  
 
-        public int UserId { get; set; }  // Идентификатор пользователя
-        public int RoleId { get; set; }  // Идентификатор роли
+        public int UserId { get; set; }  
+        public int RoleId { get; set; } 
 
-        public Role Role { get; set; }  // Навигационное свойство для связи с ролью
-        public User User { get; set; }  // Навигационное свойство для связи с пользователем
+        public Role Role { get; set; }  
+        public User User { get; set; }  
     }
 }

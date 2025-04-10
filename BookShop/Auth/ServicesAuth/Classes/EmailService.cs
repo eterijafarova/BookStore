@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Microsoft.Extensions.Options;
 using System.Net;
 using System.Net.Mail;
@@ -8,8 +9,7 @@ namespace BookShop.Auth.ServicesAuth.Classes
     public class EmailService : IEmailService
     {
         private readonly EmailSettings _emailSettings;
-
-        // Внедрение конфигурации через IOptions
+        
         public EmailService(IOptions<EmailSettings> emailSettings)
         {
             _emailSettings = emailSettings.Value;
@@ -17,6 +17,7 @@ namespace BookShop.Auth.ServicesAuth.Classes
 
         public async Task SendEmailAsync(string to, string subject, string body)
         {
+            Debug.Assert(_emailSettings.EmailAddress != null, "_emailSettings.EmailAddress != null");
             var mailMessage = new MailMessage
             {
                 From = new MailAddress(_emailSettings.EmailAddress),
@@ -26,6 +27,7 @@ namespace BookShop.Auth.ServicesAuth.Classes
             };
             mailMessage.To.Add(to);
 
+            Debug.Assert(_emailSettings.SmtpPort != null, "_emailSettings.SmtpPort != null");
             var smtpClient = new SmtpClient(_emailSettings.SmtpServer)
             {
                 Port = int.Parse(_emailSettings.SmtpPort),
