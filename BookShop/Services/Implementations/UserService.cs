@@ -8,7 +8,7 @@ using BookShop.Data.Contexts;
 using BookShop.Shared.DTO.Response;
 using BookShop.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using static BookShop.ADMIN.DTOs.UserDto;
+
 
 namespace BookShop.Services.Implementations
 {
@@ -21,26 +21,7 @@ namespace BookShop.Services.Implementations
             _context = context;
         }
 
-        // Создание нового пользователя
-        public async Task<UserDto> CreateUserAsync(CreateUserDto dto)
-        {
-            var user = new User
-            {
-                UserName = dto.UserName,
-                Email = dto.Email,
-                PasswordHash = HashPassword(dto.Password)  
-            };
-
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
-
-            return new UserDto
-            {
-                Id = user.Id,
-                UserName = user.UserName,
-                Email = user.Email
-            };
-        }
+        
 
         // Получение информации о пользователе по ID
         public async Task<UserDto> GetUserAsync(int id)

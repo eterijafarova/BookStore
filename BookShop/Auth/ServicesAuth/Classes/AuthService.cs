@@ -39,30 +39,14 @@ namespace BookShop.Auth.ServicesAuth.Classes
                 throw new Exception("Invalid username or password");
             }
 
-            return user; // Возвращаем пользователя
+            return user; 
         }
-
-        // Метод для регистрации пользователя
-        public async Task RegisterAsync(RegisterRequest request)
-        {
-            var user = new User
-            {
-                UserName = request.UserName,
-                Email = request.Email,
-            };
-
-            // Хэшируем пароль перед сохранением
-            var passwordHasher = new PasswordHasher<User>();
-            user.PasswordHash = passwordHasher.HashPassword(user, request.Password);
-
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
-        }
+        
 
         // Метод для входа (логина) пользователя с созданием токенов
         public async Task<LoginResponse> LoginAsync(LoginRequest request)
         {
-            var user = await AuthenticateAsync(request.UserName, request.Password); // Получаем пользователя
+            var user = await AuthenticateAsync(request.UserName, request.Password); 
 
             var claims = new List<Claim>
             {
@@ -113,14 +97,15 @@ namespace BookShop.Auth.ServicesAuth.Classes
         }
 
         // Метод для генерации случайного и безопасного refresh токена
-        private string? GenerateRefreshToken()
+        // Метод для генерации refresh токена
+        private static string GenerateRefreshToken()
         {
             var randomNumber = new byte[32];
             using (var rng = RandomNumberGenerator.Create())
             {
                 rng.GetBytes(randomNumber);
             }
-            return Convert.ToBase64String(randomNumber);
+            return Convert.ToBase64String(randomNumber); 
         }
     }
 }

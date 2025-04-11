@@ -1,6 +1,8 @@
 using BookShop.Auth.DTOAuth.Requests;
 using BookShop.Auth.DTOAuth.Responses;
 
+namespace BookShop.Auth.ServicesAuth.Interfaces;
+
 public interface IAccountService
 {
     Task<Result<RegistrationResponse>> RegisterAsync(RegisterRequest? request); 

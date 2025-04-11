@@ -32,8 +32,9 @@ namespace BookShop.Auth.ControllersAuth
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
-            // Логин
+          
             [HttpPost("login")]
+            [AllowAnonymous]
             public async Task<IActionResult> Login([FromBody] LoginRequest dto)
             {
                 try
@@ -97,7 +98,6 @@ namespace BookShop.Auth.ControllersAuth
             return Ok("Test successful");
         }
 
-        // Helper method to set tokens in cookies
         private void SetTokensInCookies(string accessToken, string? refreshToken)
         {
             if (string.IsNullOrEmpty(accessToken) || string.IsNullOrEmpty(refreshToken))
@@ -108,7 +108,7 @@ namespace BookShop.Auth.ControllersAuth
             var cookieOptions = new CookieOptions
             {
                 HttpOnly = true,
-                Secure = HttpContext.Request.IsHttps,  // Устанавливается только если используется HTTPS
+                Secure = HttpContext.Request.IsHttps,  
                 SameSite = SameSiteMode.Strict
             };
 
@@ -116,16 +116,7 @@ namespace BookShop.Auth.ControllersAuth
             Response.Cookies.Append("refreshToken", refreshToken, cookieOptions);
         }
 
-        // Метод для генерации refresh токена
-        private string GenerateRefreshToken()
-        {
-            var randomNumber = new byte[32];
-            using (var rng = RandomNumberGenerator.Create())
-            {
-                rng.GetBytes(randomNumber);
-            }
-            return Convert.ToBase64String(randomNumber); // Генерируем refresh token в виде Base64 строки
-        }
+
     }
 }
 

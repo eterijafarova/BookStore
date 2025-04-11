@@ -1,3 +1,3 @@
 namespace BookShop.Auth.DTOAuth.Requests;
 
-public record ConfirmRequest(string Username);
+public record ConfirmRequest(string UserName);

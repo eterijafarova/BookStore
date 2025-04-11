@@ -15,19 +15,6 @@ namespace BookShop.ADMIN.ControllersAdmin
             _userService = userService;
         }
         
-        [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] CreateUserDto dto)
-        {
-            try
-            {
-                var user = await _userService.CreateUserAsync(dto);
-                return Ok(new { message = "User created successfully", user });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
-        }
 
 
         [HttpGet("{id}")]
