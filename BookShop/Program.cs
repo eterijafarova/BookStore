@@ -57,16 +57,28 @@ builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Emai
 
 
 // CORS 
+// builder.Services.AddCors(options =>
+// {
+//     options.AddPolicy("AllowFrontend", policy =>
+//     {
+//         policy.WithOrigins("http://localhost:3000", "https://localhost:44308", "http://localhost:5173") // React + Swagger
+//               .AllowAnyHeader()
+//               .AllowAnyMethod()
+//               .AllowCredentials();
+//     });
+// });
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins("http://localhost:3000", "https://localhost:44308", "http://localhost:5173") // React + Swagger
-              .AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials();
+        policy
+            .AllowAnyOrigin()    // ❗ Только для dev!
+            .AllowAnyHeader()
+            .AllowAnyMethod();
     });
 });
+
 
 // JWT аутентификация
 var jwtSettings = builder.Configuration.GetSection("Jwt");

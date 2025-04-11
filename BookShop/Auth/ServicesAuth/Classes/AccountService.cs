@@ -148,7 +148,7 @@ public async Task<Result<RegistrationResponse>> RegisterAsync(RegisterRequest? r
         // Метод для подтверждения email
         public async Task ConfirmEmailAsync(ConfirmRequest? request)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => request != null && u.UserName == request.Username);
+            var user = await _context.Users.FirstOrDefaultAsync(u => request != null && u.UserName == request.UserName);
             if (user == null)
             {
                 throw new Exception("User not found");

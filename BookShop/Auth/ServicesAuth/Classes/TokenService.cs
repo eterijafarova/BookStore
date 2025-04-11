@@ -71,7 +71,6 @@ namespace BookShop.Auth.ServicesAuth.Classes
             }
             catch (SecurityTokenException ex)
             {
-                // Уточняем сообщение ошибки для пользователей
                 throw new SecurityTokenException($"Token validation failed: {ex.Message}");
             }
             catch (Exception ex)
@@ -80,8 +79,7 @@ namespace BookShop.Auth.ServicesAuth.Classes
                 throw new Exception($"An error occurred while validating the token: {ex.Message}");
             }
         }
-
-        // Метод для обновления access token с использованием refresh token
+        
         public async Task<string> RefreshAccessTokenAsync(string refreshToken)
         {
             // Логика для обновления access token с использованием refreshToken

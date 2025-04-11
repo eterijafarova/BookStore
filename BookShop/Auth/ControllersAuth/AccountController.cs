@@ -3,6 +3,7 @@ using BookShop.Auth.DTOAuth.Responses;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using System.Security.Claims;
+using BookShop.Auth.ServicesAuth.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using BookShop.Auth.ServicesAuth.Interfaces.BookShop.Auth.ServicesAuth.Interfaces;
 
@@ -32,7 +33,7 @@ namespace BookShop.Auth.ControllersAuth
                     return BadRequest(new Result<string>(false, null, "Request data is invalid"));
                 }
 
-                var result = await _accountService.RegisterAsync(request); // Регистрация
+                var result = await _accountService.RegisterAsync(request); 
 
                 if (!result.IsSuccess)
                 {
@@ -69,14 +70,14 @@ namespace BookShop.Auth.ControllersAuth
         {
             try
             {
-                if (request == null || string.IsNullOrEmpty(request.Username))
+                if (request == null || string.IsNullOrEmpty(request.UserName))
                 {
                     return BadRequest(new Result<string>(false, null, "Invalid email confirmation request"));
                 }
 
                 await _accountService.ConfirmEmailAsync(request);
 
-                return Ok(Result<string>.Success(request.Username, "Email confirmation link sent"));
+                return Ok(Result<string>.Success(request.UserName, "Email confirmation link sent"));
             }
             catch (Exception ex)
             {
