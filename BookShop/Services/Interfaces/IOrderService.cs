@@ -7,9 +7,9 @@ namespace BookShop.Services.Interfaces
 {
     public interface IOrderService
     {
-        Task<OrderResponseDTO> CreateOrderAsync(CreateOrderDTO dto);
-        Task<OrderResponseDTO> GetOrderByIdAsync(int orderId);
-        Task<IEnumerable<OrderResponseDTO>> GetOrdersAsync(int page = 1, int pageSize = 20);
+        Task<OrderResponseDto> CreateOrderAsync(CreateOrderDto dto);
+        Task<OrderResponseDto> GetOrderByIdAsync(int orderId);
+        Task<IEnumerable<OrderResponseDto>> GetOrdersAsync(int page = 1, int pageSize = 20);
         Task<bool> DeleteOrderAsync(int orderId);
         
         Task<bool> UpdateOrderStatusAsync(int orderId, Order.OrderStatus status);

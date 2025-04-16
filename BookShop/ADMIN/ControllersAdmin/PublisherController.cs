@@ -1,67 +1,64 @@
-using BookShop.ADMIN.DTOs;
+using BookShop.ADMIN.DTOs.PublisherDto;
 using BookShop.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BookShop.ADMIN.ControllersAdmin
 {
-    [Route("api/v1/[controller]")]
     [ApiController]
-    public class PublisherController : ControllerBase
+    [Route("api/v1/publishers")]
+    public class PublishersController : ControllerBase
     {
-        private readonly IPublisherService _publisherService;
+        private readonly IPublisherService _service;
 
-        public PublisherController(IPublisherService publisherService)
+        public PublishersController(IPublisherService service)
         {
-            _publisherService = publisherService;
+            _service = service;
         }
 
-        // Создание нового издателя
-        [HttpPost("Create")]
-        public async Task<IActionResult> CreatePublisher([FromBody] CreatePublisherDto dto)
-        {
-            var publisher = await _publisherService.CreatePublisherAsync(dto);
-            return CreatedAtAction(nameof(GetPublisher), new { id = publisher.Id }, publisher);
-        }
-
-        // Получение издателя по ID
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetPublisher(int id)
-        {
-            var publisher = await _publisherService.GetPublisherAsync(id);
-
-            if (publisher == null)
-                return NotFound();
-
-            return Ok(publisher);
-        }
-
-        // Получение всех издателей
         [HttpGet]
-        public async Task<IActionResult> GetPublishers([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
+        public async Task<ActionResult<IEnumerable<PublisherDto>>> GetAll()
         {
-            var publishers = await _publisherService.GetPublishersAsync(page, pageSize);
-            return Ok(publishers);
+            var result = await _service.GetAllAsync();
+            return Ok(result);
         }
 
-        // Обновление данных издателя
+        [HttpGet("{id}")]
+        public async Task<ActionResult<PublisherDto>> Get(int id)
+        {
+            var result = await _service.GetByIdAsync(id);
+            if (result == null)
+                return NotFound();
+            return Ok(result);
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<PublisherDto>> Create(CreatePublisherDto dto)
+        {
+            var result = await _service.CreateAsync(dto);
+            if (result == null)
+                return BadRequest("Publisher with this name already exists.");
+            return CreatedAtAction(nameof(Get), new { id = result.Id }, result);
+        }
+
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdatePublisher(int id, [FromBody] UpdatePublisherDto dto)
+        public async Task<IActionResult> Update(int id, UpdatePublisherDto dto)
         {
-            var publisher = await _publisherService.UpdatePublisherAsync(id, dto);
-            if (publisher == null)
+            if (id != dto.Id)
+                return BadRequest("ID mismatch.");
+
+            var success = await _service.UpdateAsync(id, dto);
+            if (!success)
                 return NotFound();
 
-            return Ok(publisher);
+            return NoContent();
         }
 
-        // Удаление издателя
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeletePublisher(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            var result = await _publisherService.DeletePublisherAsync(id);
-            if (!result)
+            var success = await _service.DeleteAsync(id);
+            if (!success)
                 return NotFound();
-
             return NoContent();
         }
     }

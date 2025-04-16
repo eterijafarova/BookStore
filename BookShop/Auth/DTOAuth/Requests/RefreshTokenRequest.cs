@@ -1,3 +1,3 @@
 namespace BookShop.Auth.DTOAuth.Requests;
 
-public record RefreshTokenRequest(string Username, string RefreshToken);
+public record RefreshTokenRequest(string username, string refreshToken);

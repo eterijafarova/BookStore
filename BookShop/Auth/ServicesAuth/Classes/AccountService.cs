@@ -1,193 +1,154 @@
-using System.Diagnostics;
-using BookShop.Auth.DTOAuth.Requests;
-using BookShop.Auth.ServicesAuth.Interfaces;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
-using System.Security.Cryptography;
+using System;
+using System.IO;
+using System.Net;
+using System.Net.Mail;
 using System.Text;
-using BookShop.Auth.DTOAuth.Responses;
-using BookShop.Auth.ServicesAuth.Interfaces.BookShop.Auth.ServicesAuth.Interfaces;
+using System.Threading.Tasks;
+using AutoMapper;
+using BookShop.Auth.DTOAuth.Requests;
+using BookShop.Auth.ModelsAuth;
+using BookShop.Auth.ServicesAuth.Interfaces;
 using BookShop.Data.Contexts;
+using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace BookShop.Auth.ServicesAuth.Classes
 {
     public class AccountService : IAccountService
     {
+        private readonly IMapper _mapper;
         private readonly LibraryContext _context;
-        private readonly ITokenService _tokenService;
         private readonly IConfiguration _config;
-        private readonly IEmailService _emailService;
-        private IAccountService _accountServiceImplementation;
+        private readonly ITokenService _tokenService;
 
-        public AccountService(LibraryContext context, ITokenService tokenService, IConfiguration config, IEmailService emailService)
+        public AccountService(
+            IMapper mapper,
+            LibraryContext authContext,
+            IConfiguration config,
+            ITokenService tokenService)
         {
-            _context = context;
-            _tokenService = tokenService;
+            _mapper = mapper;
+            _context = authContext;
             _config = config;
-            _emailService = emailService;
+            _tokenService = tokenService;
         }
 
-        // Метод для регистрации пользователя
-public async Task<Result<RegistrationResponse>> RegisterAsync(RegisterRequest? request)
-{
-    try
-    {
-        // Проверка на наличие пользователя с таким же именем или email
-        if (await _context.Users.AnyAsync(u => request != null && u.UserName == request.UserName))
+        public async Task RegisterAsync(RegisterRequest request)
         {
-            return Result<RegistrationResponse>.Error(null, "Username already exists");
-        }
-
-        if (await _context.Users.AnyAsync(u => request != null && u.Email == request.Email))
-        {
-            return Result<RegistrationResponse>.Error(null, "Email already exists");
-        }
-
-        // Генерация нового Refresh Token
-        var refreshToken = Guid.NewGuid().ToString();
-
-        // Создание нового пользователя
-        Debug.Assert(request != null, nameof(request) + " != null");
-        var user = new User
-        {
-            UserName = request.UserName,
-            Email = request.Email,
-            PasswordHash = HashPassword(request.Password),  // Хэшируем пароль с использованием SHA-256
-            RefreshToken = refreshToken, // Сохраняем Refresh Token
-            RefreshTokenExpiration = DateTime.UtcNow.AddDays(7) // Устанавливаем срок действия Refresh Token
-        };
-
-        // Сохранение нового пользователя в базу данных
-        _context.Users.Add(user);
-        await _context.SaveChangesAsync();
-
-        // Создание списка заявок (claims)
-        var claims = new List<Claim>
-        {
-            new Claim(ClaimTypes.Name, user.UserName),
-            new Claim(ClaimTypes.Role, "User") // Можно добавить другие claims, если нужно
-        };
-
-        // Генерация JWT Access Token
-        var accessToken = await _tokenService.CreateTokenAsync(claims);
-
-        // Возвращаем оба токена в ответе
-        var response = new RegistrationResponse
-        {
-            AccessToken = accessToken,
-            RefreshToken = refreshToken
-        };
-
-        return Result<RegistrationResponse>.Success(response, "Successfully registered");
-    }
-    catch (Exception ex)
-    {
-        // Логируем ошибку для подробного анализа
-        Console.WriteLine($"Error during registration: {ex.Message}");
-        return Result<RegistrationResponse>.Error(null, $"Error during registration: {ex.Message}");
-    }
-}
-
-
-
-        public string HashPassword(string password)
-        {
-            if (string.IsNullOrEmpty(password))
+            try
             {
-                throw new ArgumentException("Password cannot be null or empty", nameof(password));
+                var user = _mapper.Map<User>(request);
+                user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
+                user.RefreshToken = Guid.NewGuid().ToString();
+                user.RefreshTokenExpiration = DateTime.UtcNow.AddDays(7);
+
+                await _context.Users.AddAsync(user);
+                await _context.SaveChangesAsync();
+
+                var appUserRole = await _context.Roles
+                    .FirstOrDefaultAsync(r => r.RoleName == "AppUser");
+                if (appUserRole == null)
+                    throw new Exception("Role 'AppUser' not found in the database.");
+
+                await _context.UserRoles.AddAsync(new UserRole
+                {
+                    UserId = user.Id,
+                    RoleId = appUserRole.Id
+                });
+                await _context.SaveChangesAsync();
             }
-
-            using (var sha256 = SHA256.Create())
+            catch (Exception ex)
             {
-                var passwordBytes = Encoding.UTF8.GetBytes(password);
-                var hashedBytes = sha256.ComputeHash(passwordBytes);
-                return Convert.ToBase64String(hashedBytes);  
+                Console.WriteLine("Error during registration: " + ex.Message);
+                if (ex.InnerException != null)
+                    Console.WriteLine("Inner exception: " + ex.InnerException.Message);
+                throw;
             }
         }
 
-        
-        public async Task RequestPasswordResetAsync(string email)
+        public async Task ConfirmEmailAsync(ConfirmRequest request, HttpContext context)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+            // 1. Найти пользователя
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.UserName == request.username);
             if (user == null)
+                throw new Exception("User not found for email confirmation.");
+
+            // 2. Чтение SMTP‑настроек из секции "Email:Smtp"
+            var smtpSection = _config.GetSection("Email:Smtp");
+            var smtpHost = smtpSection["Host"]
+                ?? throw new InvalidOperationException("SMTP Host is missing in configuration.");
+            var smtpPort = int.Parse(smtpSection["Port"]
+                ?? throw new InvalidOperationException("SMTP Port is missing in configuration."));
+            var smtpUser = smtpSection["User"]
+                ?? throw new InvalidOperationException("SMTP User is missing in configuration.");
+            var smtpPass = smtpSection["Pass"]
+                ?? throw new InvalidOperationException("SMTP Pass is missing in configuration.");
+
+            using var client = new SmtpClient(smtpHost, smtpPort)
             {
-                throw new Exception("User not found");
-            }
-            
-            var token = Guid.NewGuid().ToString();
-            
-            var resetLink = $"{_config["AppUrl"]}/reset-password?token={token}";
-            await _emailService.SendEmailAsync(user.Email, "Password Reset Request", 
-                $"Please click the following link to reset your password: {resetLink}");
-            
-            user.RefreshToken = token;
-            user.RefreshTokenExpiration = DateTime.Now.AddHours(1); 
-            await _context.SaveChangesAsync();
-        }
-        
-        public async Task ResetPasswordAsync(string token, string? newPassword)
-        {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.RefreshToken == token);
-            if (user == null || user.RefreshTokenExpiration < DateTime.Now)
+                EnableSsl = true,
+                Credentials = new NetworkCredential(smtpUser, smtpPass)
+            };
+
+            // 3. Вычислить путь к шаблону email без использования env
+            var baseDir = AppContext.BaseDirectory;
+            var projectRoot = Path.GetFullPath(Path.Combine(baseDir, "..", "..", ".."));
+            var filePath = Path.Combine(projectRoot, "Auth", "wwwroot", "email.html");
+
+            if (!File.Exists(filePath))
+                throw new FileNotFoundException($"Email template not found at {filePath}", filePath);
+
+            // 4. Загрузить и прочитать шаблон
+            using var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+            using var sr = new StreamReader(fs, Encoding.UTF8);
+            var template = await sr.ReadToEndAsync();
+
+            // 5. Сформировать ссылку и тело письма
+            var token = await _tokenService.CreateEmailTokenAsync(request.username);
+            var link = $"{context.Request.Scheme}://{context.Request.Host}/api/v1/Account/VerifyEmail?token={token}";
+            var body = template
+                .Replace("{username}", request.username)
+                .Replace("{link}", link);
+
+            // 6. Подготовить и отправить письмо
+            var message = new MailMessage
             {
-                throw new Exception("Invalid or expired token");
-            }
+                From = new MailAddress(smtpUser),
+                Subject = "Email confirmation",
+                Body = body,
+                IsBodyHtml = true
+            };
+            message.To.Add(user.Email);
 
-            var passwordHasher = new PasswordHasher<User>();
-            Debug.Assert(newPassword != null, nameof(newPassword) + " != null");
-            user.PasswordHash = passwordHasher.HashPassword(user, newPassword);
-
-     
-            user.RefreshToken = null;
-            user.RefreshTokenExpiration = DateTime.Now.AddMinutes(-1); 
-            await _context.SaveChangesAsync();
-
-        }
-
-        // Метод для подтверждения email
-        public async Task ConfirmEmailAsync(ConfirmRequest? request)
-        {
-            var user = await _context.Users.FirstOrDefaultAsync(u => request != null && u.UserName == request.UserName);
-            if (user == null)
+            try
             {
-                throw new Exception("User not found");
+                await client.SendMailAsync(message);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error sending email: " + ex);
+                throw;
             }
 
-            var token = Guid.NewGuid().ToString();
-            
-            user.RefreshToken = token;
-            user.RefreshTokenExpiration = DateTime.Now.AddHours(1);  
-            await _context.SaveChangesAsync();
-            
-            var confirmationLink = $"{_config["AppUrl"]}/confirm-email?token={token}";
-            
-            await _emailService.SendEmailAsync(user.Email, "Confirm your email", 
-                $"Please click the following link to confirm your email: <a href='{confirmationLink}'>Confirm Email</a>");
         }
 
-        // Метод для верификации email по токену
         public async Task VerifyEmailAsync(string token)
         {
-            var username = await _tokenService.GetNameFromToken(token);
-            if (string.IsNullOrEmpty(username))
-            {
-                throw new Exception("Invalid token");
-            }
+            var name = await _tokenService.GetNameFromToken(token);
+            var isValid = await _tokenService.ValidateEmailTokenAsync(token);
+            if (!isValid) return;
 
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == username);
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.UserName == name);
             if (user == null)
-            {
-                throw new Exception("User not found");
-            }
+                throw new Exception("User not found in VerifyEmail.");
 
-            // Подтверждаем email пользователя
             user.IsEmailConfirmed = true;
-            user.RefreshToken = null;  
-            user.RefreshTokenExpiration = DateTime.Now.AddMinutes(-1); 
-          
-
             await _context.SaveChangesAsync();
         }
+        
+        
     }
 }

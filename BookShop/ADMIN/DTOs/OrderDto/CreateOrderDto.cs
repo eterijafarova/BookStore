@@ -1,13 +1,13 @@
 namespace BookShop.ADMIN.DTOs.OrderDto
 {
-    public class CreateOrderDTO
+    public class CreateOrderDto
     {
-        public int UserId { get; set; }
+        public Guid UserId { get; set; }
         public decimal TotalPrice { get; set; }
-        public List<OrderItemDTO> OrderItems { get; set; }
+        public List<OrderItemDto>? OrderItems { get; set; }
     }
 
-    public class OrderItemDTO
+    public class OrderItemDto
     {
         public int BookId { get; set; }
         public int Quantity { get; set; }

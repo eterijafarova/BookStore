@@ -3,20 +3,21 @@ using System.Globalization;
 using BookShop.ADMIN.ServicesAdmin.AdminServices;
 using BookShop.ADMIN.ServicesAdmin.ReviewServices;
 using BookShop.ADMIN.ServicesAdmin.WarehouseServices;
+using BookShop.Auth.DataAuth.Validators;
 using BookShop.Auth.JWT;
 using BookShop.Auth.ServicesAuth.Classes;
 using BookShop.Auth.ServicesAuth.Interfaces;
+using BookShop.Auth.SharedAuth;
+using BookShop.Data.Contexts;
+using BookShop.Mappings;
+using BookShop.Services.Implementations;
+using BookShop.Services.Interfaces;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using BookShop.Data;
-using BookShop.Services.Implementations;
-using BookShop.Services.Interfaces;
-using AutoMapper;
-using BookShop.Auth.ServicesAuth.Interfaces.BookShop.Auth.ServicesAuth.Interfaces;
-using BookShop.Data.Contexts;
-using BookShop.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,63 +27,33 @@ CultureInfo.DefaultThreadCurrentCulture = new CultureInfo(culture);
 CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo(culture);
 
 // AutoMapper
-builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 // DB Context
 builder.Services.AddDbContext<LibraryContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Контроллеры с настройкой сериализации
-builder.Services.AddControllers().AddJsonOptions(options =>
-{
-    options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
-});
+// Регистрируем глобальный Exception Middleware (если он определён)
+builder.Services.AddTransient<GlobalExceptionMiddleware>();
 
-
-builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
-
-// DI сервисов
-builder.Services.AddScoped<IAccountService, AccountService>();
-builder.Services.AddScoped<ITokenService, TokenService>();
-builder.Services.AddScoped<IOrderService, OrderService>();
-builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<IWarehouseService, WarehouseService>();
-builder.Services.AddScoped<IReviewService, ReviewService>();
-builder.Services.AddScoped<IAdminService, AdminService>();
-builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
-builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IEmailService, EmailService>(); 
-builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings")); // Регистрация конфигурации
-
-
-
-// CORS 
-// builder.Services.AddCors(options =>
-// {
-//     options.AddPolicy("AllowFrontend", policy =>
-//     {
-//         policy.WithOrigins("http://localhost:3000", "https://localhost:44308", "http://localhost:5173") // React + Swagger
-//               .AllowAnyHeader()
-//               .AllowAnyMethod()
-//               .AllowCredentials();
-//     });
-// });
-
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowFrontend", policy =>
+// Controllers: добавляем настройки JSON
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
     {
-        policy
-            .AllowAnyOrigin()    // ❗ Только для dev!
-            .AllowAnyHeader()
-            .AllowAnyMethod();
+        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
     });
-});
 
+// Регистрация FluentValidation — обновлено для версии 12.x:
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddValidatorsFromAssemblyContaining<RegisterValidator>();
 
-// JWT аутентификация
-var jwtSettings = builder.Configuration.GetSection("Jwt");
-var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]);
+// Конфигурация JWT — используем секцию "JWT"
+var jwtSettings = builder.Configuration.GetSection("JWT").Get<JwtOptions>();
+if (jwtSettings == null || string.IsNullOrEmpty(jwtSettings.SecretKey))
+{
+    throw new InvalidOperationException("JWT configuration is missing or SecretKey is not set.");
+}
+var key = Encoding.UTF8.GetBytes(jwtSettings.SecretKey);
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -93,32 +64,61 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = jwtSettings["Issuer"],
-            ValidAudience = jwtSettings["Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(key)
+            ValidIssuer = jwtSettings.Issuer,
+            ValidAudience = jwtSettings.Audience,
+            IssuerSigningKey = new SymmetricSecurityKey(key),
+            ClockSkew = TimeSpan.Zero
         };
     });
 
-// ДОБАВЛЯЕМ UserPolicy
-builder.Services.AddAuthorization(options =>
+// CORS – замените на конкретное значение в продакшене при необходимости
+builder.Services.AddCors(options =>
 {
-    options.AddPolicy("UserPolicy", policy =>
+    options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.RequireRole("User");
-    });
-
-    options.AddPolicy("AdminPolicy", policy =>
-    {
-        policy.RequireRole("Admin");
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod();
     });
 });
 
-// Swagger + JWT
+// Регистрация сервисов
+builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
+// builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IWarehouseService, WarehouseService>();
+builder.Services.AddScoped<IReviewService, ReviewService>();
+builder.Services.AddScoped<IAdminService, AdminService>();
+builder.Services.AddScoped<IBookService, BookService>();
+builder.Services.AddScoped<IPublisherService, PublisherService>();
+// builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IAccountService,AccountService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+
+
+
+builder.Services.AddLogging(options =>
+{
+    options.AddConsole(); // Логирование в консоль
+    options.AddDebug();   // Логирование в отладку
+});
+
+
+// // Конфигурация EmailSettings (проверьте, что в appsettings.json корректно прописан раздел "EmailSettings")
+// builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+
+// JWT авторизация
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("UserPolicy", policy => policy.RequireRole("User"));
+    options.AddPolicy("AdminPolicy", policy => policy.RequireRole("Admin"));
+});
+
+// Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "BookShop API", Version = "v1" });
-
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -126,29 +126,30 @@ builder.Services.AddSwaggerGen(c =>
         Scheme = "Bearer",
         BearerFormat = "JWT",
         In = ParameterLocation.Header,
-        Description = "Введите токен в формате: Bearer {your_token}"
+        Description = "Enter the token in the format: Bearer {your_token}"
     });
-
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
-            new OpenApiSecurityScheme
+            new OpenApiSecurityScheme 
             {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
+                Reference = new OpenApiReference 
+                { 
+                    Type = ReferenceType.SecurityScheme, 
+                    Id = "Bearer" 
                 }
             },
-            new string[] { }
+            Array.Empty<string>()
         }
     });
 });
 
-
 var app = builder.Build();
 
-// Swagger UI
+// Подключение глобального Exception Middleware
+app.UseMiddleware<GlobalExceptionMiddleware>();
+
+// Swagger UI только для Development
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -159,8 +160,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
-app.UseCors("AllowFrontend"); // Включаем CORS
+app.UseCors("AllowFrontend");
 
 app.UseAuthentication();
 app.UseAuthorization();

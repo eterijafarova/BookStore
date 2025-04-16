@@ -23,12 +23,31 @@ public class LibraryContext : DbContext
     public DbSet<User> Users { get; set; }
     public DbSet<UserRole> UserRoles { get; set; }
     public DbSet<Warehouse> Warehouses { get; set; }
-    public DbSet<Admin> Admins { get; set; } = null!;
+    public DbSet<Admin> Admins { get; set; } 
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(LibraryContext).Assembly);
         base.OnModelCreating(modelBuilder);
+        
+        // Заполнение таблицы Roles начальными данными
+        modelBuilder.Entity<Role>().HasData(
+            new Role 
+            { 
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000001"), 
+                RoleName = "AppUser" 
+            },
+            new Role 
+            { 
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000002"), 
+                RoleName = "Admin" 
+            },
+            new Role 
+            { 
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000003"), 
+                RoleName = "SuperAdmin" 
+            }
+        );
     }
 }

@@ -2,8 +2,6 @@ using BookShop.ADMIN.DTOs.OrderDto;
 using BookShop.Data;
 using BookShop.Data.Contexts;
 using BookShop.Data.Models;
-using BookShop.Shared.DTO.Requests;
-using BookShop.Shared.DTO.Response;
 using BookShop.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -19,7 +17,7 @@ namespace BookShop.Services.Implementations
         }
 
         // Создание нового заказа
-        public async Task<OrderResponseDTO> CreateOrderAsync(CreateOrderDTO dto)
+        public async Task<OrderResponseDto> CreateOrderAsync(CreateOrderDto dto)
         {
             var order = new Order
             {
@@ -38,7 +36,7 @@ namespace BookShop.Services.Implementations
             _context.Orders.Add(order);
             await _context.SaveChangesAsync();
 
-            return new OrderResponseDTO
+            return new OrderResponseDto
             {
                 Id = order.Id,
                 UserId = order.UserId,
@@ -49,7 +47,7 @@ namespace BookShop.Services.Implementations
         }
 
         // Получение заказа по ID
-        public async Task<OrderResponseDTO> GetOrderByIdAsync(int orderId)
+        public async Task<OrderResponseDto> GetOrderByIdAsync(int orderId)
         {
             var order = await _context.Orders
                 .Include(o => o.OrderItems)
@@ -58,14 +56,14 @@ namespace BookShop.Services.Implementations
             if (order == null)
                 return null;
 
-            return new OrderResponseDTO
+            return new OrderResponseDto
             {
                 Id = order.Id,
                 UserId = order.UserId,
                 TotalPrice = order.TotalPrice,
                 OrderDate = order.OrderDate,
                 Status = order.Status.ToString(),
-                OrderItems = order.OrderItems.Select(item => new OrderItemResponseDTO
+                OrderItems = order.OrderItems.Select(item => new OrderItemResponseDto
                 {
                     BookId = item.BookId,
                     Quantity = item.Quantity,
@@ -75,7 +73,7 @@ namespace BookShop.Services.Implementations
         }
 
         // Получение всех заказов с пагинацией
-        public async Task<IEnumerable<OrderResponseDTO>> GetOrdersAsync(int page = 1, int pageSize = 20)
+        public async Task<IEnumerable<OrderResponseDto>> GetOrdersAsync(int page = 1, int pageSize = 20)
         {
             var orders = await _context.Orders
                 .Skip((page - 1) * pageSize)
@@ -83,14 +81,14 @@ namespace BookShop.Services.Implementations
                 .Include(o => o.OrderItems)
                 .ToListAsync();
 
-            return orders.Select(order => new OrderResponseDTO
+            return orders.Select(order => new OrderResponseDto
             {
                 Id = order.Id,
                 UserId = order.UserId,
                 TotalPrice = order.TotalPrice,
                 OrderDate = order.OrderDate,
                 Status = order.Status.ToString(),
-                OrderItems = order.OrderItems.Select(item => new OrderItemResponseDTO
+                OrderItems = order.OrderItems.Select(item => new OrderItemResponseDto
                 {
                     BookId = item.BookId,
                     Quantity = item.Quantity,
@@ -100,7 +98,7 @@ namespace BookShop.Services.Implementations
         }
 
         // Получение всех заказов по UserId с пагинацией
-        public async Task<IEnumerable<OrderResponseDTO>> GetOrdersByUserIdAsync(int userId, int page = 1, int pageSize = 20)
+        public async Task<IEnumerable<OrderResponseDto>> GetOrdersByUserIdAsync(Guid userId, int page = 1, int pageSize = 20)
         {
             var orders = await _context.Orders
                 .Where(o => o.UserId == userId)
@@ -109,14 +107,14 @@ namespace BookShop.Services.Implementations
                 .Include(o => o.OrderItems)
                 .ToListAsync();
 
-            return orders.Select(order => new OrderResponseDTO
+            return orders.Select(order => new OrderResponseDto
             {
                 Id = order.Id,
                 UserId = order.UserId,
                 TotalPrice = order.TotalPrice,
                 OrderDate = order.OrderDate,
                 Status = order.Status.ToString(),
-                OrderItems = order.OrderItems.Select(item => new OrderItemResponseDTO
+                OrderItems = order.OrderItems.Select(item => new OrderItemResponseDto
                 {
                     BookId = item.BookId,
                     Quantity = item.Quantity,

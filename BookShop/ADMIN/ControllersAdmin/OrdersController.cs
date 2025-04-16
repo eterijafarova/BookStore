@@ -18,7 +18,7 @@ namespace BookShop.ADMIN.ControllersAdmin
 
         // Создание нового заказа
         [HttpPost("CreateOrder")]
-        public async Task<IActionResult> CreateOrderAsync([FromBody] CreateOrderDTO createOrderDto)
+        public async Task<IActionResult> CreateOrderAsync([FromBody] CreateOrderDto createOrderDto)
         {
             if (createOrderDto == null)
             {

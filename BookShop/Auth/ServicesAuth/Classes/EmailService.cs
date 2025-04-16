@@ -1,41 +1,40 @@
-using System.Diagnostics;
-using Microsoft.Extensions.Options;
 using System.Net;
 using System.Net.Mail;
+
 using BookShop.Auth.ServicesAuth.Interfaces;
 
 namespace BookShop.Auth.ServicesAuth.Classes
 {
     public class EmailService : IEmailService
     {
-        private readonly EmailSettings _emailSettings;
+        private readonly IConfiguration _configuration;
         
-        public EmailService(IOptions<EmailSettings> emailSettings)
+        public EmailService(IConfiguration configuration)
         {
-            _emailSettings = emailSettings.Value;
+            _configuration = configuration;
         }
-
+        
         public async Task SendEmailAsync(string to, string subject, string body)
         {
-            Debug.Assert(_emailSettings.EmailAddress != null, "_emailSettings.EmailAddress != null");
-            var mailMessage = new MailMessage
+            var smtpHost = _configuration["Email:Smtp:Host"];
+            var smtpPort = int.Parse(_configuration["Email:Smtp:Port"]);
+            var smtpUser = _configuration["Email:Smtp:User"];
+            var smtpPass = _configuration["Email:Smtp:Pass"];
+            
+            using (var client = new SmtpClient(smtpHost, smtpPort))
             {
-                From = new MailAddress(_emailSettings.EmailAddress),
-                Subject = subject,
-                Body = body,
-                IsBodyHtml = true
-            };
-            mailMessage.To.Add(to);
-
-            Debug.Assert(_emailSettings.SmtpPort != null, "_emailSettings.SmtpPort != null");
-            var smtpClient = new SmtpClient(_emailSettings.SmtpServer)
-            {
-                Port = int.Parse(_emailSettings.SmtpPort),
-                Credentials = new NetworkCredential(_emailSettings.EmailAddress, _emailSettings.EmailPassword),
-                EnableSsl = true
-            };
-
-            await smtpClient.SendMailAsync(mailMessage);
+                client.EnableSsl = true;
+                client.Credentials = new NetworkCredential(smtpUser, smtpPass);
+                
+                var mailMessage = new MailMessage();
+                mailMessage.From = new MailAddress(smtpUser);
+                mailMessage.To.Add(to);
+                mailMessage.Subject = subject;
+                mailMessage.Body = body;
+                mailMessage.IsBodyHtml = true;
+                
+                await client.SendMailAsync(mailMessage);
+            }
         }
     }
 }

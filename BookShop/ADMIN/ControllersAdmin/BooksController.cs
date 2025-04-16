@@ -1,5 +1,4 @@
 using BookShop.ADMIN.DTOs;
-using BookShop.Data;
 using BookShop.Data.Contexts;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -24,10 +23,10 @@ namespace BookShop.ADMIN.ControllersAdmin
             var query = _context.Books
                 .Include(b => b.Genre)
                 .Include(b => b.Publisher)
-                .Where(b => b.Title.Contains(search) || b.Author.Contains(search)); // Поиск по названию и автору
+                .Where(b => b.Title.Contains(search) || b.Author.Contains(search)); 
 
             var books = await query
-                .Skip((page - 1) * pageSize)  // Пагинация
+                .Skip((page - 1) * pageSize)  
                 .Take(pageSize)
                 .Select(b => new BookDto
                 {
@@ -39,7 +38,7 @@ namespace BookShop.ADMIN.ControllersAdmin
                     Description = b.Description,
                     ImageUrl = b.ImageUrl,
                     GenreName = b.Genre.GenreName,
-                    PublisherName = b.Publisher.Name
+                    PublisherName = b.Publisher.Name 
                 })
                 .ToListAsync();
 

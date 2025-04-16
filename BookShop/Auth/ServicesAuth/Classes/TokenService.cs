@@ -1,11 +1,10 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using Microsoft.IdentityModel.Tokens;
 using BookShop.Auth.ServicesAuth.Interfaces;
 using BookShop.Data.Contexts;
-using System.Threading.Tasks;
-using BookShop.Auth.ServicesAuth.Interfaces.BookShop.Auth.ServicesAuth.Interfaces;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 namespace BookShop.Auth.ServicesAuth.Classes
 {
@@ -16,81 +15,132 @@ namespace BookShop.Auth.ServicesAuth.Classes
 
         public TokenService(IConfiguration config, LibraryContext context)
         {
-            _config = config ?? throw new ArgumentNullException(nameof(config));
-            _context = context ?? throw new ArgumentNullException(nameof(context));
+            _config = config;
+            _context = context;
         }
 
-        // Метод для создания токена с возможностью настройки времени жизни
-        public async Task<string> CreateTokenAsync(List<Claim> claims, int expirationMinutes = 15)
+        public Task<string> GetNameFromToken(string token)
         {
-            var jwtKey = _config["JWT:Key"];
-            if (string.IsNullOrEmpty(jwtKey))
-                throw new InvalidOperationException("JWT:Key is not configured");
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var securityToken = tokenHandler.ReadToken(token) as JwtSecurityToken;
 
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
-            var signingCred = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256Signature);
+            if (securityToken == null)
+                throw new SecurityTokenException("Invalid token");
 
-            var securityToken = new JwtSecurityToken(
-                claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(expirationMinutes),
-                issuer: _config["JWT:Issuer"],
-                audience: _config["JWT:Audience"],
-                signingCredentials: signingCred
-            );
+            var usernameClaim = securityToken.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Name);
+            if (usernameClaim == null)
+                throw new Exception("Username claim is missing in token.");
 
-            return await Task.FromResult(new JwtSecurityTokenHandler().WriteToken(securityToken));
+            return Task.FromResult(usernameClaim.Value);
         }
 
-        // Метод для получения имени пользователя из токена
-        public async Task<string> GetNameFromToken(string token)
+        public async Task<string> CreateTokenAsync(string username)
         {
-            try
-            {
-                var tokenHandler = new JwtSecurityTokenHandler();
-                var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["JWT:Key"]));
+            // Находим пользователя по имени
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == username);
+            if (user == null)
+                throw new Exception("User not found.");
 
-                var principal = tokenHandler.ValidateToken(token, new TokenValidationParameters
-                {
-                    ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = securityKey,
-                    ValidateIssuer = true,
-                    ValidIssuer = _config["JWT:Issuer"],
-                    ValidateAudience = true,
-                    ValidAudience = _config["JWT:Audience"],
-                    ValidateLifetime = true,
-                    ClockSkew = TimeSpan.Zero
-                }, out var validatedToken);
-                
-                var username = principal.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Name)?.Value;
-                if (string.IsNullOrEmpty(username))
-                {
-                    throw new SecurityTokenException("Username not found in token");
-                }
+            // Загружаем роли пользователя через связь UserRoles
+            var userRoles = await _context.UserRoles
+                .Where(ur => ur.UserId == user.Id)
+                .Include(ur => ur.Role)
+                .AsNoTracking()
+                .ToListAsync();
 
-                return await Task.FromResult(username);
-            }
-            catch (SecurityTokenException ex)
-            {
-                throw new SecurityTokenException($"Token validation failed: {ex.Message}");
-            }
-            catch (Exception ex)
-            {
-                // Общая обработка ошибок
-                throw new Exception($"An error occurred while validating the token: {ex.Message}");
-            }
-        }
-        
-        public async Task<string> RefreshAccessTokenAsync(string refreshToken)
-        {
-            // Логика для обновления access token с использованием refreshToken
-            // Например, проверить refreshToken, получить новые claims, создать новый токен
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.Name, "user") // Пример, обновите в зависимости от вашего случая
+                new Claim(ClaimTypes.Name, username)
             };
 
-            // Здесь добавьте логику для создания нового access токена
-            return await CreateTokenAsync(claims, expirationMinutes: 15);
+            foreach (var ur in userRoles)
+            {
+                // Добавляем claim для каждой роли
+                claims.Add(new Claim(ClaimTypes.Role, ur.Role.RoleName));
+            }
+
+            // Получаем секретный ключ из конфигурации (убедитесь, что он указан в appsettings.json как "JWT:SecretKey")
+            var secretKeyValue = _config["JWT:SecretKey"];
+            if (string.IsNullOrEmpty(secretKeyValue))
+            {
+                throw new Exception("JWT SecretKey is missing in configuration.");
+            }
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKeyValue));
+
+            var signingCredentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256Signature);
+
+            // Создаем токен с указанными параметрами
+            var tokenDescriptor = new JwtSecurityToken(
+                issuer: _config["JWT:Issuer"],
+                audience: _config["JWT:Audience"],
+                claims: claims,
+                expires: DateTime.UtcNow.AddMinutes(Convert.ToDouble(_config["JWT:AccessTokenExpiryMinutes"])),
+                signingCredentials: signingCredentials
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(tokenDescriptor);
+        }
+
+        public async Task<string> CreateEmailTokenAsync(string username)
+        {
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, username)
+            };
+
+            // Получаем ключ для email токена
+            var emailKey = _config["JWT:EmailKey"];
+            if (string.IsNullOrEmpty(emailKey))
+            {
+                throw new Exception("JWT EmailKey is missing in configuration.");
+            }
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(emailKey));
+
+            var signingCredentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256Signature);
+
+            var tokenDescriptor = new JwtSecurityToken(
+                claims: claims,
+                expires: DateTime.UtcNow.AddMinutes(3),
+                issuer: _config["JWT:Issuer"],
+                audience: _config["JWT:Audience"],
+                signingCredentials: signingCredentials
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(tokenDescriptor);
+        }
+
+        public async Task<bool> ValidateEmailTokenAsync(string token)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var emailKey = _config["JWT:EmailKey"];
+            if (string.IsNullOrEmpty(emailKey))
+            {
+                throw new Exception("JWT EmailKey is missing in configuration.");
+            }
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(emailKey));
+
+            var validationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                ValidIssuer = _config["JWT:Issuer"],
+                ValidAudience = _config["JWT:Audience"],
+                IssuerSigningKey = securityKey,
+                ClockSkew = TimeSpan.Zero
+            };
+
+            try
+            {
+                // Синхронная валидация токена
+                var principal = tokenHandler.ValidateToken(token, validationParameters, out SecurityToken validatedToken);
+                return principal.Identity != null && principal.Identity.IsAuthenticated;
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }

@@ -1,9 +1,7 @@
-using BookShop.Data.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 
-
-namespace BookShop.Data
+namespace BookShop.Data.Contexts
 {
     public class LibraryContextFactory : IDesignTimeDbContextFactory<LibraryContext>
     {

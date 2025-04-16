@@ -1,9 +1,3 @@
-namespace BookShop.Auth.DTOAuth.Requests
-{
-    public class LoginRequest
-    {
-        public required string UserName { get; set; }
-        public required string Password { get; set; }
-    }
+namespace BookShop.Auth.DTOAuth.Requests;
 
-}
+public record LoginRequest(string username, string password);
