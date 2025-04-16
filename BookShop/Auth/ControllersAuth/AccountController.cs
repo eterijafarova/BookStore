@@ -1,130 +1,56 @@
+using BookShop.Auth.DataAuth.Validators;
 using BookShop.Auth.DTOAuth.Requests;
-using BookShop.Auth.DTOAuth.Responses;
-using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics;
-using System.Security.Claims;
 using BookShop.Auth.ServicesAuth.Interfaces;
+using ControllerFirst.DTO.Responses;
 using Microsoft.AspNetCore.Authorization;
-using BookShop.Auth.ServicesAuth.Interfaces.BookShop.Auth.ServicesAuth.Interfaces;
+using Microsoft.AspNetCore.Mvc;
 
-namespace BookShop.Auth.ControllersAuth
+namespace BookShop.Auth.ControllersAuth;
+
+[ApiController]
+[Route("api/v1/[controller]")]
+public class AccountController : ControllerBase
 {
-    [Route("api/v1/[controller]")]
-    [ApiController]
-    public class AccountController : ControllerBase
+    private readonly IAccountService _accountService;
+
+    public AccountController(IAccountService accountService)
     {
-        private readonly IAccountService _accountService;
-        private readonly ITokenService _tokenService;
-
-        public AccountController(IAccountService accountService, ITokenService tokenService)
-        {
-            _accountService = accountService;
-            _tokenService = tokenService;
-        }
-
-        // Регистрация пользователя
-        [HttpPost("Register")]
-        public async Task<IActionResult> Register([FromBody] RegisterRequest? request)
-        {
-            try
-            {
-                if (request == null)
-                {
-                    return BadRequest(new Result<string>(false, null, "Request data is invalid"));
-                }
-
-                var result = await _accountService.RegisterAsync(request); 
-
-                if (!result.IsSuccess)
-                {
-                    return BadRequest(new Result<string>(false, null, result.Message));
-                }
-
-                Debug.Assert(result.Data != null, "result.Data != null");
-
-                var claims = new List<Claim>
-                {
-                    new Claim(ClaimTypes.Name, request.UserName)
-                };
-
-                var accessToken = await _tokenService.CreateTokenAsync(claims, expirationMinutes: 15);
-                var refreshToken = await _tokenService.CreateTokenAsync(claims, expirationMinutes: 60);
-
-                // Вернем оба токена
-                return Ok(new
-                {
-                    AccessToken = accessToken,
-                    RefreshToken = refreshToken
-                });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new Result<string>(false, null, $"Error during registration: {ex.Message}"));
-            }
-        }
-
-        // Подтверждение email
-        [Authorize]
-        [HttpPost("ConfirmEmail")]
-        public async Task<IActionResult> ConfirmEmailAsync([FromBody] ConfirmRequest? request)
-        {
-            try
-            {
-                if (request == null || string.IsNullOrEmpty(request.UserName))
-                {
-                    return BadRequest(new Result<string>(false, null, "Invalid email confirmation request"));
-                }
-
-                await _accountService.ConfirmEmailAsync(request);
-
-                return Ok(Result<string>.Success(request.UserName, "Email confirmation link sent"));
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new Result<string>(false, null, $"Error during email confirmation: {ex.Message}"));
-            }
-        }
-
-        // Запрос на сброс пароля
-        [HttpPost("RequestPasswordReset")]
-        public async Task<IActionResult> RequestPasswordReset([FromBody] string email)
-        {
-            try
-            {
-                if (string.IsNullOrEmpty(email))
-                {
-                    return BadRequest(new Result<string>(false, null, "Email is required for password reset"));
-                }
-
-                await _accountService.RequestPasswordResetAsync(email);
-
-                return Ok(new Result<string>(true, null, "Password reset link sent to your email"));
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new Result<string>(false, null, $"Error during password reset request: {ex.Message}"));
-            }
-        }
-
-        // Сброс пароля
-        [HttpPost("ResetPassword/{token}")] // Используем параметр {token}
-        public async Task<IActionResult> ResetPassword([FromRoute] string token, [FromBody] ResetPasswordRequest? request)
-        {
-            try
-            {
-                if (string.IsNullOrEmpty(token) || request == null || string.IsNullOrEmpty(request.NewPassword))
-                {
-                    return BadRequest(new Result<string>(false, null, "Invalid token or password"));
-                }
-
-                await _accountService.ResetPasswordAsync(token, request.NewPassword);
-
-                return Ok(new Result<string>(true, null, "Password successfully reset"));
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new Result<string>(false, null, $"Error during password reset: {ex.Message}"));
-            }
-        }
+        _accountService = accountService;
     }
+
+
+    [HttpPost("Register")]
+    public async Task<IActionResult> Register([FromBody] RegisterRequest request)
+    {
+        var validator = new RegisterValidator();
+        var result = validator.Validate(request);
+
+        if (!result.IsValid)
+        {
+            return BadRequest(result.Errors);
+        }
+
+        await _accountService.RegisterAsync(request);
+
+        return Ok(new Result<string>(true, request.Username, "Successfully registered"));
+    }
+
+    [AllowAnonymous]
+    [HttpGet("VerifyEmail")]
+    public async Task<IActionResult> VerifyEmailAsync([FromQuery] string token)
+    {
+        await _accountService.VerifyEmailAsync(token);
+        
+        return Ok(new Result<string>(true, "Email confirmed", "Email confirmed"));
+    }
+    [AllowAnonymous]
+    [HttpPost("ConfirmEmail")]
+    public async Task<IActionResult> ConfirmEmailAsync([FromBody] ConfirmRequest request)
+    {
+        await _accountService.ConfirmEmailAsync(request, HttpContext);
+
+        return Ok(new Result<string>(true, request.username, "Email sent"));
+    }
+
+   
 }

@@ -1,8 +1,8 @@
-using BookShop.Data;
-using BookShop.Data.Models;
-using BookShop.Shared.DTO.Response;
+using AutoMapper;
 using BookShop.ADMIN.DTOs;
+using BookShop.ADMIN.DTOs.PublisherDto;
 using BookShop.Data.Contexts;
+using BookShop.Data.Models;
 using BookShop.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,105 +11,59 @@ namespace BookShop.Services.Implementations
     public class PublisherService : IPublisherService
     {
         private readonly LibraryContext _context;
+        private readonly IMapper _mapper;
 
-        public PublisherService(LibraryContext context)
+        public PublisherService(LibraryContext context, IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
 
-        // Создание нового издателя
-        public async Task<PublisherDto> CreatePublisherAsync(CreatePublisherDto dto)
+        public async Task<IEnumerable<PublisherDto>> GetAllAsync()
         {
-            var publisher = new Publisher
-            {
-                Name = dto.Name,
-                Address = dto.Address,
-                PhoneNumber = dto.PhoneNumber
-            };
+            var publishers = await _context.Publishers.ToListAsync();
+            return _mapper.Map<List<PublisherDto>>(publishers);
+        }
 
+        public async Task<PublisherDto?> GetByIdAsync(int id)
+        {
+            var publisher = await _context.Publishers.FindAsync(id);
+            return publisher == null ? null : _mapper.Map<PublisherDto>(publisher);
+        }
+
+        public async Task<PublisherDto?> CreateAsync(CreatePublisherDto dto)
+        {
+            var exists = await _context.Publishers.AnyAsync(p => p.Name == dto.Name);
+            if (exists) return null;
+
+            var publisher = _mapper.Map<Publisher>(dto);
             _context.Publishers.Add(publisher);
             await _context.SaveChangesAsync();
 
-            return new PublisherDto
-            {
-                Id = publisher.Id,
-                Name = publisher.Name,
-                Address = publisher.Address,
-                PhoneNumber = publisher.PhoneNumber
-            };
+            return _mapper.Map<PublisherDto>(publisher);
         }
 
-        // Получение издателя по ID
-        public async Task<PublisherDto> GetPublisherAsync(int id)
+        public async Task<bool> UpdateAsync(int id, UpdatePublisherDto dto)
         {
-            var publisher = await _context.Publishers
-                .FirstOrDefaultAsync(p => p.Id == id);
+            if (id != dto.Id) return false;
 
-            if (publisher == null)
-                return null;
-
-            return new PublisherDto
-            {
-                Id = publisher.Id,
-                Name = publisher.Name,
-                Address = publisher.Address,
-                PhoneNumber = publisher.PhoneNumber
-            };
-        }
-
-        // Получение всех издателей с пагинацией
-        public async Task<IEnumerable<PublisherDto>> GetPublishersAsync(int page = 1, int pageSize = 20)
-        {
-            var publishers = await _context.Publishers
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
-
-            return publishers.Select(publisher => new PublisherDto
-            {
-                Id = publisher.Id,
-                Name = publisher.Name,
-                Address = publisher.Address,
-                PhoneNumber = publisher.PhoneNumber
-            });
-        }
-
-        // Обновление данных издателя
-        public async Task<PublisherDto> UpdatePublisherAsync(int id, UpdatePublisherDto dto)
-        {
             var publisher = await _context.Publishers.FindAsync(id);
-            if (publisher == null)
-            {
-                return null;
-            }
+            if (publisher == null) return false;
 
-            publisher.Name = dto.Name;
-            publisher.Address = dto.Address;
-            publisher.PhoneNumber = dto.PhoneNumber;
-
+            _mapper.Map(dto, publisher);
+            _context.Publishers.Update(publisher);
             await _context.SaveChangesAsync();
 
-            return new PublisherDto
-            {
-                Id = publisher.Id,
-                Name = publisher.Name,
-                Address = publisher.Address,
-                PhoneNumber = publisher.PhoneNumber
-            };
+            return true;
         }
 
-        // Удаление издателя
-        public async Task<bool> DeletePublisherAsync(int id)
+        public async Task<bool> DeleteAsync(int id)
         {
             var publisher = await _context.Publishers.FindAsync(id);
-            if (publisher == null)
-            {
-                return false;
-            }
+            if (publisher == null) return false;
 
             _context.Publishers.Remove(publisher);
             await _context.SaveChangesAsync();
-
             return true;
         }
     }

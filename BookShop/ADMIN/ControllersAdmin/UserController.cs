@@ -1,11 +1,11 @@
 using BookShop.ADMIN.DTOs;
-using BookShop.Services.Interfaces;
+using BookShop.Auth.ServicesAuth.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BookShop.ADMIN.ControllersAdmin
 {
-    [Route("api/v1/[controller]")]
     [ApiController]
+    [Route("api/[controller]")]
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
@@ -14,49 +14,47 @@ namespace BookShop.ADMIN.ControllersAdmin
         {
             _userService = userService;
         }
-        
 
-
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetUser(int id)
+        // GET: api/User/{userId}
+        // Получение пользователя по Guid
+        [HttpGet("{userId:guid}")]
+        public async Task<IActionResult> GetUser(Guid userId)
         {
-            var user = await _userService.GetUserAsync(id);
+            var user = await _userService.GetUserAsync(userId);
             if (user == null)
-            {
-                return NotFound(new { message = "User not found" });
-            }
+                return NotFound();
             return Ok(user);
         }
 
-        [HttpGet("list")]
-        public async Task<IActionResult> GetUsers([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
+        // GET: api/User?page=1&pageSize=10
+        // Получение списка пользователей с пагинацией
+        [HttpGet]
+        public async Task<IActionResult> GetUsers([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
             var users = await _userService.GetUsersAsync(page, pageSize);
             return Ok(users);
         }
 
-
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateUser(int id, [FromBody] UpdateUserDto dto)
+        // PUT: api/User/{userId}
+        // Обновление пользователя
+        [HttpPut("{userId:guid}")]
+        public async Task<IActionResult> UpdateUser(Guid userId, [FromBody] UpdateUserDto updateUserDto)
         {
-            var user = await _userService.UpdateUserAsync(id, dto);
-            if (user == null)
-            {
-                return NotFound(new { message = "User not found" });
-            }
-            return Ok(new { message = "User updated successfully", user });
+            var updatedUser = await _userService.UpdateUserAsync(userId, updateUserDto);
+            if (updatedUser == null)
+                return NotFound();
+            return Ok(updatedUser);
         }
 
-   
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteUser(int id)
+        // DELETE: api/User/{userId}
+        // Удаление пользователя
+        [HttpDelete("{userId:guid}")]
+        public async Task<IActionResult> DeleteUser(Guid userId)
         {
-            var isDeleted = await _userService.DeleteUserAsync(id);
-            if (!isDeleted)
-            {
-                return NotFound(new { message = "User not found" });
-            }
-            return Ok(new { message = "User deleted successfully" });
+            var result = await _userService.DeleteUserAsync(userId);
+            if (!result)
+                return NotFound();
+            return NoContent();
         }
     }
 }

@@ -4,20 +4,23 @@ using FluentValidation;
 
 namespace BookShop.Auth.DataAuth.Validators;
 
+
 public class LoginValidator : AbstractValidator<LoginRequest>
 {
     public LoginValidator()
     {
-        // Валидация имени пользователя
-        RuleFor(x => x.UserName)
+        RuleFor(x => x.username)
             .NotEmpty()
-            .WithMessage("Username is required") // Проверка на пустое значение
+            .WithMessage("Username is required")
+            .NotNull()
+            .WithMessage("Username is required")
             .Matches(RegexPattern.UserName)
             .WithMessage("Username must be at least 6 characters long and contain only letters, numbers, underscores, and hyphens");
 
-        // Валидация пароля
-        RuleFor(x => x.Password)
+        RuleFor(x => x.password)
             .NotEmpty()
+            .WithMessage("Password is required")
+            .NotNull()
             .WithMessage("Password is required")
             .Matches(RegexPattern.Password)
             .WithMessage("Password must contain at least one lowercase letter, one uppercase letter, and one number");

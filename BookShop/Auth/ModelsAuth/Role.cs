@@ -1,8 +1,12 @@
-namespace BookShop.Auth.ModelsAuth;
-
-public class Role
+namespace BookShop.Auth.ModelsAuth
 {
-    public int RoleId { get; set; }  
-    public string RoleName { get; set; } = string.Empty;
-    public ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
+    public class Role
+    {
+        public Guid Id { get; set; } = Guid.NewGuid();
+        public string RoleName { get; set; }
+
+        public ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
+    }
+
+
 }

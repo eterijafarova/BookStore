@@ -1,4 +1,4 @@
-using BookShop.Data.Models;
+namespace BookShop.Data.Models;
 
 public class Publisher
 {

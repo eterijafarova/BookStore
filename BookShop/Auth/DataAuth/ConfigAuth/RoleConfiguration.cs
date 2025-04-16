@@ -1,20 +1,21 @@
 using BookShop.Auth.ModelsAuth;
-using BookShop.Data.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace BookShop.Auth.DataAuth.ConfigAuth;
-
-public class RoleConfiguration : IEntityTypeConfiguration<Role>
+namespace BookShop.Auth.DataAuth.ConfigAuth
 {
-    public void Configure(EntityTypeBuilder<Role> builder)
+    public class RoleConfiguration : IEntityTypeConfiguration<Role>
     {
-        builder.HasKey(r => r.RoleId);
+        public void Configure(EntityTypeBuilder<Role> entity)
+        {
+            // Устанавливаем первичный ключ как Id
+            entity.HasKey(e => e.Id).HasName("PK_Roles");
 
-        builder.Property(r => r.RoleName)
-            .IsRequired()
-            .HasMaxLength(100);
-
-        builder.HasIndex(r => r.RoleName).IsUnique();
+            // Настройка свойства RoleName
+            entity.Property(e => e.RoleName)
+                .IsRequired()
+                .HasMaxLength(50)
+                .HasColumnName("roleName");
+        }
     }
 }

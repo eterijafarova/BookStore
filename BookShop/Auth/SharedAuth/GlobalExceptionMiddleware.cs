@@ -1,5 +1,6 @@
 using System.Net;
 using BookShop.Auth.DTOAuth.Responses;
+using ControllerFirst.DTO.Responses;
 using FluentValidation;
 using Newtonsoft.Json;
 

@@ -10,13 +10,16 @@ public class Book
     public string Description { get; set; } = string.Empty;
     public string ImageUrl { get; set; } = string.Empty;
 
-    public int GenreId { get; set; }  // ID жанра
-    public int? PublisherId { get; set; }  // Используем int для PublisherId
+    public int GenreId { get; set; }  
+    public int? PublisherId { get; set; }  
     public string GenreName { get; set; } = string.Empty;
     public string PublisherName { get; set; } = string.Empty;
 
     public Genre Genre { get; set; } = null!;
-    public Publisher? Publisher { get; set; }  // Связь с Publisher
+    public Publisher Publisher { get; set; } = null!;
+
+
+
     public Warehouse? Warehouse { get; set; }
     public ICollection<Review> Reviews { get; set; } = new List<Review>();
     public ICollection<BookAttributeValue> BookAttributeValues { get; set; } = new List<BookAttributeValue>();
