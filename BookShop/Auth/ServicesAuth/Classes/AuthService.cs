@@ -23,22 +23,17 @@ namespace BookShop.Auth.ServicesAuth.Classes
 
         public async Task<LoginResponse> LoginAsync(LoginRequest request)
         {
-            // Найти пользователя по имени
             var user = await _context.Users.FirstOrDefaultAsync(x => x.UserName == request.username);
             if (user == null)
             {
                 throw new Exception("User not found");
             }
-
-            // Создаем access-токен через TokenService
+            
             var accessToken = await _tokenService.CreateTokenAsync(request.username);
-
-            // Генерируем refresh-токен как строку (GUID)
+            
             var refreshToken = Guid.NewGuid().ToString();
-            // Используем UtcNow для единообразия
             var refreshTokenExpiration = DateTime.UtcNow.AddDays(7);
             
-            // Обновляем свойства пользователя
             user.RefreshToken = refreshToken;
             user.RefreshTokenExpiration = refreshTokenExpiration;
             
@@ -54,23 +49,20 @@ namespace BookShop.Auth.ServicesAuth.Classes
             {
                 throw new Exception("User not found");
             }
-
-            // Сравниваем текущий refresh-токен с переданным и проверяем срок действия
+            
             bool oldRefreshTokenValid = user.RefreshToken == request.refreshToken 
                                           && user.RefreshTokenExpiration > DateTime.UtcNow;
             if (!oldRefreshTokenValid)
             {
                 throw new Exception("Invalid refresh token");
             }
-
-            // Генерируем новый refresh-токен
+            
             var newRefreshToken = Guid.NewGuid().ToString();
             user.RefreshToken = newRefreshToken;
             user.RefreshTokenExpiration = DateTime.UtcNow.AddDays(7);
 
             await _context.SaveChangesAsync();
-
-            // Генерируем новый access-токен
+            
             var newAccessToken = await _tokenService.CreateTokenAsync(request.username);
 
             return new RefreshTokenResponse(newAccessToken, newRefreshToken);

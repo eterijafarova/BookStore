@@ -1,13 +1,11 @@
-using Microsoft.AspNetCore.Mvc;
-using BookShop.Data;
-using Microsoft.EntityFrameworkCore;
-using BookShop.Data.Models;
-using BookShop.ADMIN.DTOs.GenreDto;
-using Microsoft.Extensions.Logging;
 using AutoMapper;
+using BookShop.ADMIN.DTOs.GenreDto;
 using BookShop.Data.Contexts;
+using BookShop.Data.Models;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
-namespace BookShop.Controllers
+namespace BookShop.ADMIN.ControllersAdmin
 {
     [Route("api/genres")]
     [ApiController]
@@ -24,6 +22,19 @@ namespace BookShop.Controllers
             _mapper = mapper;
         }
 
+        // GET: api/genres
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<GenreDto>>> GetAllGenres()
+        {
+            var genres = await _context.Genres
+                .Include(g => g.SubGenres)
+                .ToListAsync();
+
+            var genreDtos = _mapper.Map<List<GenreDto>>(genres);
+            _logger.LogInformation("Fetched all genres. Count: {Count}", genres.Count);
+            return Ok(genreDtos);
+        }
+
         // POST: api/genres/createParent
         [HttpPost("createParent")]
         public async Task<ActionResult<GenreDto>> CreateParentGenre(CreateGenreDto dto)
@@ -34,17 +45,12 @@ namespace BookShop.Controllers
                 return BadRequest("Genre with this name already exists.");
             }
 
-            var genre = new Genre
-            {
-                GenreName = dto.Name
-            };
-
+            var genre = new Genre { GenreName = dto.Name };
             _context.Genres.Add(genre);
             await _context.SaveChangesAsync();
             _logger.LogInformation("Parent genre created successfully with name: {Name}", dto.Name);
 
             var genreDto = _mapper.Map<GenreDto>(genre);
-
             return CreatedAtAction(nameof(GetGenreById), new { id = genre.Id }, genreDto);
         }
 
@@ -53,15 +59,11 @@ namespace BookShop.Controllers
         public async Task<ActionResult<GenreDto>> CreateSubGenre(CreateSubGenreDto dto)
         {
             if (_context.Genres.Any(g => g.GenreName == dto.Name))
-            {
                 return BadRequest("A genre with this name already exists.");
-            }
 
             var parentGenre = await _context.Genres.FirstOrDefaultAsync(g => g.Id == dto.ParentGenreId);
             if (parentGenre == null)
-            {
                 return BadRequest("Parent genre not found.");
-            }
 
             var subGenre = new Genre
             {
@@ -73,7 +75,6 @@ namespace BookShop.Controllers
             await _context.SaveChangesAsync();
 
             var subGenreDto = _mapper.Map<GenreDto>(subGenre);
-
             return CreatedAtAction(nameof(GetGenreById), new { id = subGenre.Id }, subGenreDto);
         }
 
@@ -92,7 +93,6 @@ namespace BookShop.Controllers
             }
 
             _logger.LogInformation("Fetched genre with ID: {Id}", id);
-
             var genreDto = _mapper.Map<GenreDto>(genre);
             return genreDto;
         }
@@ -111,7 +111,7 @@ namespace BookShop.Controllers
                 return NotFound("Genre not found.");
             }
 
-            if (genre.SubGenres.Any()) // Если есть поджанры
+            if (genre.SubGenres.Any())
             {
                 _logger.LogWarning("Cannot delete genre with id {Id} because it has subgenres.", id);
                 return BadRequest("Cannot delete genre with subgenres.");
@@ -137,7 +137,7 @@ namespace BookShop.Controllers
                 return NotFound("Subgenre not found.");
             }
 
-            if (subGenre.SubGenres.Any()) // Если есть поджанры у поджанра
+            if (subGenre.SubGenres.Any())
             {
                 _logger.LogWarning("Cannot delete subgenre with name {Name} because it has subgenres.", name);
                 return BadRequest("Cannot delete subgenre with subgenres.");

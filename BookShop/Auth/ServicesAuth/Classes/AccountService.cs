@@ -1,17 +1,13 @@
-using System;
-using System.IO;
 using System.Net;
 using System.Net.Mail;
 using System.Text;
-using System.Threading.Tasks;
 using AutoMapper;
 using BookShop.Auth.DTOAuth.Requests;
 using BookShop.Auth.ModelsAuth;
 using BookShop.Auth.ServicesAuth.Interfaces;
 using BookShop.Data.Contexts;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
+
 
 namespace BookShop.Auth.ServicesAuth.Classes
 {
@@ -69,13 +65,13 @@ namespace BookShop.Auth.ServicesAuth.Classes
 
         public async Task ConfirmEmailAsync(ConfirmRequest request, HttpContext context)
         {
-            // 1. Найти пользователя
+            
             var user = await _context.Users
                 .FirstOrDefaultAsync(u => u.UserName == request.username);
             if (user == null)
                 throw new Exception("User not found for email confirmation.");
-
-            // 2. Чтение SMTP‑настроек из секции "Email:Smtp"
+            
+            
             var smtpSection = _config.GetSection("Email:Smtp");
             var smtpHost = smtpSection["Host"]
                 ?? throw new InvalidOperationException("SMTP Host is missing in configuration.");
@@ -92,7 +88,7 @@ namespace BookShop.Auth.ServicesAuth.Classes
                 Credentials = new NetworkCredential(smtpUser, smtpPass)
             };
 
-            // 3. Вычислить путь к шаблону email без использования env
+           
             var baseDir = AppContext.BaseDirectory;
             var projectRoot = Path.GetFullPath(Path.Combine(baseDir, "..", "..", ".."));
             var filePath = Path.Combine(projectRoot, "Auth", "wwwroot", "email.html");
@@ -100,19 +96,19 @@ namespace BookShop.Auth.ServicesAuth.Classes
             if (!File.Exists(filePath))
                 throw new FileNotFoundException($"Email template not found at {filePath}", filePath);
 
-            // 4. Загрузить и прочитать шаблон
-            using var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+
+            await using var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read);
             using var sr = new StreamReader(fs, Encoding.UTF8);
             var template = await sr.ReadToEndAsync();
 
-            // 5. Сформировать ссылку и тело письма
+         
             var token = await _tokenService.CreateEmailTokenAsync(request.username);
             var link = $"{context.Request.Scheme}://{context.Request.Host}/api/v1/Account/VerifyEmail?token={token}";
             var body = template
                 .Replace("{username}", request.username)
                 .Replace("{link}", link);
 
-            // 6. Подготовить и отправить письмо
+            
             var message = new MailMessage
             {
                 From = new MailAddress(smtpUser),
@@ -148,7 +144,5 @@ namespace BookShop.Auth.ServicesAuth.Classes
             user.IsEmailConfirmed = true;
             await _context.SaveChangesAsync();
         }
-        
-        
     }
 }

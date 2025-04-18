@@ -1,69 +1,99 @@
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Cryptography;
-using System.Text;
-using BookShop.ADMIN.DTOs.DTOAdmin;
-using BookShop.ADMIN.ModelsAdmin;
-using BookShop.Data;
+using BookShop.Auth.ModelsAuth;
 using BookShop.Data.Contexts;
+using BookShop.Data.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 
-namespace BookShop.ADMIN.ServicesAdmin.AdminServices;
-
-public class AdminService : IAdminService
+namespace BookShop.ADMIN.ServicesAdmin.AdminServices
 {
-    private readonly LibraryContext _context;
-    private readonly IConfiguration _config;
-
-    public AdminService(LibraryContext context, IConfiguration config)
+    public class AdminService : IAdminService
     {
-        _context = context;
-        _config = config;
-    }
+        private readonly LibraryContext _context;
 
-    public async Task<bool> RegisterAsync(AdminRegisterDto dto)
-    {
-        if (await _context.Admins.AnyAsync(a => a.Username == dto.Username || a.Email == dto.Email))
-            return false;
-
-        var hash = HashPassword(dto.Password);
-        var admin = new Admin
+        public AdminService(LibraryContext context)
         {
-            Username = dto.Username,
-            Email = dto.Email,
-            PasswordHash = hash
-        };
+            _context = context;
+        }
 
-        _context.Admins.Add(admin);
-        await _context.SaveChangesAsync();
-        return true;
-    }
+        public async Task DeleteUserAsync(Guid userId)  // Change userId to Guid
+        {
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null) throw new Exception("User not found");
 
-    public async Task<string> LoginAsync(AdminLoginDto dto)
-    {
-        var admin = await _context.Admins.FirstOrDefaultAsync(a => a.Username == dto.Username);
-        if (admin == null || admin.PasswordHash != HashPassword(dto.Password))
-            throw new UnauthorizedAccessException();
+            // Prevent deletion of super admins
+            var isSuperAdmin = await _context.UserRoles
+                .AnyAsync(ur => ur.UserId == userId && ur.Role.RoleName == "SuperAdmin");
 
-        // Генерация JWT
-        var jwtSection = _config.GetSection("Jwt");
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSection["Key"]!));
-        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-        var token = new JwtSecurityToken(
-            issuer: jwtSection["Issuer"],
-            audience: jwtSection["Audience"],
-            expires: DateTime.UtcNow.AddHours(5),
-            signingCredentials: creds
-        );
+            if (isSuperAdmin) throw new Exception("Cannot delete SuperAdmin.");
 
-        return new JwtSecurityTokenHandler().WriteToken(token);
-    }
+            _context.Users.Remove(user);
+            await _context.SaveChangesAsync();
+        }
 
-    private string HashPassword(string password)
-    {
-        using var sha256 = SHA256.Create();
-        var bytes = Encoding.UTF8.GetBytes(password);
-        var hash = sha256.ComputeHash(bytes);
-        return Convert.ToBase64String(hash);
+        public async Task AssignAdminRoleAsync(Guid userId)  // Change userId to Guid
+        {
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null) throw new Exception("User not found");
+
+            var adminRole = await _context.Roles.FirstOrDefaultAsync(r => r.RoleName == "Admin");
+            if (adminRole == null) throw new Exception("Admin role not found");
+
+            var userRole = new UserRole { UserId = user.Id, RoleId = adminRole.Id };
+            _context.UserRoles.Add(userRole);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task RemoveAdminRoleAsync(Guid userId)  // Change userId to Guid
+        {
+            var userRole = await _context.UserRoles
+                .FirstOrDefaultAsync(ur => ur.UserId == userId && ur.Role.RoleName == "Admin");
+
+            if (userRole == null) throw new Exception("Admin role not found for this user");
+
+            _context.UserRoles.Remove(userRole);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task DeleteCommentAsync(int commentId)
+        {
+            var comment = await _context.Reviews.FindAsync(commentId);
+            if (comment == null) throw new Exception("Comment not found");
+
+            _context.Reviews.Remove(comment);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task ChangeOrderStatusAsync(int orderId, Order.OrderStatus newStatus)
+        {
+            var order = await _context.Orders.FindAsync(orderId);
+            if (order == null) throw new Exception("Order not found");
+
+            order.Status = newStatus;
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task AddBookAsync(Book book)
+        {
+            // 1. Adding the book to the Books table
+            await _context.Books.AddAsync(book);
+
+            // 2. Saving changes to the database to persist the book
+            await _context.SaveChangesAsync();
+        }
+        public async Task UpdateStockAsync(int bookId, int quantity)
+        {
+            // 1. Find the book by bookId
+            var book = await _context.Books.FindAsync(bookId);
+            if (book == null)
+            {
+                throw new Exception("Book not found");
+            }
+
+            // 2. Update the stock quantity (adding the specified quantity)
+            book.Stock += quantity;
+
+            // 3. Save the changes to the database
+            await _context.SaveChangesAsync();
+        }
+
     }
 }
