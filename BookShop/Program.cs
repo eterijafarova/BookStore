@@ -146,7 +146,6 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
-
 app.UseMiddleware<GlobalExceptionMiddleware>();
 
 if (app.Environment.IsDevelopment())
@@ -160,6 +159,10 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseCors("AllowFrontend");
+
+// <<< Добавляем отдачу статических файлов из wwwroot
+app.UseStaticFiles();
+// <<<
 
 app.UseAuthentication();
 app.UseAuthorization();

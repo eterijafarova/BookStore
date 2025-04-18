@@ -63,21 +63,7 @@ public class AdminController : ControllerBase
         }
     }
 
-    // Добавить книгу
-    [HttpPost("AddBook")]
-    [Authorize(Roles = "Admin, SuperAdmin")]
-    public async Task<IActionResult> AddBook([FromBody] Book book)
-    {
-        try
-        {
-            await _adminService.AddBookAsync(book);
-            return Ok(new { message = "Book added successfully." });
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(new { message = ex.Message });
-        }
-    }
+   
 
     // Обновить количество на складе
     [HttpPost("UpdateStock/{bookId}")]

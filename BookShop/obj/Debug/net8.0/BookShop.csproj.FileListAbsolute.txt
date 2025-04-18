@@ -178,3 +178,4 @@ C:\Users\ASUS\Downloads\BookShop-main\BookShop-main\BookShop\obj\Debug\net8.0\re
 C:\Users\ASUS\Downloads\BookShop-main\BookShop-main\BookShop\obj\Debug\net8.0\BookShop.pdb
 C:\Users\ASUS\Downloads\BookShop-main\BookShop-main\BookShop\obj\Debug\net8.0\BookShop.genruntimeconfig.cache
 C:\Users\ASUS\Downloads\BookShop-main\BookShop-main\BookShop\obj\Debug\net8.0\ref\BookShop.dll
+C:\Users\ASUS\Downloads\BookShop-main\BookShop-main\BookShop\bin\Debug\net8.0\BookShop.staticwebassets.runtime.json

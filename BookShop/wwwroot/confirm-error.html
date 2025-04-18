@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmation Error</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #333;
+        }
+        .card {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            padding: 40px 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        .card::before {
+            content: '';
+            position: absolute;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: radial-gradient(circle at center, rgba(231, 111, 81, 0.3) 0%, transparent 70%);
+            transform: rotate(45deg);
+        }
+        .icon {
+            font-size: 4rem;
+            color: #e63946;
+            margin-bottom: 20px;
+        }
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: #d62828;
+        }
+        p {
+            font-size: 1rem;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        .link {
+            display: inline-block;
+            margin-top: 20px;
+            font-size: 1rem;
+            color: #457b9d;
+            text-decoration: none;
+            border-bottom: 1px dashed #457b9d;
+            transition: color 0.3s ease;
+        }
+        .link:hover {
+            color: #1d3557;
+        }
+        @media (max-width: 480px) {
+            .card { padding: 30px 15px; }
+            h1 { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="card">
+    <div class="icon">❌</div>
+    <h1>Confirmation Failed</h1>
+    <p>Your account could not be confirmed.<br>
+        The link is invalid or has expired.</p>
+    <p>Please request a new confirmation email to activate your account.</p>
+    <a class="link" href="/">Return to Home</a>
+</div>
+</body>
+</html>

@@ -1,0 +1,33 @@
+{
+  "Files": [
+    {
+      "Id": "C:\\Users\\ASUS\\Downloads\\BookShop-main\\BookShop-main\\BookShop\\wwwroot\\confirm-error.html",
+      "PackagePath": "staticwebassets\\confirm-error.html"
+    },
+    {
+      "Id": "C:\\Users\\ASUS\\Downloads\\BookShop-main\\BookShop-main\\BookShop\\wwwroot\\confirm-success.html",
+      "PackagePath": "staticwebassets\\confirm-success.html"
+    },
+    {
+      "Id": "C:\\Users\\ASUS\\Downloads\\BookShop-main\\BookShop-main\\BookShop\\wwwroot\\email.html",
+      "PackagePath": "staticwebassets\\email.html"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.BookShop.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.build.BookShop.props",
+      "PackagePath": "build\\BookShop.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildMultiTargeting.BookShop.props",
+      "PackagePath": "buildMultiTargeting\\BookShop.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildTransitive.BookShop.props",
+      "PackagePath": "buildTransitive\\BookShop.props"
+    }
+  ],
+  "ElementsToRemove": []
+}

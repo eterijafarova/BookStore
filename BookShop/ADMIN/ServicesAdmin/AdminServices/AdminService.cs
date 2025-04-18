@@ -70,15 +70,7 @@ namespace BookShop.ADMIN.ServicesAdmin.AdminServices
             order.Status = newStatus;
             await _context.SaveChangesAsync();
         }
-
-        public async Task AddBookAsync(Book book)
-        {
-            // 1. Adding the book to the Books table
-            await _context.Books.AddAsync(book);
-
-            // 2. Saving changes to the database to persist the book
-            await _context.SaveChangesAsync();
-        }
+        
         public async Task UpdateStockAsync(int bookId, int quantity)
         {
             // 1. Find the book by bookId
@@ -87,11 +79,9 @@ namespace BookShop.ADMIN.ServicesAdmin.AdminServices
             {
                 throw new Exception("Book not found");
             }
-
-            // 2. Update the stock quantity (adding the specified quantity)
+            
             book.Stock += quantity;
-
-            // 3. Save the changes to the database
+            
             await _context.SaveChangesAsync();
         }
 
