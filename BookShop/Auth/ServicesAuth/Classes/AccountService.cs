@@ -1,3 +1,5 @@
+using System;
+using System.IO;
 using System.Net;
 using System.Net.Mail;
 using System.Text;
@@ -8,7 +10,6 @@ using BookShop.Auth.ServicesAuth.Interfaces;
 using BookShop.Data.Contexts;
 using Microsoft.EntityFrameworkCore;
 
-
 namespace BookShop.Auth.ServicesAuth.Classes
 {
     public class AccountService : IAccountService
@@ -17,6 +18,7 @@ namespace BookShop.Auth.ServicesAuth.Classes
         private readonly LibraryContext _context;
         private readonly IConfiguration _config;
         private readonly ITokenService _tokenService;
+        private readonly string _webAppUrl;
 
         public AccountService(
             IMapper mapper,
@@ -24,10 +26,13 @@ namespace BookShop.Auth.ServicesAuth.Classes
             IConfiguration config,
             ITokenService tokenService)
         {
-            _mapper = mapper;
-            _context = authContext;
-            _config = config;
+            _mapper       = mapper;
+            _context      = authContext;
+            _config       = config;
             _tokenService = tokenService;
+            
+            _webAppUrl = _config.GetValue<string>("AppSettings:WebAppUrl")
+                ?? throw new InvalidOperationException("AppSettings:WebAppUrl is not configured.");
         }
 
         public async Task RegisterAsync(RegisterRequest request)
@@ -63,59 +68,66 @@ namespace BookShop.Auth.ServicesAuth.Classes
             }
         }
 
-        public async Task ConfirmEmailAsync(ConfirmRequest request, HttpContext context)
+        public async Task ConfirmEmailAsync(ConfirmRequest request)
         {
-            
             var user = await _context.Users
                 .FirstOrDefaultAsync(u => u.UserName == request.username);
             if (user == null)
                 throw new Exception("User not found for email confirmation.");
-            
-            
+
             var smtpSection = _config.GetSection("Email:Smtp");
-            var smtpHost = smtpSection["Host"]
+            var smtpHost    = smtpSection["Host"]
                 ?? throw new InvalidOperationException("SMTP Host is missing in configuration.");
-            var smtpPort = int.Parse(smtpSection["Port"]
+            var smtpPort    = int.Parse(smtpSection["Port"]
                 ?? throw new InvalidOperationException("SMTP Port is missing in configuration."));
-            var smtpUser = smtpSection["User"]
+            var smtpUser    = smtpSection["User"]
                 ?? throw new InvalidOperationException("SMTP User is missing in configuration.");
-            var smtpPass = smtpSection["Pass"]
+            var smtpPass    = smtpSection["Pass"]
                 ?? throw new InvalidOperationException("SMTP Pass is missing in configuration.");
 
             using var client = new SmtpClient(smtpHost, smtpPort)
             {
-                EnableSsl = true,
+                EnableSsl   = true,
                 Credentials = new NetworkCredential(smtpUser, smtpPass)
             };
 
-           
-            var baseDir = AppContext.BaseDirectory;
+            var baseDir     = AppContext.BaseDirectory;
             var projectRoot = Path.GetFullPath(Path.Combine(baseDir, "..", "..", ".."));
-            var filePath = Path.Combine(projectRoot, "Auth", "wwwroot", "email.html");
+            var filePath    = Path.Combine(projectRoot, "wwwroot", "email.html");
 
             if (!File.Exists(filePath))
                 throw new FileNotFoundException($"Email template not found at {filePath}", filePath);
 
-
             await using var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read);
-            using var sr = new StreamReader(fs, Encoding.UTF8);
-            var template = await sr.ReadToEndAsync();
+            using var sr       = new StreamReader(fs, Encoding.UTF8);
+            var template       = await sr.ReadToEndAsync();
 
-         
             var token = await _tokenService.CreateEmailTokenAsync(request.username);
-            var link = $"{context.Request.Scheme}://{context.Request.Host}/api/v1/Account/VerifyEmail?token={token}";
-            var body = template
+            var link  = $"{_webAppUrl}/confirm-email?token={Uri.EscapeDataString(token)}";
+            
+            var htmlBody = template
                 .Replace("{username}", request.username)
                 .Replace("{link}", link);
+            var plainBody =
+                $"Hello, {request.username}!\n\n" +
+                $"You have received this email because you have registered on our website. Please confirm your email by clicking the button below:\n{link}\n\n" +
+                "If you haven't registered for the \"Cheshire Shelf\" - book shop - just ignore this email.";
 
-            
             var message = new MailMessage
             {
-                From = new MailAddress(smtpUser),
-                Subject = "Email confirmation",
-                Body = body,
+                From       = new MailAddress(smtpUser, "BookShop Team"),
+                Subject    = "Confirm your email",
                 IsBodyHtml = true
             };
+            message.AlternateViews.Add(
+                AlternateView.CreateAlternateViewFromString(htmlBody, Encoding.UTF8, "text/html")
+            );
+            message.AlternateViews.Add(
+                AlternateView.CreateAlternateViewFromString(plainBody, Encoding.UTF8, "text/plain")
+            );
+            message.Headers.Add("MIME-Version", "1.0");
+            message.Headers.Add("X-Priority", "3");
+            message.Headers.Add("Content-Transfer-Encoding", "7bit");
             message.To.Add(user.Email);
 
             try
@@ -127,12 +139,11 @@ namespace BookShop.Auth.ServicesAuth.Classes
                 Console.WriteLine("Error sending email: " + ex);
                 throw;
             }
-
         }
 
         public async Task VerifyEmailAsync(string token)
         {
-            var name = await _tokenService.GetNameFromToken(token);
+            var name    = await _tokenService.GetNameFromToken(token);
             var isValid = await _tokenService.ValidateEmailTokenAsync(token);
             if (!isValid) return;
 

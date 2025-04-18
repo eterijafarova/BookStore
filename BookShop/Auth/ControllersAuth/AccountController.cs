@@ -4,53 +4,72 @@ using BookShop.Auth.ServicesAuth.Interfaces;
 using ControllerFirst.DTO.Responses;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System;
 
-namespace BookShop.Auth.ControllersAuth;
-
-[ApiController]
-[Route("api/v1/[controller]")]
-public class AccountController : ControllerBase
+namespace BookShop.Auth.ControllersAuth
 {
-    private readonly IAccountService _accountService;
-
-    public AccountController(IAccountService accountService)
+    [ApiController]
+    [Route("api/v1/[controller]")]
+    public class AccountController : ControllerBase
     {
-        _accountService = accountService;
-    }
+        private readonly IAccountService _accountService;
 
-
-    [HttpPost("Register")]
-    public async Task<IActionResult> Register([FromBody] RegisterRequest request)
-    {
-        var validator = new RegisterValidator();
-        var result = validator.Validate(request);
-
-        if (!result.IsValid)
+        public AccountController(IAccountService accountService)
         {
-            return BadRequest(result.Errors);
+            _accountService = accountService;
         }
 
-        await _accountService.RegisterAsync(request);
+        [HttpPost("Register")]
+        public async Task<IActionResult> Register([FromBody] RegisterRequest request)
+        {
+            var validator = new RegisterValidator();
+            var result = validator.Validate(request);
 
-        return Ok(new Result<string>(true, request.Username, "Successfully registered"));
-    }
+            if (!result.IsValid)
+                return BadRequest(result.Errors);
 
-    [AllowAnonymous]
-    [HttpGet("VerifyEmail")]
-    public async Task<IActionResult> VerifyEmailAsync([FromQuery] string token)
-    {
-        await _accountService.VerifyEmailAsync(token);
+            await _accountService.RegisterAsync(request);
+            return Ok(new Result<string>(true, request.Username, "Successfully registered"));
+        }
+
+        /// <summary>
+        /// API endpoint returning JSON
+        /// GET /api/v1/Account/VerifyEmail?token={token}
+        /// </summary>
+        [AllowAnonymous]
+        [HttpGet("VerifyEmail")]
+        public async Task<IActionResult> VerifyEmailAsync([FromQuery] string token)
+        {
+            await _accountService.VerifyEmailAsync(token);
+            return Ok(new Result<string>(true, "Email confirmed", "Email confirmed"));
+        }
+
+        /// <summary>
+        /// Web page endpoint redirecting to static HTML pages
+        /// GET /confirm-email/{token}
+        /// </summary>
+        [AllowAnonymous]
+        [HttpGet("/confirm-email")]
+        public async Task<IActionResult> ConfirmEmailPage([FromQuery] string token)
+        {
+            try
+            {
+                await _accountService.VerifyEmailAsync(token);
+                return Redirect("/confirm-success.html");
+            }
+            catch
+            {
+                return Redirect("/confirm-error.html");
+            }
+        }
         
-        return Ok(new Result<string>(true, "Email confirmed", "Email confirmed"));
-    }
-    [AllowAnonymous]
-    [HttpPost("ConfirmEmail")]
-    public async Task<IActionResult> ConfirmEmailAsync([FromBody] ConfirmRequest request)
-    {
-        await _accountService.ConfirmEmailAsync(request, HttpContext);
 
-        return Ok(new Result<string>(true, request.username, "Email sent"));
+        [AllowAnonymous]
+        [HttpPost("ConfirmEmail")]
+        public async Task<IActionResult> ConfirmEmailAsync([FromBody] ConfirmRequest request)
+        {
+            await _accountService.ConfirmEmailAsync(request);
+            return Ok(new Result<string>(true, request.username, "Email sent"));
+        }
     }
-
-   
 }

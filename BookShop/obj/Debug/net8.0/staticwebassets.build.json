@@ -1,11 +1,77 @@
 {
   "Version": 1,
-  "Hash": "p49sjR01rZXKtqvVzkCiu9qaRgGE/dhTjgC3sDK1bFA=",
+  "Hash": "e2NSaQryGW7NCLeEWoJcMSK4NFENOSKzyZnTLZ08B0A=",
   "Source": "BookShop",
   "BasePath": "_content/BookShop",
   "Mode": "Default",
   "ManifestType": "Build",
   "ReferencedProjectsConfiguration": [],
-  "DiscoveryPatterns": [],
-  "Assets": []
+  "DiscoveryPatterns": [
+    {
+      "Name": "BookShop\\wwwroot",
+      "Source": "BookShop",
+      "ContentRoot": "C:\\Users\\ASUS\\Downloads\\BookShop-main\\BookShop-main\\BookShop\\wwwroot\\",
+      "BasePath": "_content/BookShop",
+      "Pattern": "**"
+    }
+  ],
+  "Assets": [
+    {
+      "Identity": "C:\\Users\\ASUS\\Downloads\\BookShop-main\\BookShop-main\\BookShop\\wwwroot\\confirm-error.html",
+      "SourceId": "BookShop",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\ASUS\\Downloads\\BookShop-main\\BookShop-main\\BookShop\\wwwroot\\",
+      "BasePath": "_content/BookShop",
+      "RelativePath": "confirm-error.html",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\confirm-error.html"
+    },
+    {
+      "Identity": "C:\\Users\\ASUS\\Downloads\\BookShop-main\\BookShop-main\\BookShop\\wwwroot\\confirm-success.html",
+      "SourceId": "BookShop",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\ASUS\\Downloads\\BookShop-main\\BookShop-main\\BookShop\\wwwroot\\",
+      "BasePath": "_content/BookShop",
+      "RelativePath": "confirm-success.html",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\confirm-success.html"
+    },
+    {
+      "Identity": "C:\\Users\\ASUS\\Downloads\\BookShop-main\\BookShop-main\\BookShop\\wwwroot\\email.html",
+      "SourceId": "BookShop",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\ASUS\\Downloads\\BookShop-main\\BookShop-main\\BookShop\\wwwroot\\",
+      "BasePath": "_content/BookShop",
+      "RelativePath": "email.html",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\email.html"
+    }
+  ]
 }
