@@ -21,33 +21,30 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Локализация
+
 var culture = builder.Configuration.GetValue<string>("Culture") ?? "en-US";
 CultureInfo.DefaultThreadCurrentCulture = new CultureInfo(culture);
 CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo(culture);
 
-// AutoMapper
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 
-// DB Context
 builder.Services.AddDbContext<LibraryContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Регистрируем глобальный Exception Middleware (если он определён)
+
 builder.Services.AddTransient<GlobalExceptionMiddleware>();
 
-// Controllers: добавляем настройки JSON
+
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
     });
 
-// Регистрация FluentValidation — обновлено для версии 12.x:
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<RegisterValidator>();
 
-// Конфигурация JWT — используем секцию "JWT"
+// Конфигурация JWT 
 var jwtSettings = builder.Configuration.GetSection("JWT").Get<JwtOptions>();
 if (jwtSettings == null || string.IsNullOrEmpty(jwtSettings.SecretKey))
 {
@@ -71,18 +68,21 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-// CORS – замените на конкретное значение в продакшене при необходимости
+// CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.AllowAnyOrigin()
-              .AllowAnyHeader()
-              .AllowAnyMethod();
+        policy
+            .WithOrigins("http://localhost:5174") 
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials(); 
     });
 });
 
-// Регистрация сервисов
+
+
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 // builder.Services.AddScoped<IUserService, UserService>();
@@ -99,12 +99,12 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 
 builder.Services.AddLogging(options =>
 {
-    options.AddConsole(); // Логирование в консоль
-    options.AddDebug();   // Логирование в отладку
+    options.AddConsole(); 
+    options.AddDebug();  
 });
 
 
-// // Конфигурация EmailSettings (проверьте, что в appsettings.json корректно прописан раздел "EmailSettings")
+
 // builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 
 // JWT авторизация
@@ -146,10 +146,9 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
-// Подключение глобального Exception Middleware
+
 app.UseMiddleware<GlobalExceptionMiddleware>();
 
-// Swagger UI только для Development
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
