@@ -33,7 +33,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Auth\DataAuth\DataSee\" />
       <Folder Include="Controllers\" />
     </ItemGroup>
 
