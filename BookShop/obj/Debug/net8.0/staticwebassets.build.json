@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "e2NSaQryGW7NCLeEWoJcMSK4NFENOSKzyZnTLZ08B0A=",
+  "Hash": "AB6KmOrYN8Ktqb2Dp/msnBJeiL302Bcx9olLOaj0UtI=",
   "Source": "BookShop",
   "BasePath": "_content/BookShop",
   "Mode": "Default",
@@ -72,6 +72,25 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\email.html"
+    },
+    {
+      "Identity": "C:\\Users\\ASUS\\Downloads\\BookShop-main\\BookShop-main\\BookShop\\wwwroot\\reset-password.html",
+      "SourceId": "BookShop",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\ASUS\\Downloads\\BookShop-main\\BookShop-main\\BookShop\\wwwroot\\",
+      "BasePath": "_content/BookShop",
+      "RelativePath": "reset-password.html",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\reset-password.html"
     }
   ]
 }

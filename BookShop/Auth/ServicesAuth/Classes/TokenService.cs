@@ -87,8 +87,7 @@ namespace BookShop.Auth.ServicesAuth.Classes
             {
                 new Claim(ClaimTypes.Name, username)
             };
-
-            // Получаем ключ для email токена
+            
             var emailKey = _config["JWT:EmailKey"];
             if (string.IsNullOrEmpty(emailKey))
             {
@@ -133,7 +132,6 @@ namespace BookShop.Auth.ServicesAuth.Classes
 
             try
             {
-                // Синхронная валидация токена
                 var principal = tokenHandler.ValidateToken(token, validationParameters, out SecurityToken validatedToken);
                 return principal.Identity != null && principal.Identity.IsAuthenticated;
             }
@@ -141,6 +139,61 @@ namespace BookShop.Auth.ServicesAuth.Classes
             {
                 return false;
             }
+        }
+        
+        public async Task<string> CreateResetPasswordTokenAsync(string username)
+        {
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, username)
+            };
+
+            var secretKeyValue = _config["JWT:SecretKey"];
+            if (string.IsNullOrEmpty(secretKeyValue))
+            {
+                throw new Exception("JWT SecretKey is missing in configuration.");
+            }
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKeyValue));
+
+            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256Signature);
+            var tokenDescriptor = new JwtSecurityToken(
+                issuer: _config["JWT:Issuer"],
+                audience: _config["JWT:Audience"],
+                claims: claims,
+                expires: DateTime.UtcNow.AddHours(1), // Используем DateTime
+                signingCredentials: credentials
+            );
+
+            var token = new JwtSecurityTokenHandler().WriteToken(tokenDescriptor);
+            return token;
+        }
+
+        public async Task<bool> ValidateResetPasswordTokenAsync(string token)
+        {
+            try
+            {
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var jsonToken = tokenHandler.ReadToken(token) as JwtSecurityToken;
+                var expirationDate = jsonToken?.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Expiration)?.Value;
+
+                if (DateTime.TryParse(expirationDate, out var expiration) && expiration > DateTime.UtcNow)
+                {
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error validating token: {ex.Message}"); // Логирование ошибки
+            }
+            return false;
+        }
+
+        
+        public async Task<string> GetUsernameFromResetToken(string token)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var jsonToken = tokenHandler.ReadToken(token) as JwtSecurityToken;
+            return jsonToken?.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value ?? throw new InvalidOperationException();
         }
     }
 }

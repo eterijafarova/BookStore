@@ -1,6 +1,7 @@
-namespace BookShop.Auth.DTOAuth.Requests;
-
-public class RequestPasswordResetRequest
+namespace BookShop.Auth.DTOAuth.Requests
 {
-    public string Email { get; set; }
+    public class RequestPasswordResetRequest
+    {
+        public string Email { get; set; }
+    }
 }
