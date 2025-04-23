@@ -2,6 +2,7 @@ using AutoMapper;
 using BookShop.ADMIN.DTOs.GenreDto;
 using BookShop.Data.Contexts;
 using BookShop.Data.Models;
+using BookShop.Services.Interfaces;  // Импортируем интерфейс сервиса
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,25 +15,22 @@ namespace BookShop.ADMIN.ControllersAdmin
         private readonly LibraryContext _context;
         private readonly ILogger<GenreController> _logger;
         private readonly IMapper _mapper;
+        private readonly IGenreService _genreService;  // Добавляем инъекцию сервиса
 
-        public GenreController(LibraryContext context, ILogger<GenreController> logger, IMapper mapper)
+        public GenreController(LibraryContext context, ILogger<GenreController> logger, IMapper mapper, IGenreService genreService)
         {
             _context = context;
             _logger = logger;
             _mapper = mapper;
+            _genreService = genreService;  // Инициализация сервиса
         }
 
-        // GET: api/genres
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<GenreDto>>> GetAllGenres()
+        // GET: api/genres/all
+        [HttpGet("all")]
+        public async Task<ActionResult<IEnumerable<GenreResponseDto>>> GetAllGenres()
         {
-            var genres = await _context.Genres
-                .Include(g => g.SubGenres)
-                .ToListAsync();
-
-            var genreDtos = _mapper.Map<List<GenreDto>>(genres);
-            _logger.LogInformation("Fetched all genres. Count: {Count}", genres.Count);
-            return Ok(genreDtos);
+            var genres = await _genreService.GetAllGenresAsync();  // Используем сервис для получения всех жанров
+            return Ok(genres);
         }
 
         // POST: api/genres/createParent

@@ -94,6 +94,7 @@ builder.Services.AddScoped<IPublisherService, PublisherService>();
 // builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IAccountService,AccountService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IGenreService, GenreService>();
 
 
 
