@@ -8,7 +8,7 @@ namespace BookShop.Services.Interfaces
     {
         Task<GenreResponseDto> CreateGenreAsync(CreateGenreDTO dto);
         Task<GenreResponseDto> GetGenreAsync(string name);
-        Task<IEnumerable<GenreResponseDto>> GetGenresAsync(int page = 1, int pageSize = 20);
+        Task<IEnumerable<GenreResponseDto>> GetAllGenresAsync(int page = 1, int pageSize = 20);
         Task<GenreResponseDto> UpdateGenreAsync(int id, UpdateGenreDto dto);
         Task<bool> DeleteGenreAsync(int id);
     }

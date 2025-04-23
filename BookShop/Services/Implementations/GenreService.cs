@@ -12,6 +12,7 @@ namespace BookShop.Services.Implementations
     public class GenreService : IGenreService
     {
         private readonly LibraryContext _context;
+        private IGenreService _genreServiceImplementation;
 
         public GenreService(LibraryContext context)
         {
@@ -67,7 +68,7 @@ namespace BookShop.Services.Implementations
         }
 
         // Получение всех жанров с пагинацией
-        public async Task<IEnumerable<GenreResponseDto>> GetGenresAsync(int page = 1, int pageSize = 20)
+        public async Task<IEnumerable<GenreResponseDto>> GetAllGenresAsync(int page = 1, int pageSize = 20)
         {
             var genres = await _context.Genres
                 .Skip((page - 1) * pageSize)
