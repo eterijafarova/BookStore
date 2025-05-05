@@ -5,6 +5,7 @@ using BookShop.ADMIN.ServicesAdmin.ReviewServices;
 using BookShop.ADMIN.ServicesAdmin.WarehouseServices;
 using BookShop.Auth.DataAuth.Validators;
 using BookShop.Auth.JWT;
+using BookShop.Auth.ModelsAuth;
 using BookShop.Auth.ServicesAuth.Classes;
 using BookShop.Auth.ServicesAuth.Interfaces;
 using BookShop.Auth.SharedAuth;
@@ -25,6 +26,7 @@ var builder = WebApplication.CreateBuilder(args);
 var culture = builder.Configuration.GetValue<string>("Culture") ?? "en-US";
 CultureInfo.DefaultThreadCurrentCulture = new CultureInfo(culture);
 CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo(culture);
+
 
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 
@@ -88,7 +90,7 @@ builder.Services.AddScoped<IOrderService, OrderService>();
 // builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IWarehouseService, WarehouseService>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
-builder.Services.AddScoped<IAdminService, AdminService>();
+// builder.Services.AddScoped<IAdminService, AdminService>();
 builder.Services.AddScoped<IBookService, BookService>();
 builder.Services.AddScoped<IPublisherService, PublisherService>();
 // builder.Services.AddScoped<IEmailService, EmailService>();
@@ -145,6 +147,11 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
+builder.WebHost.UseUrls(
+    "http://localhost:13779",
+    "https://localhost:44308"
+);
+
 var app = builder.Build();
 
 app.UseMiddleware<GlobalExceptionMiddleware>();
@@ -157,6 +164,41 @@ if (app.Environment.IsDevelopment())
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "BookShop API v1");
     });
 }
+//
+// // Инициализация данных (создание двух суперадминов)
+// using (var scope = app.Services.CreateScope())
+// {
+//     var services = scope.ServiceProvider;
+//     var context = services.GetRequiredService<LibraryContext>();
+//
+//     // Проверка, существуют ли роли "SuperAdmin" в базе данных
+//     var superAdminRole = await context.Roles.FirstOrDefaultAsync(r => r.RoleName == "SuperAdmin");
+//     if (superAdminRole == null)
+//     {
+//         superAdminRole = new Role { RoleName = "SuperAdmin" };
+//         context.Roles.Add(superAdminRole);
+//         await context.SaveChangesAsync();
+//     }
+//
+//     // Проверка, существуют ли суперадмины в базе данных
+//     var superAdmin1 = await context.Users.Include(u => u.UserRoles)
+//         .FirstOrDefaultAsync(u => u.Email == "etericeferova2005@gmail.com");
+//     if (superAdmin1 == null)
+//     {
+//         superAdmin1 = new User
+//         {
+//             UserName = "Eteri_Super4dmin",
+//             Email = "etericeferova2005@gmail.com",
+//             PasswordHash = BCrypt.Net.BCrypt.HashPassword("EteriAdmin123!")
+//         };
+//         context.Users.Add(superAdmin1);
+//         await context.SaveChangesAsync();
+//
+//         // Присваиваем роль "SuperAdmin"
+//         context.UserRoles.Add(new UserRole { UserId = superAdmin1.Id, RoleId = superAdminRole.Id });
+//         await context.SaveChangesAsync();
+//     }
+// }
 
 app.UseHttpsRedirection();
 app.UseCors("AllowFrontend");
@@ -165,6 +207,7 @@ app.UseCors("AllowFrontend");
 app.UseStaticFiles();
 // <<<
 
+app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 

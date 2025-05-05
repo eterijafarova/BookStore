@@ -43,19 +43,19 @@ namespace BookShop.Auth.DataAuth.ConfigAuth
             entity.Property(e => e.RefreshTokenExpiration)
                 .HasColumnName("refreshTokenExpiration");
 
-// Если нужен уникальный индекс:
+
             entity.HasIndex(e => e.RefreshToken)
                 .IsUnique()
                 .HasDatabaseName("UQ_RefreshToken")
                 .HasFilter("[refreshToken] IS NOT NULL");
-
-            // Настройка навигационных свойств для заказов
+            
+            
             entity.HasMany(e => e.Orders)
                 .WithOne(o => o.User)
                 .HasForeignKey(o => o.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Настройка навигационных свойств для отзывов
+
             entity.HasMany(e => e.Reviews)
                 .WithOne(r => r.User)
                 .HasForeignKey(r => r.UserId)

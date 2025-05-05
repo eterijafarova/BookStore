@@ -81,25 +81,38 @@ namespace BookShop.Migrations
 
             modelBuilder.Entity("BookShop.ADMIN.ModelsAdmin.Admin", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("id")
+                        .HasDefaultValueSql("NEWID()");
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)")
+                        .HasColumnName("email");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("passwordHash");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("userId");
 
                     b.Property<string>("Username")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)")
+                        .HasColumnName("username");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("PK_Admin");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
 
                     b.ToTable("Admins");
                 });
@@ -534,6 +547,17 @@ namespace BookShop.Migrations
                     b.Navigation("Publisher");
                 });
 
+            modelBuilder.Entity("BookShop.ADMIN.ModelsAdmin.Admin", b =>
+                {
+                    b.HasOne("BookShop.Auth.ModelsAuth.User", "User")
+                        .WithOne("Admin")
+                        .HasForeignKey("BookShop.ADMIN.ModelsAdmin.Admin", "UserId")
+                        .IsRequired()
+                        .HasConstraintName("FK_Admin_User");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("BookShop.Auth.ModelsAuth.UserRole", b =>
                 {
                     b.HasOne("BookShop.Auth.ModelsAuth.Role", "Role")
@@ -662,6 +686,9 @@ namespace BookShop.Migrations
 
             modelBuilder.Entity("BookShop.Auth.ModelsAuth.User", b =>
                 {
+                    b.Navigation("Admin")
+                        .IsRequired();
+
                     b.Navigation("Orders");
 
                     b.Navigation("Reviews");

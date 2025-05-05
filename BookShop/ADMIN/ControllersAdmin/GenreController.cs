@@ -2,7 +2,7 @@ using AutoMapper;
 using BookShop.ADMIN.DTOs.GenreDto;
 using BookShop.Data.Contexts;
 using BookShop.Data.Models;
-using BookShop.Services.Interfaces;  // Импортируем интерфейс сервиса
+using BookShop.Services.Interfaces;  
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,25 +15,23 @@ namespace BookShop.ADMIN.ControllersAdmin
         private readonly LibraryContext _context;
         private readonly ILogger<GenreController> _logger;
         private readonly IMapper _mapper;
-        private readonly IGenreService _genreService;  // Добавляем инъекцию сервиса
+        private readonly IGenreService _genreService;  
 
         public GenreController(LibraryContext context, ILogger<GenreController> logger, IMapper mapper, IGenreService genreService)
         {
             _context = context;
             _logger = logger;
             _mapper = mapper;
-            _genreService = genreService;  // Инициализация сервиса
+            _genreService = genreService;  
         }
-
-        // GET: api/genres/all
+        
         [HttpGet("all")]
         public async Task<ActionResult<IEnumerable<GenreResponseDto>>> GetAllGenres()
         {
-            var genres = await _genreService.GetAllGenresAsync();  // Используем сервис для получения всех жанров
+            var genres = await _genreService.GetAllGenresAsync();  
             return Ok(genres);
         }
-
-        // POST: api/genres/createParent
+        
         [HttpPost("createParent")]
         public async Task<ActionResult<GenreDto>> CreateParentGenre(CreateGenreDto dto)
         {
@@ -75,8 +73,8 @@ namespace BookShop.ADMIN.ControllersAdmin
             var subGenreDto = _mapper.Map<GenreDto>(subGenre);
             return CreatedAtAction(nameof(GetGenreById), new { id = subGenre.Id }, subGenreDto);
         }
-
-        // GET: api/genres/{id}
+        
+        
         [HttpGet("{id}")]
         public async Task<ActionResult<GenreDto>> GetGenreById(int id)
         {
@@ -94,8 +92,7 @@ namespace BookShop.ADMIN.ControllersAdmin
             var genreDto = _mapper.Map<GenreDto>(genre);
             return genreDto;
         }
-
-        // DELETE: api/genres/delete/{id}
+        
         [HttpDelete("delete/{id}")]
         public async Task<IActionResult> DeleteGenre(int id)
         {
@@ -122,7 +119,7 @@ namespace BookShop.ADMIN.ControllersAdmin
             return NoContent();
         }
 
-        // DELETE: api/genres/deleteSub/{name}
+      
         [HttpDelete("deleteSub/{name}")]
         public async Task<IActionResult> DeleteSubGenre(string name)
         {

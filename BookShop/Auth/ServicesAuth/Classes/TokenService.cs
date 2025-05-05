@@ -19,19 +19,27 @@ namespace BookShop.Auth.ServicesAuth.Classes
             _context = context;
         }
 
-        public Task<string> GetNameFromToken(string token)
+        public async Task<string> GetNameFromToken(string token)
         {
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var securityToken = tokenHandler.ReadToken(token) as JwtSecurityToken;
+            try
+            {
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var securityToken = tokenHandler.ReadToken(token) as JwtSecurityToken;
 
-            if (securityToken == null)
-                throw new SecurityTokenException("Invalid token");
+                if (securityToken == null)
+                    throw new SecurityTokenException("Invalid token");
 
-            var usernameClaim = securityToken.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Name);
-            if (usernameClaim == null)
-                throw new Exception("Username claim is missing in token.");
+                var usernameClaim = securityToken.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Name);
+                if (usernameClaim == null)
+                    throw new Exception("Username claim is missing in token.");
 
-            return Task.FromResult(usernameClaim.Value);
+                return usernameClaim.Value;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting name from token: {ex.Message}");
+                throw;
+            }
         }
 
         public async Task<string> CreateTokenAsync(string username)
@@ -183,12 +191,12 @@ namespace BookShop.Auth.ServicesAuth.Classes
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error validating token: {ex.Message}"); // Логирование ошибки
+                Console.WriteLine($"Error validating token: {ex.Message}");
             }
             return false;
         }
 
-        
+      
         public async Task<string> GetUsernameFromResetToken(string token)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
