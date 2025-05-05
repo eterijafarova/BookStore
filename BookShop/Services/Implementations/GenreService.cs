@@ -18,8 +18,7 @@ namespace BookShop.Services.Implementations
         {
             _context = context;
         }
-
-        // Создание нового жанра
+        
         public async Task<GenreResponseDto> CreateGenreAsync(CreateGenreDTO dto)
         {
             var genre = new Genre
@@ -34,14 +33,13 @@ namespace BookShop.Services.Implementations
             {
                 Id = genre.Id,
                 Name = genre.GenreName,
-                ParentGenreId = null,  // Родительский жанр для нового жанра пока пуст
-                ParentGenreName = null  // Родительский жанр для нового жанра пока пуст
+                ParentGenreId = null,  
+                ParentGenreName = null  
             };
 
             return response;
         }
-
-        // Получение жанра по имени
+        
         public async Task<GenreResponseDto> GetGenreAsync(string name)
         {
             var genre = await _context.Genres
@@ -49,7 +47,7 @@ namespace BookShop.Services.Implementations
 
             if (genre == null)
             {
-                return null;  // Возвращаем null, если жанр не найден
+                return null;  
             }
 
             var parentGenreName = genre.ParentGenreId.HasValue
@@ -66,8 +64,7 @@ namespace BookShop.Services.Implementations
 
             return response;
         }
-
-        // Получение всех жанров с пагинацией
+        
         public async Task<IEnumerable<GenreResponseDto>> GetAllGenresAsync(int page = 1, int pageSize = 20)
         {
             var genres = await _context.Genres
@@ -92,15 +89,15 @@ namespace BookShop.Services.Implementations
 
             return response;
         }
-
-        // Обновление жанра
+        
+        
         public async Task<GenreResponseDto> UpdateGenreAsync(int id, UpdateGenreDto dto)
         {
             var genre = await _context.Genres.FindAsync(id);
 
             if (genre == null)
             {
-                return null; // Жанр не найден
+                return null;
             }
 
             genre.GenreName = dto.Name;
@@ -122,21 +119,21 @@ namespace BookShop.Services.Implementations
 
             return response;
         }
-
-        // Удаление жанра
+        
+        
         public async Task<bool> DeleteGenreAsync(int id)
         {
             var genre = await _context.Genres.FindAsync(id);
 
             if (genre == null)
             {
-                return false; // Жанр не найден
+                return false; 
             }
 
             _context.Genres.Remove(genre);
             await _context.SaveChangesAsync();
 
-            return true; // Успешное удаление
+            return true; 
         }
     }
 }

@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
+
 namespace BookShop.Migrations
 {
     /// <inheritdoc />
@@ -11,21 +13,6 @@ namespace BookShop.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.CreateTable(
-                name: "Admins",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Username = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Admins", x => x.Id);
-                });
-
             migrationBuilder.CreateTable(
                 name: "BookAttribute",
                 columns: table => new
@@ -127,8 +114,8 @@ namespace BookShop.Migrations
                     passwordHash = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     email = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     emailConfirmed = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    refreshToken = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    refreshTokenExpiration = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    refreshToken = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    refreshTokenExpiration = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -170,6 +157,26 @@ namespace BookShop.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Admins",
+                columns: table => new
+                {
+                    id = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "NEWID()"),
+                    username = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
+                    email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
+                    passwordHash = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    userId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Admin", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_Admin_User",
+                        column: x => x.userId,
+                        principalTable: "Users",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Orders",
                 columns: table => new
                 {
@@ -199,7 +206,7 @@ namespace BookShop.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "UserRole",
+                name: "UserRoles",
                 columns: table => new
                 {
                     userRoleId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -327,6 +334,22 @@ namespace BookShop.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.InsertData(
+                table: "Roles",
+                columns: new[] { "Id", "roleName" },
+                values: new object[,]
+                {
+                    { new Guid("00000000-0000-0000-0000-000000000001"), "AppUser" },
+                    { new Guid("00000000-0000-0000-0000-000000000002"), "Admin" },
+                    { new Guid("00000000-0000-0000-0000-000000000003"), "SuperAdmin" }
+                });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Admins_userId",
+                table: "Admins",
+                column: "userId",
+                unique: true);
+
             migrationBuilder.CreateIndex(
                 name: "IX_BookAttribute_Name",
                 table: "BookAttribute",
@@ -419,13 +442,13 @@ namespace BookShop.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_UserRole_roleId",
-                table: "UserRole",
+                name: "IX_UserRoles_roleId",
+                table: "UserRoles",
                 column: "roleId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_UserRole_userId",
-                table: "UserRole",
+                name: "IX_UserRoles_userId",
+                table: "UserRoles",
                 column: "userId");
 
             migrationBuilder.CreateIndex(
@@ -438,7 +461,8 @@ namespace BookShop.Migrations
                 name: "UQ_RefreshToken",
                 table: "Users",
                 column: "refreshToken",
-                unique: true);
+                unique: true,
+                filter: "[refreshToken] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Warehouses_BookId",
@@ -466,7 +490,7 @@ namespace BookShop.Migrations
                 name: "Reviews");
 
             migrationBuilder.DropTable(
-                name: "UserRole");
+                name: "UserRoles");
 
             migrationBuilder.DropTable(
                 name: "Warehouses");

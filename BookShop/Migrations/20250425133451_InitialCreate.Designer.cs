@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BookShop.Migrations
 {
     [DbContext(typeof(LibraryContext))]
-    [Migration("20250416121157_UpdateContext")]
-    partial class UpdateContext
+    [Migration("20250425133451_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -84,25 +84,38 @@ namespace BookShop.Migrations
 
             modelBuilder.Entity("BookShop.ADMIN.ModelsAdmin.Admin", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("id")
+                        .HasDefaultValueSql("NEWID()");
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)")
+                        .HasColumnName("email");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("passwordHash");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("userId");
 
                     b.Property<string>("Username")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)")
+                        .HasColumnName("username");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("PK_Admin");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
 
                     b.ToTable("Admins");
                 });
@@ -123,6 +136,23 @@ namespace BookShop.Migrations
                         .HasName("PK_Roles");
 
                     b.ToTable("Roles");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0000-000000000001"),
+                            RoleName = "AppUser"
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0000-000000000002"),
+                            RoleName = "Admin"
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0000-000000000003"),
+                            RoleName = "SuperAdmin"
+                        });
                 });
 
             modelBuilder.Entity("BookShop.Auth.ModelsAuth.User", b =>
@@ -148,11 +178,12 @@ namespace BookShop.Migrations
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("passwordHash");
 
-                    b.Property<Guid>("RefreshToken")
-                        .HasColumnType("uniqueidentifier")
+                    b.Property<string>("RefreshToken")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)")
                         .HasColumnName("refreshToken");
 
-                    b.Property<DateTime>("RefreshTokenExpiration")
+                    b.Property<DateTime?>("RefreshTokenExpiration")
                         .HasColumnType("datetime2")
                         .HasColumnName("refreshTokenExpiration");
 
@@ -169,7 +200,8 @@ namespace BookShop.Migrations
 
                     b.HasIndex("RefreshToken")
                         .IsUnique()
-                        .HasDatabaseName("UQ_RefreshToken");
+                        .HasDatabaseName("UQ_RefreshToken")
+                        .HasFilter("[refreshToken] IS NOT NULL");
 
                     b.ToTable("Users");
                 });
@@ -518,6 +550,17 @@ namespace BookShop.Migrations
                     b.Navigation("Publisher");
                 });
 
+            modelBuilder.Entity("BookShop.ADMIN.ModelsAdmin.Admin", b =>
+                {
+                    b.HasOne("BookShop.Auth.ModelsAuth.User", "User")
+                        .WithOne("Admin")
+                        .HasForeignKey("BookShop.ADMIN.ModelsAdmin.Admin", "UserId")
+                        .IsRequired()
+                        .HasConstraintName("FK_Admin_User");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("BookShop.Auth.ModelsAuth.UserRole", b =>
                 {
                     b.HasOne("BookShop.Auth.ModelsAuth.Role", "Role")
@@ -646,6 +689,9 @@ namespace BookShop.Migrations
 
             modelBuilder.Entity("BookShop.Auth.ModelsAuth.User", b =>
                 {
+                    b.Navigation("Admin")
+                        .IsRequired();
+
                     b.Navigation("Orders");
 
                     b.Navigation("Reviews");

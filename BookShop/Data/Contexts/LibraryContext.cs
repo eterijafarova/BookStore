@@ -23,7 +23,8 @@ public class LibraryContext : DbContext
     public DbSet<User> Users { get; set; }
     public DbSet<UserRole> UserRoles { get; set; }
     public DbSet<Warehouse> Warehouses { get; set; }
-    public DbSet<Admin> Admins { get; set; } 
+    public DbSet<Admin> Admins { get; set; }
+   
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -31,7 +32,6 @@ public class LibraryContext : DbContext
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(LibraryContext).Assembly);
         base.OnModelCreating(modelBuilder);
         
-        // Заполнение таблицы Roles начальными данными
         modelBuilder.Entity<Role>().HasData(
             new Role 
             { 

@@ -13,18 +13,15 @@ public class UserRoleConfiguration : IEntityTypeConfiguration<UserRole>
 
             entity.Property(e => e.UserRoleId)
                 .HasColumnName("userRoleId");
-
-            // Настраиваем внешний ключ RoleId, который должен быть Guid
+            
             entity.Property(e => e.RoleId)
                 .IsRequired()
                 .HasColumnName("roleId");
-
-            // Настраиваем внешний ключ UserId, который должен быть Guid
+            
             entity.Property(e => e.UserId)
                 .IsRequired()
                 .HasColumnName("userId");
-
-            // Настройка связи с Role: Один Role имеет много UserRole
+            
             entity.HasOne(ur => ur.Role)
                 .WithMany(r => r.UserRoles)
                 .HasForeignKey(ur => ur.RoleId)

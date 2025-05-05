@@ -4,11 +4,8 @@ namespace BookShop.Auth.ServicesAuth.Interfaces;
 
 public interface IAccountService
 {
-    Task RegisterAsync(RegisterRequest request);
-    Task ConfirmEmailAsync(ConfirmRequest request);
-    Task VerifyEmailAsync(string token);
-
-    // Новый метод для сброса пароля
-    Task ResetPasswordAsync(ResetPasswordRequest request); // Добавлен метод для сброса пароля
-    Task RequestPasswordResetAsync(RequestPasswordResetRequest request);
+    public Task RegisterAsync(RegisterRequest request);
+    public Task ConfirmEmailAsync(ConfirmRequest request);
+    public Task VerifyEmailAsync(string token);
+    // public Task ResetPasswordAsync(ResetPasswordRequest request);
 }
