@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using BookShop.Auth.DTOAuth.Requests;
 using BookShop.Auth.ServicesAuth.Interfaces;
 using BookShop.Data.Contexts;
 using Microsoft.EntityFrameworkCore;
@@ -149,59 +150,61 @@ namespace BookShop.Auth.ServicesAuth.Classes
             }
         }
         
-        public async Task<string> CreateResetPasswordTokenAsync(string username)
+        
+        //
+        public async Task<string> CreatePasswordResetTokenAsync(string userName)
         {
-            var claims = new List<Claim>
+            var token = Guid.NewGuid().ToString(); // Генерация уникального токена
+            var expirationDate = DateTime.UtcNow.AddHours(1);  // Токен действует 1 час
+
+            // Сохраняем токен в базе данных
+            var resetToken = new PasswordResetToken
             {
-                new Claim(ClaimTypes.Name, username)
+                Token = token,
+                UserName = userName,
+                ExpiryDate = expirationDate
             };
 
-            var secretKeyValue = _config["JWT:SecretKey"];
-            if (string.IsNullOrEmpty(secretKeyValue))
-            {
-                throw new Exception("JWT SecretKey is missing in configuration.");
-            }
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKeyValue));
+            await _context.PasswordResetTokens.AddAsync(resetToken);
+            await _context.SaveChangesAsync();
 
-            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256Signature);
-            var tokenDescriptor = new JwtSecurityToken(
-                issuer: _config["JWT:Issuer"],
-                audience: _config["JWT:Audience"],
-                claims: claims,
-                expires: DateTime.UtcNow.AddHours(1), // Используем DateTime
-                signingCredentials: credentials
-            );
-
-            var token = new JwtSecurityTokenHandler().WriteToken(tokenDescriptor);
             return token;
         }
 
-        public async Task<bool> ValidateResetPasswordTokenAsync(string token)
+        public async Task<bool> ValidatePasswordResetTokenAsync(string token)
         {
-            try
-            {
-                var tokenHandler = new JwtSecurityTokenHandler();
-                var jsonToken = tokenHandler.ReadToken(token) as JwtSecurityToken;
-                var expirationDate = jsonToken?.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Expiration)?.Value;
+            var resetToken = await _context.PasswordResetTokens
+                .FirstOrDefaultAsync(t => t.Token == token);
 
-                if (DateTime.TryParse(expirationDate, out var expiration) && expiration > DateTime.UtcNow)
-                {
-                    return true;
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error validating token: {ex.Message}");
-            }
-            return false;
+            if (resetToken == null)
+                return false;
+
+            if (resetToken.ExpiryDate < DateTime.UtcNow)
+                return false;  
+
+            return true;
         }
 
-      
         public async Task<string> GetUsernameFromResetToken(string token)
         {
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var jsonToken = tokenHandler.ReadToken(token) as JwtSecurityToken;
-            return jsonToken?.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value ?? throw new InvalidOperationException();
+            var resetToken = await _context.PasswordResetTokens
+                .FirstOrDefaultAsync(t => t.Token == token);
+
+            return resetToken?.UserName;
         }
+
+        public async Task InvalidateResetPasswordToken(string token)
+        {
+            var resetToken = await _context.PasswordResetTokens
+                .FirstOrDefaultAsync(t => t.Token == token);
+
+            if (resetToken != null)
+            {
+                _context.PasswordResetTokens.Remove(resetToken); // Удаляем использованный токен
+                await _context.SaveChangesAsync();
+            }
+        }
+
+
     }
 }

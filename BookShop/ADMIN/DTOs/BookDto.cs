@@ -9,8 +9,9 @@ namespace BookShop.ADMIN.DTOs
         public int Stock { get; set; }
         public string Description { get; set; }
         public string ImageUrl { get; set; }
-        public string GenreName { get; set; }  // Название жанра
-        public string PublisherName { get; set; }  // Название издателя
+        public string GenreName { get; set; }  
+        public string PublisherName { get; set; }  
+        public int GenreId { get; set; }
     }
 
     public class CreateBookDto

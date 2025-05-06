@@ -1,4 +1,5 @@
 using BookShop.ADMIN.ModelsAdmin;
+using BookShop.Auth.DTOAuth.Requests;
 using BookShop.Auth.ModelsAuth;
 using BookShop.Data.Models;
 using Microsoft.EntityFrameworkCore;
@@ -24,7 +25,8 @@ public class LibraryContext : DbContext
     public DbSet<UserRole> UserRoles { get; set; }
     public DbSet<Warehouse> Warehouses { get; set; }
     public DbSet<Admin> Admins { get; set; }
-   
+    public DbSet<PasswordResetToken> PasswordResetTokens { get; set; }
+
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

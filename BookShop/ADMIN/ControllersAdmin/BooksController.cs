@@ -38,6 +38,7 @@ namespace BookShop.ADMIN.ControllersAdmin
                     Description = b.Description,
                     ImageUrl = b.ImageUrl,
                     GenreName = b.Genre.GenreName,
+                    GenreId = b.GenreId,
                     PublisherName = b.Publisher.Name 
                 })
                 .ToListAsync();

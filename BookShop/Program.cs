@@ -5,7 +5,6 @@ using BookShop.ADMIN.ServicesAdmin.ReviewServices;
 using BookShop.ADMIN.ServicesAdmin.WarehouseServices;
 using BookShop.Auth.DataAuth.Validators;
 using BookShop.Auth.JWT;
-using BookShop.Auth.ModelsAuth;
 using BookShop.Auth.ServicesAuth.Classes;
 using BookShop.Auth.ServicesAuth.Interfaces;
 using BookShop.Auth.SharedAuth;
@@ -22,20 +21,16 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
 var culture = builder.Configuration.GetValue<string>("Culture") ?? "en-US";
 CultureInfo.DefaultThreadCurrentCulture = new CultureInfo(culture);
 CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo(culture);
-
 
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 builder.Services.AddDbContext<LibraryContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-
 builder.Services.AddTransient<GlobalExceptionMiddleware>();
-
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
@@ -46,7 +41,7 @@ builder.Services.AddControllers()
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<RegisterValidator>();
 
-// Конфигурация JWT 
+// Конфигурация JWT
 var jwtSettings = builder.Configuration.GetSection("JWT").Get<JwtOptions>();
 if (jwtSettings == null || string.IsNullOrEmpty(jwtSettings.SecretKey))
 {
@@ -83,32 +78,24 @@ builder.Services.AddCors(options =>
     });
 });
 
-
-
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
-// builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IWarehouseService, WarehouseService>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
-// builder.Services.AddScoped<IAdminService, AdminService>();
+builder.Services.AddScoped<IAdminService, AdminService>();
 builder.Services.AddScoped<IBookService, BookService>();
 builder.Services.AddScoped<IPublisherService, PublisherService>();
-// builder.Services.AddScoped<IEmailService, EmailService>();
-builder.Services.AddScoped<IAccountService,AccountService>();
+builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IGenreService, GenreService>();
 
-
+builder.Services.AddScoped<SuperAdminInitializer>();
 
 builder.Services.AddLogging(options =>
 {
     options.AddConsole(); 
     options.AddDebug();  
 });
-
-
-
-// builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 
 // JWT авторизация
 builder.Services.AddAuthorization(options =>
@@ -154,6 +141,13 @@ builder.WebHost.UseUrls(
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var superAdminInitializer = services.GetRequiredService<SuperAdminInitializer>();
+    await superAdminInitializer.CreateSuperAdminAsync();  
+}
+
 app.UseMiddleware<GlobalExceptionMiddleware>();
 
 if (app.Environment.IsDevelopment())
@@ -164,48 +158,11 @@ if (app.Environment.IsDevelopment())
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "BookShop API v1");
     });
 }
-//
-// // Инициализация данных (создание двух суперадминов)
-// using (var scope = app.Services.CreateScope())
-// {
-//     var services = scope.ServiceProvider;
-//     var context = services.GetRequiredService<LibraryContext>();
-//
-//     // Проверка, существуют ли роли "SuperAdmin" в базе данных
-//     var superAdminRole = await context.Roles.FirstOrDefaultAsync(r => r.RoleName == "SuperAdmin");
-//     if (superAdminRole == null)
-//     {
-//         superAdminRole = new Role { RoleName = "SuperAdmin" };
-//         context.Roles.Add(superAdminRole);
-//         await context.SaveChangesAsync();
-//     }
-//
-//     // Проверка, существуют ли суперадмины в базе данных
-//     var superAdmin1 = await context.Users.Include(u => u.UserRoles)
-//         .FirstOrDefaultAsync(u => u.Email == "etericeferova2005@gmail.com");
-//     if (superAdmin1 == null)
-//     {
-//         superAdmin1 = new User
-//         {
-//             UserName = "Eteri_Super4dmin",
-//             Email = "etericeferova2005@gmail.com",
-//             PasswordHash = BCrypt.Net.BCrypt.HashPassword("EteriAdmin123!")
-//         };
-//         context.Users.Add(superAdmin1);
-//         await context.SaveChangesAsync();
-//
-//         // Присваиваем роль "SuperAdmin"
-//         context.UserRoles.Add(new UserRole { UserId = superAdmin1.Id, RoleId = superAdminRole.Id });
-//         await context.SaveChangesAsync();
-//     }
-// }
 
 app.UseHttpsRedirection();
 app.UseCors("AllowFrontend");
 
-// <<< Добавляем отдачу статических файлов из wwwroot
 app.UseStaticFiles();
-// <<<
 
 app.UseRouting();
 app.UseAuthentication();

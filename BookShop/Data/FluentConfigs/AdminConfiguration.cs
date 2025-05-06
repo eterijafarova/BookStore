@@ -33,12 +33,11 @@ namespace BookShop.Data.FluentConfigs
             entity.Property(e => e.PasswordHash)
                 .IsRequired()
                 .HasColumnName("passwordHash");
-
-            // Настройка связи с таблицей Users
+            
             entity.HasOne(a => a.User)
-                .WithOne(u => u.Admin)  // Один пользователь может быть только одним суперадмином
+                .WithOne(u => u.Admin)  
                 .HasForeignKey<Admin>(a => a.UserId)
-                .OnDelete(DeleteBehavior.ClientSetNull) // Если пользователь удален, суперадмин не удаляется
+                .OnDelete(DeleteBehavior.ClientSetNull) 
                 .HasConstraintName("FK_Admin_User");
         }
     }

@@ -8,11 +8,12 @@ public interface ITokenService
     
     Task<bool> ValidateEmailTokenAsync(string token);
 
-    Task<string> CreateResetPasswordTokenAsync(string username);
-
-    Task<bool> ValidateResetPasswordTokenAsync(string token);
-    
-    Task<string> GetUsernameFromResetToken(string requestToken);
+    Task<string> CreatePasswordResetTokenAsync(string username);  
+    Task<bool> ValidatePasswordResetTokenAsync(string token);     
+        
+ 
+    // Task InvalidateResetPasswordToken(string token); 
    
+    
     
 }
