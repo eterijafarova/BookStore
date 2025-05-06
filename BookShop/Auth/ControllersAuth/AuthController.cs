@@ -21,13 +21,12 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("Login")]
-    public async  Task<IActionResult> Login([FromBody] LoginRequest request)
+    public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
         var response = await _authService.LoginAsync(request);
         
-        Response.Cookies.Append("accessToken", response.accessToken);
-        Response.Cookies.Append("refreshToken", response.refreshToken);
-        
+        Response.Cookies.Append("accessToken", response.AccessToken);
+        Response.Cookies.Append("refreshToken", response.RefreshToken);
         
         return Ok(new Result<LoginResponse>(true, response, "Successfully logged in"));
     }
@@ -37,28 +36,30 @@ public class AuthController : ControllerBase
     {
         var refreshToken = Request.Cookies["refreshToken"];
         var accessToken = Request.Cookies["accessToken"];
-        
+
         var request = new RefreshTokenRequest(await _tokenService.GetNameFromToken(accessToken), refreshToken);
-        
+
         var newTokens = await _authService.RefreshTokenAsync(request);
         
         Response.Cookies.Append("accessToken", newTokens.accessToken);
         Response.Cookies.Append("refreshToken", newTokens.refreshToken);
-        
-        return Ok(new Result<RefreshTokenResponse>(true, newTokens, "Successfully refreshed token"));
-        
-    }
 
+        return Ok(new Result<RefreshTokenResponse>(true, newTokens, "Successfully refreshed token"));
+    }
+    
     [HttpPost("Test")]
     [Authorize(Policy = "AdminPolicy")]
     public async Task<IActionResult> Test()
     {
         return Ok("Test");
     }
-    
+
     [HttpPost("Logout")]
     public async Task<IActionResult> Logout()
     {
+        Response.Cookies.Delete("accessToken");
+        Response.Cookies.Delete("refreshToken");
+
         return Ok("Logout");
     }
 }

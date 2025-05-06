@@ -20,25 +20,6 @@ namespace BookShop.ADMIN.ControllersAdmin
         }
 
         /// <summary>
-        /// Удалить пользователя по имени
-        /// </summary>
-        /// <param name="userName">Имя пользователя</param>
-        /// <returns>Результат удаления</returns>
-        [HttpDelete("delete-user-by-name/{userName}")]
-        public async Task<IActionResult> DeleteUserByName(string userName)
-        {
-            try
-            {
-                await _adminService.DeleteUserByNameAsync(userName);
-                return Ok(new { message = "User deleted successfully." });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
-        }
-
-        /// <summary>
         /// Назначить роль Admin пользователю по имени
         /// </summary>
         /// <param name="userName">Имя пользователя</param>
@@ -76,25 +57,6 @@ namespace BookShop.ADMIN.ControllersAdmin
             }
         }
         
-        /// <summary>
-        /// Удалить комментарий
-        /// </summary>
-        /// <param name="commentId">Идентификатор комментария</param>
-        /// <returns>Результат удаления</returns>
-        [HttpDelete("delete-comment/{commentId}")]
-        public async Task<IActionResult> DeleteComment(int commentId)
-        {
-            try
-            {
-                await _adminService.DeleteCommentAsync(commentId);
-                return Ok(new { message = "Comment deleted successfully." });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
-        }
-
         /// <summary>
         /// Изменить статус заказа
         /// </summary>
@@ -146,6 +108,25 @@ namespace BookShop.ADMIN.ControllersAdmin
                 {
                     var users = await _adminService.GetAllUsersAsync();  
                     return Ok(users);
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(new { message = ex.Message });
+                }
+            }
+            
+            /// <summary>
+            /// Удалить пользователя по имени
+            /// </summary>
+            /// <param name="userName">Имя пользователя</param>
+            /// <returns>Результат удаления</returns>
+            [HttpDelete("delete-user-by-name/{userName}")]
+            public async Task<IActionResult> DeleteUserByName(string userName)
+            {
+                try
+                {
+                    await _adminService.DeleteUserByNameAsync(userName);
+                    return Ok(new { message = "User deleted successfully." });
                 }
                 catch (Exception ex)
                 {

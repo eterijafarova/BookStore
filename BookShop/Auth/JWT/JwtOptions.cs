@@ -8,6 +8,5 @@ namespace BookShop.Auth.JWT
         public int AccessTokenExpiryMinutes { get; set; }
         public int RefreshTokenExpiryDays { get; set; }
     }
-
-
+    
 }
