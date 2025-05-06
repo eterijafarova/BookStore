@@ -1,11 +1,20 @@
 using BookShop.Auth.DTOAuth.Requests;
+using System.Threading.Tasks;
 
-namespace BookShop.Auth.ServicesAuth.Interfaces;
-
-public interface IAccountService
+namespace BookShop.Auth.ServicesAuth.Interfaces
 {
-    public Task RegisterAsync(RegisterRequest request);
-    public Task ConfirmEmailAsync(ConfirmRequest request);
-    public Task VerifyEmailAsync(string token);
-    // public Task ResetPasswordAsync(ResetPasswordRequest request);
+    public interface IAccountService
+    {
+        Task RegisterAsync(RegisterRequest request);
+        
+        Task ConfirmEmailAsync(ConfirmRequest request);
+        
+        Task VerifyEmailAsync(string token);
+        
+        Task RequestPasswordResetAsync(string email);
+        
+        Task ResetPasswordAsync(ResetPasswordRequest request);
+        Task<bool> ValidatePasswordResetTokenAsync(string token);
+    }
 }
+

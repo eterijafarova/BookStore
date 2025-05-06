@@ -16,8 +16,7 @@ namespace BookShop.Services.Implementations
         {
             _context = context;
         }
-
-        // Создание новой книги
+        
         public async Task<BookDto> CreateBookAsync(CreateBookDto dto)
         {
             var book = new Book
@@ -50,8 +49,7 @@ namespace BookShop.Services.Implementations
 
             return bookDto;
         }
-
-        // Получение книги по ID
+        
         public async Task<BookDto> GetBookAsync(int id)
         {
             var book = await _context.Books
@@ -77,8 +75,7 @@ namespace BookShop.Services.Implementations
                 PublisherName = book.Publisher?.Name
             };
         }
-
-        // Получение списка книг с пагинацией
+        
         public async Task<IEnumerable<BookDto>> GetBooksAsync(int page = 1, int pageSize = 20)
         {
             var books = await _context.Books
@@ -101,8 +98,7 @@ namespace BookShop.Services.Implementations
                 PublisherName = book.Publisher?.Name
             });
         }
-
-        // Обновление информации о книге
+        
         public async Task<BookDto> UpdateBookAsync(int id, UpdateBookDto dto)
         {
             var book = await _context.Books.FindAsync(id);
@@ -135,8 +131,7 @@ namespace BookShop.Services.Implementations
                 PublisherName = book.Publisher?.Name
             };
         }
-
-        // Удаление книги
+        
         public async Task<bool> DeleteBookAsync(int id)
         {
             var book = await _context.Books.FindAsync(id);

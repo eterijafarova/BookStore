@@ -4,4 +4,5 @@ namespace BookShop.Auth.DTOAuth.Requests
     {
         public string Email { get; set; }
     }
+
 }

@@ -1,165 +1,156 @@
-// using BookShop.ADMIN.ServicesAdmin.AdminServices;
-// using BookShop.Auth.ModelsAuth;
-// using BookShop.Data.Models;
-// using Microsoft.AspNetCore.Authorization;
-// using Microsoft.AspNetCore.Identity;
-// using Microsoft.AspNetCore.Mvc;
-// using System;
-// using System.Threading.Tasks;
-//
-// namespace BookShop.ADMIN.ControllersAdmin
-// {
-//     [ApiController]
-//     [Route("api/v1/[controller]")]
-//     public class AdminController : ControllerBase
-//     {
-//         private readonly IAdminService _adminService;
-//         private readonly UserManager<User> _userManager; // Добавлен UserManager для работы с пользователями
-//
-//         public AdminController(IAdminService adminService, UserManager<User> userManager)
-//         {
-//             _adminService = adminService;
-//             _userManager = userManager; // Инициализация UserManager
-//         }
-//
-//         // Удалить пользователя
-//         [HttpDelete("DeleteUser/{userId}")]
-//         [Authorize(Roles = "Admin, SuperAdmin")]
-//         public async Task<IActionResult> DeleteUser(Guid userId)
-//         {
-//             try
-//             {
-//                 await _adminService.DeleteUserAsync(userId);
-//                 return Ok(new { message = "User deleted successfully." });
-//             }
-//             catch (Exception ex)
-//             {
-//                 return BadRequest(new { message = ex.Message });
-//             }
-//         }
-//
-//         // POST: api/genres/assignAdmin/{userId}
-//         [HttpPost("assignAdmin/{userId}")]
-//         [Authorize(Roles = "SuperAdmin")] // Только SuperAdmin может назначать администраторов
-//         public async Task<IActionResult> AssignAdminRole(Guid userId)
-//         {
-//             // Получаем текущего пользователя
-//             var currentUser = await _userManager.GetUserAsync(User);  
-//
-//             // Проверяем, является ли текущий пользователь суперадмином
-//             if (!await _userManager.IsInRoleAsync(currentUser, "SuperAdmin"))
-//             {
-//                 return Unauthorized("You do not have permission to perform this action.");
-//             }
-//
-//             var userToUpdate = await _userManager.FindByIdAsync(userId.ToString());
-//             if (userToUpdate == null)
-//             {
-//                 return NotFound("User not found.");
-//             }
-//
-//             // Назначаем роль "Admin"
-//             var result = await _userManager.AddToRoleAsync(userToUpdate, "Admin");
-//             if (!result.Succeeded)
-//             {
-//                 return BadRequest("Failed to assign Admin role.");
-//             }
-//
-//             return Ok("User assigned as Admin.");
-//         }
-//
-//         // POST: api/genres/removeAdmin/{userId}
-//         [HttpPost("removeAdmin/{userId}")]
-//         [Authorize(Roles = "SuperAdmin")] // Только SuperAdmin может удалять администраторов
-//         public async Task<IActionResult> RemoveAdminRole(Guid userId)
-//         {
-//             // Получаем текущего пользователя
-//             var currentUser = await _userManager.GetUserAsync(User);
-//
-//             // Проверяем, является ли текущий пользователь суперадмином
-//             if (!await _userManager.IsInRoleAsync(currentUser, "SuperAdmin"))
-//             {
-//                 return Unauthorized("You do not have permission to perform this action.");
-//             }
-//
-//             var userToUpdate = await _userManager.FindByIdAsync(userId.ToString());
-//             if (userToUpdate == null)
-//             {
-//                 return NotFound("User not found.");
-//             }
-//
-//             // Убираем роль "Admin"
-//             var result = await _userManager.RemoveFromRoleAsync(userToUpdate, "Admin");
-//             if (!result.Succeeded)
-//             {
-//                 return BadRequest("Failed to remove Admin role.");
-//             }
-//
-//             return Ok("Admin role removed from user.");
-//         }
-//
-//         // Обновить количество на складе
-//         [HttpPost("UpdateStock/{bookId}")]
-//         [Authorize(Roles = "Admin, SuperAdmin")]
-//         public async Task<IActionResult> UpdateStock(int bookId, [FromBody] int quantity)
-//         {
-//             try
-//             {
-//                 await _adminService.UpdateStockAsync(bookId, quantity);
-//                 return Ok(new { message = "Stock updated successfully." });
-//             }
-//             catch (Exception ex)
-//             {
-//                 return BadRequest(new { message = ex.Message });
-//             }
-//         }
-//
-//         // Удалить комментарий
-//         [HttpDelete("DeleteComment/{commentId}")]
-//         [Authorize(Roles = "Admin, SuperAdmin")]
-//         public async Task<IActionResult> DeleteComment(int commentId)
-//         {
-//             try
-//             {
-//                 await _adminService.DeleteCommentAsync(commentId);
-//                 return Ok(new { message = "Comment deleted successfully." });
-//             }
-//             catch (Exception ex)
-//             {
-//                 return BadRequest(new { message = ex.Message });
-//             }
-//         }
-//
-//         // Изменить статус заказа
-//         [HttpPost("ChangeOrderStatus/{orderId}")]
-//         [Authorize(Roles = "Admin, SuperAdmin")]
-//         public async Task<IActionResult> ChangeOrderStatus(int orderId, [FromBody] Order.OrderStatus newStatus)
-//         {
-//             try
-//             {
-//                 await _adminService.ChangeOrderStatusAsync(orderId, newStatus);
-//                 return Ok(new { message = "Order status updated successfully." });
-//             }
-//             catch (Exception ex)
-//             {
-//                 return BadRequest(new { message = ex.Message });
-//             }
-//         }
-//
-//         // Изменить статус предзаказа
-//         // [HttpPost("ChangePreOrderStatus/{preOrderId}")]
-//         // [Authorize(Roles = "Admin, SuperAdmin")]
-//         // public async Task<IActionResult> ChangePreOrderStatus(int preOrderId, [FromBody] Order.OrderStatus newStatus)
-//         // {
-//         //     try
-//         //     {
-//         //         await _adminService.ChangePreOrderStatusAsync(preOrderId, newStatus);
-//         //         return Ok(new { message = "Pre-order status updated successfully." });
-//         //     }
-//         //     catch (Exception ex)
-//         //     {
-//         //         return BadRequest(new { message = ex.Message });
-//         //     }
-//         // }
-//     }
-// }
+using BookShop.ADMIN.ServicesAdmin.AdminServices;
+using BookShop.Data.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Threading.Tasks;
+
+namespace BookShop.ADMIN.ControllersAdmin
+{
+    [ApiController]
+    [Route("api/v1/[controller]")]
+    [Authorize(Roles = "SuperAdmin, Admin")] 
+    public class AdminController : ControllerBase
+    {
+        private readonly IAdminService _adminService;
+
+        public AdminController(IAdminService adminService)
+        {
+            _adminService = adminService;
+        }
+
+        /// <summary>
+        /// Удалить пользователя по имени
+        /// </summary>
+        /// <param name="userName">Имя пользователя</param>
+        /// <returns>Результат удаления</returns>
+        [HttpDelete("delete-user-by-name/{userName}")]
+        public async Task<IActionResult> DeleteUserByName(string userName)
+        {
+            try
+            {
+                await _adminService.DeleteUserByNameAsync(userName);
+                return Ok(new { message = "User deleted successfully." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Назначить роль Admin пользователю по имени
+        /// </summary>
+        /// <param name="userName">Имя пользователя</param>
+        /// <returns>Результат назначения роли</returns>
+        [HttpPost("assign-admin-role-by-name/{userName}")]
+        public async Task<IActionResult> AssignAdminRoleByName(string userName)
+        {
+            try
+            {
+                await _adminService.AssignAdminRoleByNameAsync(userName);
+                return Ok(new { message = "Admin role assigned successfully." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Удалить роль Admin у пользователя по имени
+        /// </summary>
+        /// <param name="userName">Имя пользователя</param>
+        /// <returns>Результат удаления роли</returns>
+        [HttpPost("remove-admin-role-by-name/{userName}")]
+        public async Task<IActionResult> RemoveAdminRoleByName(string userName)
+        {
+            try
+            {
+                await _adminService.RemoveAdminRoleByNameAsync(userName);
+                return Ok(new { message = "Admin role removed successfully." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+        
+        /// <summary>
+        /// Удалить комментарий
+        /// </summary>
+        /// <param name="commentId">Идентификатор комментария</param>
+        /// <returns>Результат удаления</returns>
+        [HttpDelete("delete-comment/{commentId}")]
+        public async Task<IActionResult> DeleteComment(int commentId)
+        {
+            try
+            {
+                await _adminService.DeleteCommentAsync(commentId);
+                return Ok(new { message = "Comment deleted successfully." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Изменить статус заказа
+        /// </summary>
+        /// <param name="orderId">Идентификатор заказа</param>
+        /// <param name="newStatus">Новый статус заказа</param>
+        /// <returns>Результат изменения статуса</returns>
+        [HttpPost("change-order-status/{orderId}")]
+        public async Task<IActionResult> ChangeOrderStatus(int orderId, [FromBody] Order.OrderStatus newStatus)
+        {
+            try
+            {
+                await _adminService.ChangeOrderStatusAsync(orderId, newStatus);
+                return Ok(new { message = "Order status updated successfully." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Обновить количество книг на складе
+        /// </summary>
+        /// <param name="bookId">Идентификатор книги</param>
+        /// <param name="quantity">Количество книг для добавления (можно использовать отрицательное значение для уменьшения)</param>
+        /// <returns>Результат обновления склада</returns>
+        [HttpPost("update-stock/{bookId}")]
+        public async Task<IActionResult> UpdateStock(int bookId, [FromBody] int quantity)
+        {
+            try
+            {
+                await _adminService.UpdateStockAsync(bookId, quantity);
+                return Ok(new { message = "Stock updated successfully." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+            /// <summary>
+            /// Получить всех пользователей
+            /// </summary>
+            /// <returns>Список всех пользователей</returns>
+            [HttpGet("get-all-users")]
+            public async Task<IActionResult> GetAllUsers()
+            {
+                try
+                {
+                    var users = await _adminService.GetAllUsersAsync();  
+                    return Ok(users);
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(new { message = ex.Message });
+                }
+            }
+    }
+}

@@ -19,6 +19,44 @@ namespace BookShop.Auth.ControllersAuth
             _accountService = accountService;
         }
 
+        
+        /// <summary>
+        /// API endpoint returning JSON
+        /// GET /api/v1/Account/reset-password?token={token}
+        /// </summary>
+        [AllowAnonymous]
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
+        {
+            try
+            {
+                await _accountService.ResetPasswordAsync(request);
+                return Ok(new { message = "Password reset successfully." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        
+   
+        [AllowAnonymous]
+        [HttpPost("request-password")]
+        public async Task<IActionResult> RequestPasswordReset([FromBody] RequestPasswordResetRequest request)
+        {
+            try
+            {
+                
+                await _accountService.RequestPasswordResetAsync(request.Email);
+                return Ok(new { message = "Password reset link sent to your email." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
         [HttpPost("Register")]
         public async Task<IActionResult> Register([FromBody] RegisterRequest request)
         {
@@ -63,6 +101,27 @@ namespace BookShop.Auth.ControllersAuth
             }
         }
         
+        
+        /// <summary>
+        /// Web page endpoint for resetting password
+        /// GET /reset-password-page?token={token}
+        /// </summary>
+        [AllowAnonymous]
+        [HttpGet("/reset-password")]
+        public async Task<IActionResult> ResetPasswordPage([FromQuery] string token)
+        {
+            if (string.IsNullOrEmpty(token))
+            {
+                return BadRequest(new { message = "Token is required." });
+            }
+            var isValidToken = await _accountService.ValidatePasswordResetTokenAsync(token);
+            if (!isValidToken)
+            {
+                return BadRequest(new { message = "Invalid or expired token." });
+            }
+            return PhysicalFile(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "reset-password.html"), "text/html");
+        
+        }
 
         [AllowAnonymous]
         [HttpPost("ConfirmEmail")]

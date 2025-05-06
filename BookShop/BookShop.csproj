@@ -33,10 +33,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Controllers\" />
-    </ItemGroup>
-
-    <ItemGroup>
       <None Include="wwwroot\confirm-error.html" />
       <None Include="wwwroot\confirm-success.html" />
       <None Include="wwwroot\email.html" />

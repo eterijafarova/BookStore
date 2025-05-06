@@ -4,6 +4,7 @@ using BookShop.Data.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BookShop.Migrations
 {
     [DbContext(typeof(LibraryContext))]
-    partial class LibraryContextModelSnapshot : ModelSnapshot
+    [Migration("20250505132154_AddPasswordResetToken")]
+    partial class AddPasswordResetToken
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -128,9 +131,6 @@ namespace BookShop.Migrations
                     b.Property<DateTime>("ExpiryDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("NewPassword")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Token")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -203,7 +203,8 @@ namespace BookShop.Migrations
                         .HasColumnName("passwordHash");
 
                     b.Property<string>("RefreshToken")
-                        .HasColumnType("nvarchar(max)")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)")
                         .HasColumnName("refreshToken");
 
                     b.Property<DateTime?>("RefreshTokenExpiration")
@@ -220,6 +221,11 @@ namespace BookShop.Migrations
 
                     b.HasIndex("Email")
                         .IsUnique();
+
+                    b.HasIndex("RefreshToken")
+                        .IsUnique()
+                        .HasDatabaseName("UQ_RefreshToken")
+                        .HasFilter("[refreshToken] IS NOT NULL");
 
                     b.ToTable("Users");
                 });
