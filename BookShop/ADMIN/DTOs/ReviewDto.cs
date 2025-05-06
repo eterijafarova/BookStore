@@ -1,11 +1,10 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace BookShop.ADMIN.DTOs;
 
 public class ReviewDto
 {
-    public int Id { get; set; }
-    public string UserName { get; set; } = null!;
-    public string BookTitle { get; set; } = null!;
-    public string Comment { get; set; } = null!; 
+    [Range(1, 5, ErrorMessage = "Rating must be between 1 and 5.")]
     public int Rating { get; set; }
-    public DateTime CreatedAt { get; set; }
+    public string Comment { get; set; } = null!;
 }

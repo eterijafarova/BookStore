@@ -1,11 +1,11 @@
-using BookShop.ADMIN.DTOs;
+using BookShop.Data.Models;
 
 namespace BookShop.ADMIN.ServicesAdmin.ReviewServices;
 
-using BookShop.ADMIN.DTOs.DTOAdmin;
-
 public interface IReviewService
 {
-    Task<List<ReviewDto>> GetAllAsync();
-    Task<bool> DeleteAsync(Guid id);
+    Task AddReviewAsync(Guid userId, int bookId, string comment, int rating);
+    Task<IEnumerable<Review>> GetReviewsByBookAsync(int bookId);
+    Task DeleteReviewByIdAsync(int reviewId, Guid userId,bool isAdmin = true);
+    Task DeleteAllReviewsAsync();
 }

@@ -154,21 +154,29 @@ namespace BookShop.Auth.ServicesAuth.Classes
         //
         public async Task<string> CreatePasswordResetTokenAsync(string userName)
         {
-            var token = Guid.NewGuid().ToString(); // Генерация уникального токена
-            var expirationDate = DateTime.UtcNow.AddHours(1);  // Токен действует 1 час
-
-            // Сохраняем токен в базе данных
-            var resetToken = new PasswordResetToken
+            var claims = new List<Claim>
             {
-                Token = token,
-                UserName = userName,
-                ExpiryDate = expirationDate
+                new Claim(ClaimTypes.Name, userName)
             };
 
-            await _context.PasswordResetTokens.AddAsync(resetToken);
-            await _context.SaveChangesAsync();
+            var emailKey = _config["JWT:EmailKey"];
+            if (string.IsNullOrEmpty(emailKey))
+            {
+                throw new Exception("JWT EmailKey is missing in configuration.");
+            }
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(emailKey));
 
-            return token;
+            var signingCredentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256Signature);
+
+            var tokenDescriptor = new JwtSecurityToken(
+                claims: claims,
+                expires: DateTime.UtcNow.AddHours(1),  // Токен действует 1 час
+                issuer: _config["JWT:Issuer"],
+                audience: _config["JWT:Audience"],
+                signingCredentials: signingCredentials
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(tokenDescriptor);  // возвращаем JWT токен
         }
 
         public async Task<bool> ValidatePasswordResetTokenAsync(string token)
@@ -184,6 +192,7 @@ namespace BookShop.Auth.ServicesAuth.Classes
 
             return true;
         }
+
 
         public async Task<string> GetUsernameFromResetToken(string token)
         {
