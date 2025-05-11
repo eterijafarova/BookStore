@@ -2,9 +2,9 @@
 //просто дополнительная информация  
 public class OrderItem
 {
-    public int Id { get; set; } 
-    public int OrderId { get; set; }
-    public int BookId { get; set; }
+    public Guid Id { get; set; } 
+    public Guid OrderId { get; set; }
+    public Guid BookId { get; set; }
     public int Quantity { get; set; }
     public decimal Price { get; set; } 
     

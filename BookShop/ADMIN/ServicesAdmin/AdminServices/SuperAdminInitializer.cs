@@ -21,7 +21,7 @@ public class SuperAdminInitializer
 
     public async Task CreateSuperAdminAsync()
     {
-        var superAdminEmail = "somebody@gmail.com";
+        var superAdminEmail = "shelfcheshire@gmail.com";
         
         var superAdmin = await _context.Users.FirstOrDefaultAsync(u => u.Email == superAdminEmail);
 

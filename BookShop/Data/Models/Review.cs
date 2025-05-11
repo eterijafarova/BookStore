@@ -8,7 +8,7 @@ public class Review
     public int Id { get; set; } 
 
     public Guid UserId { get; set; }
-    public int BookId { get; set; }
+    public Guid BookId { get; set; }
 
     [Range(1, 5, ErrorMessage = "Range has to be between 1 and 5")]
     public int Rating { get; set; }

@@ -15,8 +15,8 @@ public class PaginatedResponse<TResult>
 
     public PaginatedResponse(IEnumerable<TResult> data, int totalCount, int page, int pageSize)
     {
-        Page = Math.Max(page, 1); // Минимальное значение 1
-        PageSize = Math.Max(pageSize, 1); // Минимальное значение 1
+        Page = Math.Max(page, 1); 
+        PageSize = Math.Max(pageSize, 1); 
         TotalCount = totalCount;
         TotalPages = (int)Math.Ceiling(totalCount / (double)PageSize);
         Data = data;

@@ -1,4 +1,4 @@
-namespace ControllerFirst.DTO.Responses;
+namespace BookShop.Auth.DTOAuth.Responses;
 
 public class Result<T>
 {

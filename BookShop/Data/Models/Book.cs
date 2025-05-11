@@ -1,8 +1,11 @@
-﻿using BookShop.Data.Models;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace BookShop.Data.Models;
 
 public class Book
 {
-    public int Id { get; set; }  // ID книги, например, int
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    public Guid Id { get; set; } = Guid.NewGuid();
     public string Title { get; set; } = string.Empty;
     public string Author { get; set; } = string.Empty;
     public decimal Price { get; set; }

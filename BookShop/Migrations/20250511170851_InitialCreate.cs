@@ -47,6 +47,22 @@ namespace BookShop.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "PasswordResetTokens",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Token = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    UserName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    NewPassword = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ExpiryDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PasswordResetTokens", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "PreOrders",
                 columns: table => new
                 {
@@ -126,14 +142,13 @@ namespace BookShop.Migrations
                 name: "Books",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "NEWID()"),
                     Title = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
                     Author = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Price = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     Stock = table.Column<int>(type: "int", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(4000)", maxLength: 4000, nullable: false),
+                    ImageUrl = table.Column<string>(type: "nvarchar(4000)", maxLength: 4000, nullable: false),
                     GenreId = table.Column<int>(type: "int", nullable: false),
                     PublisherId = table.Column<int>(type: "int", nullable: true),
                     GenreName = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -157,48 +172,45 @@ namespace BookShop.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Admins",
+                name: "Adresses",
                 columns: table => new
                 {
-                    id = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "NEWID()"),
-                    username = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
-                    email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
-                    passwordHash = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    userId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Street = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    City = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    State = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    PostalCode = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    Country = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Admin", x => x.id);
+                    table.PrimaryKey("PK_Adresses", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Admin_User",
-                        column: x => x.userId,
+                        name: "FK_Adresses_Users_UserId",
+                        column: x => x.UserId,
                         principalTable: "Users",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Orders",
+                name: "BankCards",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    TotalPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    Status = table.Column<int>(type: "int", maxLength: 50, nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    OrderDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    PromoCodeId = table.Column<int>(type: "int", nullable: true)
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CardNumber = table.Column<string>(type: "nvarchar(4000)", nullable: false),
+                    CardHolderName = table.Column<string>(type: "nvarchar(100)", nullable: false),
+                    ExpirationDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CVV = table.Column<string>(type: "nvarchar(4000)", nullable: false),
+                    Last4Digits = table.Column<string>(type: "nvarchar(4)", nullable: false),
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Orders", x => x.Id);
+                    table.PrimaryKey("PK_BankCards", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Orders_PromoCodes_PromoCodeId",
-                        column: x => x.PromoCodeId,
-                        principalTable: "PromoCodes",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_Orders_Users_UserId",
+                        name: "FK_BankCards_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
                         principalColumn: "Id",
@@ -235,7 +247,7 @@ namespace BookShop.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Value = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    BookId = table.Column<int>(type: "int", nullable: false),
+                    BookId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     AttributeId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -262,7 +274,7 @@ namespace BookShop.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    BookId = table.Column<int>(type: "int", nullable: false),
+                    BookId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Rating = table.Column<int>(type: "int", nullable: false),
                     Comment = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
@@ -291,7 +303,7 @@ namespace BookShop.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    BookId = table.Column<int>(type: "int", nullable: false),
+                    BookId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Quantity = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()")
                 },
@@ -307,15 +319,55 @@ namespace BookShop.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Orders",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    TotalPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Status = table.Column<int>(type: "int", maxLength: 50, nullable: false),
+                    OrderDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UserAdressId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    UserBankCardId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    PromoCodeId = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Orders", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Orders_Adresses_UserAdressId",
+                        column: x => x.UserAdressId,
+                        principalTable: "Adresses",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Orders_BankCards_UserBankCardId",
+                        column: x => x.UserBankCardId,
+                        principalTable: "BankCards",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Orders_PromoCodes_PromoCodeId",
+                        column: x => x.PromoCodeId,
+                        principalTable: "PromoCodes",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Orders_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "OrderItems",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    OrderId = table.Column<int>(type: "int", nullable: false),
-                    BookId = table.Column<int>(type: "int", nullable: false),
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    OrderId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    BookId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Quantity = table.Column<int>(type: "int", nullable: false),
-                    Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
+                    Price = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -345,10 +397,14 @@ namespace BookShop.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Admins_userId",
-                table: "Admins",
-                column: "userId",
-                unique: true);
+                name: "IX_Adresses_UserId",
+                table: "Adresses",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_BankCards_UserId",
+                table: "BankCards",
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_BookAttribute_Name",
@@ -407,6 +463,16 @@ namespace BookShop.Migrations
                 name: "IX_Orders_PromoCodeId",
                 table: "Orders",
                 column: "PromoCodeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Orders_UserAdressId",
+                table: "Orders",
+                column: "UserAdressId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Orders_UserBankCardId",
+                table: "Orders",
+                column: "UserBankCardId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Orders_UserId",
@@ -475,13 +541,13 @@ namespace BookShop.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Admins");
-
-            migrationBuilder.DropTable(
                 name: "BookAttributeValue");
 
             migrationBuilder.DropTable(
                 name: "OrderItems");
+
+            migrationBuilder.DropTable(
+                name: "PasswordResetTokens");
 
             migrationBuilder.DropTable(
                 name: "PreOrders");
@@ -508,16 +574,22 @@ namespace BookShop.Migrations
                 name: "Books");
 
             migrationBuilder.DropTable(
-                name: "PromoCodes");
+                name: "Adresses");
 
             migrationBuilder.DropTable(
-                name: "Users");
+                name: "BankCards");
+
+            migrationBuilder.DropTable(
+                name: "PromoCodes");
 
             migrationBuilder.DropTable(
                 name: "Genres");
 
             migrationBuilder.DropTable(
                 name: "Publishers");
+
+            migrationBuilder.DropTable(
+                name: "Users");
         }
     }
 }

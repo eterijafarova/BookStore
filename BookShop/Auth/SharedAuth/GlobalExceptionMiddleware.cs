@@ -1,6 +1,5 @@
 using System.Net;
 using BookShop.Auth.DTOAuth.Responses;
-using ControllerFirst.DTO.Responses;
 using FluentValidation;
 using Newtonsoft.Json;
 
@@ -14,18 +13,18 @@ public class GlobalExceptionMiddleware : IMiddleware
         {
             await next(context);
         }
-        catch (ValidationException ex) // Обработка ошибок валидации
+        catch (ValidationException ex) 
         {
             context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
 
-            var errors = ex.Errors.Select(x => x.ErrorMessage); // Извлекаем сообщения об ошибках
+            var errors = ex.Errors.Select(x => x.ErrorMessage); 
 
             var errorRes = Result<IEnumerable<string>>.Error(errors, "Validation error");
 
             context.Response.ContentType = "application/json";
             await context.Response.WriteAsync(JsonConvert.SerializeObject(errorRes));
         }
-        catch (Exception ex) // Обработка других ошибок
+        catch (Exception ex) 
         {
             await HandleExceptionAsync(context, ex);
         }

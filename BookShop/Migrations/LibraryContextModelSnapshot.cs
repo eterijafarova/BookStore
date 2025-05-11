@@ -22,101 +22,6 @@ namespace BookShop.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("Book", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Author")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("GenreId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("GenreName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ImageUrl")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<decimal>("Price")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int?>("PublisherId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("PublisherName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Stock")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("GenreId");
-
-                    b.HasIndex("PublisherId");
-
-                    b.HasIndex("Title")
-                        .IsUnique();
-
-                    b.ToTable("Books");
-                });
-
-            modelBuilder.Entity("BookShop.ADMIN.ModelsAdmin.Admin", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("id")
-                        .HasDefaultValueSql("NEWID()");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)")
-                        .HasColumnName("email");
-
-                    b.Property<string>("PasswordHash")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnName("passwordHash");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("userId");
-
-                    b.Property<string>("Username")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)")
-                        .HasColumnName("username");
-
-                    b.HasKey("Id")
-                        .HasName("PK_Admin");
-
-                    b.HasIndex("UserId")
-                        .IsUnique();
-
-                    b.ToTable("Admins");
-                });
-
             modelBuilder.Entity("BookShop.Auth.DTOAuth.Requests.PasswordResetToken", b =>
                 {
                     b.Property<int>("Id")
@@ -203,7 +108,8 @@ namespace BookShop.Migrations
                         .HasColumnName("passwordHash");
 
                     b.Property<string>("RefreshToken")
-                        .HasColumnType("nvarchar(max)")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)")
                         .HasColumnName("refreshToken");
 
                     b.Property<DateTime?>("RefreshTokenExpiration")
@@ -220,6 +126,11 @@ namespace BookShop.Migrations
 
                     b.HasIndex("Email")
                         .IsUnique();
+
+                    b.HasIndex("RefreshToken")
+                        .IsUnique()
+                        .HasDatabaseName("UQ_RefreshToken")
+                        .HasFilter("[refreshToken] IS NOT NULL");
 
                     b.ToTable("Users");
                 });
@@ -247,6 +158,141 @@ namespace BookShop.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("UserRoles");
+                });
+
+            modelBuilder.Entity("BookShop.Data.Models.Adress", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("City")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Country")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("PostalCode")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Street")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Adresses");
+                });
+
+            modelBuilder.Entity("BookShop.Data.Models.BankCard", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("CVV")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<string>("CardHolderName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("CardNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<DateTime>("ExpirationDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Last4Digits")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(4)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("BankCards", (string)null);
+                });
+
+            modelBuilder.Entity("BookShop.Data.Models.Book", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("NEWID()");
+
+                    b.Property<string>("Author")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<int>("GenreId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("GenreName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ImageUrl")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<decimal>("Price")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("PublisherId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("PublisherName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Stock")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GenreId");
+
+                    b.HasIndex("PublisherId");
+
+                    b.HasIndex("Title")
+                        .IsUnique();
+
+                    b.ToTable("Books");
                 });
 
             modelBuilder.Entity("BookShop.Data.Models.BookAttribute", b =>
@@ -281,8 +327,8 @@ namespace BookShop.Migrations
                     b.Property<int>("AttributeId")
                         .HasColumnType("int");
 
-                    b.Property<int>("BookId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("BookId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Value")
                         .IsRequired()
@@ -326,14 +372,9 @@ namespace BookShop.Migrations
 
             modelBuilder.Entity("BookShop.Data.Models.Order", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("OrderDate")
                         .HasColumnType("datetime2");
@@ -348,12 +389,22 @@ namespace BookShop.Migrations
                     b.Property<decimal>("TotalPrice")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<Guid>("UserAdressId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("UserBankCardId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
                     b.HasIndex("PromoCodeId");
+
+                    b.HasIndex("UserAdressId");
+
+                    b.HasIndex("UserBankCardId");
 
                     b.HasIndex("UserId");
 
@@ -362,19 +413,18 @@ namespace BookShop.Migrations
 
             modelBuilder.Entity("BookShop.Data.Models.OrderItem", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("uniqueidentifier");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.Property<Guid>("BookId")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("BookId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("OrderId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<decimal>("Price")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("Quantity")
@@ -492,8 +542,8 @@ namespace BookShop.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("BookId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("BookId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Comment")
                         .IsRequired()
@@ -529,8 +579,8 @@ namespace BookShop.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("BookId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("BookId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("Quantity")
                         .ValueGeneratedOnAdd()
@@ -548,35 +598,6 @@ namespace BookShop.Migrations
                         .IsUnique();
 
                     b.ToTable("Warehouses");
-                });
-
-            modelBuilder.Entity("Book", b =>
-                {
-                    b.HasOne("BookShop.Data.Models.Genre", "Genre")
-                        .WithMany("Books")
-                        .HasForeignKey("GenreId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("BookShop.Data.Models.Publisher", "Publisher")
-                        .WithMany("Books")
-                        .HasForeignKey("PublisherId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("Genre");
-
-                    b.Navigation("Publisher");
-                });
-
-            modelBuilder.Entity("BookShop.ADMIN.ModelsAdmin.Admin", b =>
-                {
-                    b.HasOne("BookShop.Auth.ModelsAuth.User", "User")
-                        .WithOne("Admin")
-                        .HasForeignKey("BookShop.ADMIN.ModelsAdmin.Admin", "UserId")
-                        .IsRequired()
-                        .HasConstraintName("FK_Admin_User");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("BookShop.Auth.ModelsAuth.UserRole", b =>
@@ -598,6 +619,46 @@ namespace BookShop.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("BookShop.Data.Models.Adress", b =>
+                {
+                    b.HasOne("BookShop.Auth.ModelsAuth.User", "User")
+                        .WithMany("Adresses")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("BookShop.Data.Models.BankCard", b =>
+                {
+                    b.HasOne("BookShop.Auth.ModelsAuth.User", "User")
+                        .WithMany("BankCards")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("BookShop.Data.Models.Book", b =>
+                {
+                    b.HasOne("BookShop.Data.Models.Genre", "Genre")
+                        .WithMany("Books")
+                        .HasForeignKey("GenreId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("BookShop.Data.Models.Publisher", "Publisher")
+                        .WithMany("Books")
+                        .HasForeignKey("PublisherId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Genre");
+
+                    b.Navigation("Publisher");
+                });
+
             modelBuilder.Entity("BookShop.Data.Models.BookAttributeValue", b =>
                 {
                     b.HasOne("BookShop.Data.Models.BookAttribute", "Attribute")
@@ -606,7 +667,7 @@ namespace BookShop.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Book", "Book")
+                    b.HasOne("BookShop.Data.Models.Book", "Book")
                         .WithMany("BookAttributeValues")
                         .HasForeignKey("BookId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -633,6 +694,18 @@ namespace BookShop.Migrations
                         .WithMany("Orders")
                         .HasForeignKey("PromoCodeId");
 
+                    b.HasOne("BookShop.Data.Models.Adress", "UserAdress")
+                        .WithMany()
+                        .HasForeignKey("UserAdressId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("BookShop.Data.Models.BankCard", "UserBankCard")
+                        .WithMany()
+                        .HasForeignKey("UserBankCardId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("BookShop.Auth.ModelsAuth.User", "User")
                         .WithMany("Orders")
                         .HasForeignKey("UserId")
@@ -640,11 +713,15 @@ namespace BookShop.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+
+                    b.Navigation("UserAdress");
+
+                    b.Navigation("UserBankCard");
                 });
 
             modelBuilder.Entity("BookShop.Data.Models.OrderItem", b =>
                 {
-                    b.HasOne("Book", "Book")
+                    b.HasOne("BookShop.Data.Models.Book", "Book")
                         .WithMany()
                         .HasForeignKey("BookId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -663,7 +740,7 @@ namespace BookShop.Migrations
 
             modelBuilder.Entity("BookShop.Data.Models.Review", b =>
                 {
-                    b.HasOne("Book", "Book")
+                    b.HasOne("BookShop.Data.Models.Book", "Book")
                         .WithMany("Reviews")
                         .HasForeignKey("BookId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -682,22 +759,13 @@ namespace BookShop.Migrations
 
             modelBuilder.Entity("BookShop.Data.Models.Warehouse", b =>
                 {
-                    b.HasOne("Book", "Book")
+                    b.HasOne("BookShop.Data.Models.Book", "Book")
                         .WithOne("Warehouse")
                         .HasForeignKey("BookShop.Data.Models.Warehouse", "BookId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Book");
-                });
-
-            modelBuilder.Entity("Book", b =>
-                {
-                    b.Navigation("BookAttributeValues");
-
-                    b.Navigation("Reviews");
-
-                    b.Navigation("Warehouse");
                 });
 
             modelBuilder.Entity("BookShop.Auth.ModelsAuth.Role", b =>
@@ -707,14 +775,24 @@ namespace BookShop.Migrations
 
             modelBuilder.Entity("BookShop.Auth.ModelsAuth.User", b =>
                 {
-                    b.Navigation("Admin")
-                        .IsRequired();
+                    b.Navigation("Adresses");
+
+                    b.Navigation("BankCards");
 
                     b.Navigation("Orders");
 
                     b.Navigation("Reviews");
 
                     b.Navigation("UserRoles");
+                });
+
+            modelBuilder.Entity("BookShop.Data.Models.Book", b =>
+                {
+                    b.Navigation("BookAttributeValues");
+
+                    b.Navigation("Reviews");
+
+                    b.Navigation("Warehouse");
                 });
 
             modelBuilder.Entity("BookShop.Data.Models.BookAttribute", b =>

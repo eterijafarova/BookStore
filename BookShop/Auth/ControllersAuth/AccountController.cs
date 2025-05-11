@@ -1,10 +1,10 @@
 using BookShop.Auth.DataAuth.Validators;
 using BookShop.Auth.DTOAuth.Requests;
 using BookShop.Auth.ServicesAuth.Interfaces;
-using ControllerFirst.DTO.Responses;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using BookShop.Auth.DTOAuth.Responses;
 
 namespace BookShop.Auth.ControllersAuth
 {

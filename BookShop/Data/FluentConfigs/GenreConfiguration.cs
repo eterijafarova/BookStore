@@ -9,8 +9,7 @@ public class GenreConfiguration : IEntityTypeConfiguration<Genre>
     public void Configure(EntityTypeBuilder<Genre> builder)
     {
         builder.HasKey(g => g.Id);
-
-        // Указываем тип для ID и включаем автоинкремент
+        
         builder.Property(g => g.Id)
             .HasColumnType("int")
             .ValueGeneratedOnAdd();

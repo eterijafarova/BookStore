@@ -19,11 +19,11 @@ public class ReviewsController : ControllerBase
     }
 
     [HttpPost("add/{bookId}")]
-    public async Task<IActionResult> AddReview(int bookId, [FromBody] AddReviewRequest request)
+    public async Task<IActionResult> AddReview(Guid bookId, [FromBody] AddReviewRequest request)
     {
         try
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier); // Получение userId из токена
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier); 
             if (string.IsNullOrEmpty(userId))
             {
                 return Unauthorized(new { message = "User not authenticated." });
@@ -39,9 +39,9 @@ public class ReviewsController : ControllerBase
     }
 
 
-    // Получить все комментарии для книги
+
     [HttpGet("get-by-book/{bookId}")]
-    public async Task<IActionResult> GetReviewsByBook(int bookId)
+    public async Task<IActionResult> GetReviewsByBook(Guid bookId)
     {
         var reviews = await _reviewService.GetReviewsByBookAsync(bookId);
         return Ok(reviews);

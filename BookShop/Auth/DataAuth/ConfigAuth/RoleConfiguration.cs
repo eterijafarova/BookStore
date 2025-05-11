@@ -8,10 +8,8 @@ namespace BookShop.Auth.DataAuth.ConfigAuth
     {
         public void Configure(EntityTypeBuilder<Role> entity)
         {
-            // Устанавливаем первичный ключ как Id
             entity.HasKey(e => e.Id).HasName("PK_Roles");
-
-            // Настройка свойства RoleName
+            
             entity.Property(e => e.RoleName)
                 .IsRequired()
                 .HasMaxLength(50)

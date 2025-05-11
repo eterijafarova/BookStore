@@ -1,4 +1,3 @@
-using BookShop.ADMIN.ModelsAdmin;
 using BookShop.Auth.DTOAuth.Requests;
 using BookShop.Auth.ModelsAuth;
 using BookShop.Data.Models;
@@ -24,9 +23,9 @@ public class LibraryContext : DbContext
     public DbSet<User> Users { get; set; }
     public DbSet<UserRole> UserRoles { get; set; }
     public DbSet<Warehouse> Warehouses { get; set; }
-    public DbSet<Admin> Admins { get; set; }
     public DbSet<PasswordResetToken> PasswordResetTokens { get; set; }
-
+    public DbSet<Adress> Adresses { get; set; }
+    public DbSet<BankCard> BankCards { get; set; }
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

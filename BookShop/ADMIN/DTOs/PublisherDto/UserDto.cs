@@ -1,4 +1,4 @@
-namespace BookShop.ADMIN.DTOs
+namespace BookShop.ADMIN.DTOs.PublisherDto
 {
     public class UserDto
     {
@@ -11,13 +11,13 @@ namespace BookShop.ADMIN.DTOs
         public bool EmailConfirmed { get; set; }
 
         public DateTime? EmailConfirmationTokenExpiry { get; set; }
-        // Можно добавить и другие свойства, которые хотите возвращать
+     
     }
 
     public class UpdateUserDto
     {
         public string UserName { get; set; }
         public string Email { get; set; }
-        // При необходимости добавьте другие изменяемые поля
+    
     }
 }

@@ -41,7 +41,6 @@ builder.Services.AddControllers()
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<RegisterValidator>();
 
-// Конфигурация JWT
 var jwtSettings = builder.Configuration.GetSection("JWT").Get<JwtOptions>();
 if (jwtSettings == null || string.IsNullOrEmpty(jwtSettings.SecretKey))
 {
@@ -88,6 +87,8 @@ builder.Services.AddScoped<IPublisherService, PublisherService>();
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IGenreService, GenreService>();
+builder.Services.AddScoped<IAdressService, AdressService>();
+builder.Services.AddScoped<ICardService, CardService>();
 
 builder.Services.AddScoped<SuperAdminInitializer>();
 

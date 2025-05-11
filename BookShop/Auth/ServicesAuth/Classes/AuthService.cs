@@ -24,16 +24,15 @@ namespace BookShop.Auth.ServicesAuth.Classes
         {
             var user = await _context.Users
                 .Where(x => x.UserName == request.username)
-                .Include(u => u.UserRoles) // Загружаем связи с ролями
-                .ThenInclude(ur => ur.Role) // Загружаем саму роль
+                .Include(u => u.UserRoles) 
+                .ThenInclude(ur => ur.Role) 
                 .FirstOrDefaultAsync();
 
             if (user == null)
             {
                 throw new Exception("User not found");
             }
-
-            // Предполагаем, что у пользователя только одна роль
+            
             var role = user.UserRoles.FirstOrDefault()?.Role?.RoleName;
 
             if (role == null)
@@ -49,8 +48,7 @@ namespace BookShop.Auth.ServicesAuth.Classes
             user.RefreshTokenExpiration = refreshTokenExpiration;
 
             await _context.SaveChangesAsync();
-
-            // Возвращаем токены и роль
+            
             return new LoginResponse(accessToken, refreshToken, role);
         }
 

@@ -3,7 +3,7 @@ namespace BookShop.Data.Models;
 public class Warehouse
 {
     public int Id { get; set; }
-    public int BookId { get; set; } 
+    public Guid BookId { get; set; } 
     public int Quantity { get; set; } 
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow; 
 

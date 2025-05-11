@@ -5,78 +5,86 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace BookShop.ADMIN.ControllersAdmin
 {
-    [Route("api/v1/[controller]")]
     [ApiController]
+    [Route("api/[controller]")]
     public class OrderController : ControllerBase
     {
         private readonly IOrderService _orderService;
-
         public OrderController(IOrderService orderService)
         {
             _orderService = orderService;
         }
 
-        // Создание нового заказа
-        [HttpPost("CreateOrder")]
-        public async Task<IActionResult> CreateOrderAsync([FromBody] CreateOrderDto createOrderDto)
+        /// <summary>
+        /// Создать новый заказ.
+        /// </summary>
+        [HttpPost]
+        public async Task<ActionResult<OrderResponseDto>> Create([FromBody] OrderRequestDto request)
         {
-            if (createOrderDto == null)
+            try
             {
-                return BadRequest("Invalid order data.");
+                var result = await _orderService.CreateOrderAsync(request);
+                return CreatedAtAction(
+                    nameof(GetById),
+                    new { orderId = result.Id },
+                    result
+                );
             }
-
-            var order = await _orderService.CreateOrderAsync(createOrderDto);
-            return CreatedAtAction(nameof(GetOrderByIdAsync), new { orderId = order.Id }, order);
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
-        // Получение заказа по ID
-        [HttpGet("{orderId}")]
-        public async Task<IActionResult> GetOrderByIdAsync(int orderId)
+        /// <summary>
+        /// Получить заказ по его Id.
+        /// </summary>
+        [HttpGet("{orderId:guid}")]
+        public async Task<ActionResult<OrderResponseDto>> GetById(Guid orderId)
         {
-            var order = await _orderService.GetOrderByIdAsync(orderId);
-
-            if (order == null)
-            {
-                return NotFound($"Order with ID {orderId} not found.");
-            }
-
-            return Ok(order);
+            var result = await _orderService.GetOrderByIdAsync(orderId);
+            if (result == null) return NotFound();
+            return Ok(result);
         }
 
-        // Получение всех заказов с пагинацией
-        [HttpGet("GetOrders")]
-        public async Task<IActionResult> GetOrdersAsync([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
+        /// <summary>
+        /// Получить все заказы пользователя.
+        /// </summary>
+        [HttpGet("user/{userId:guid}")]
+        public async Task<ActionResult<IEnumerable<OrderResponseDto>>> GetByUser(Guid userId)
         {
-            var orders = await _orderService.GetOrdersAsync(page, pageSize);
-            return Ok(orders);
+            var results = await _orderService.GetOrdersByUserIdAsync(userId);
+            return Ok(results);
         }
 
-        // Обновление статуса заказа
-        [HttpPut("UpdateStatus/{orderId}")]
-        public async Task<IActionResult> UpdateOrderStatusAsync(int orderId, [FromBody] Order.OrderStatus status)
+        /// <summary>
+        /// Удалить заказ.
+        /// </summary>
+        [HttpDelete("{orderId:guid}")]
+        public async Task<IActionResult> Delete(Guid orderId)
         {
-            var result = await _orderService.UpdateOrderStatusAsync(orderId, status);
-
-            if (!result)
-            {
-                return NotFound($"Order with ID {orderId} not found.");
-            }
-
-            return Ok(new { message = "Order status updated successfully." });
+            var success = await _orderService.DeleteOrderAsync(orderId);
+            if (!success) return NotFound();
+            return NoContent();
         }
 
-        // Удаление заказа
-        [HttpDelete("DeleteOrder/{orderId}")]
-        public async Task<IActionResult> DeleteOrderAsync(int orderId)
+        /// <summary>
+        /// DTO для изменения статуса заказа.
+        /// </summary>
+        public class UpdateOrderStatusDto
         {
-            var result = await _orderService.DeleteOrderAsync(orderId);
+            public Order.OrderStatus Status { get; set; }
+        }
 
-            if (!result)
-            {
-                return NotFound($"Order with ID {orderId} not found.");
-            }
-
-            return Ok(new { message = "Order deleted successfully." });
+        /// <summary>
+        /// Обновить статус заказа.
+        /// </summary>
+        [HttpPatch("{orderId:guid}/status")]
+        public async Task<IActionResult> UpdateStatus(Guid orderId, [FromBody] UpdateOrderStatusDto dto)
+        {
+            var success = await _orderService.UpdateOrderStatusAsync(orderId, dto.Status);
+            if (!success) return NotFound();
+            return NoContent();
         }
     }
 }

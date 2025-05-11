@@ -1,5 +1,6 @@
 using BookShop.ADMIN.DTOs;
 using BookShop.Data.Contexts;
+using BookShop.Data.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -48,7 +49,7 @@ namespace BookShop.ADMIN.ControllersAdmin
 
         // GET: api/books/{id}
         [HttpGet("{id}")]
-        public async Task<ActionResult<BookDto>> GetBook(int id)
+        public async Task<ActionResult<BookDto>> GetBook(Guid id)
         {
             var book = await _context.Books
                 .Include(b => b.Genre)
@@ -107,7 +108,7 @@ namespace BookShop.ADMIN.ControllersAdmin
 
         // PUT: api/books/{id}
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateBook(int id, [FromBody] UpdateBookDto dto)
+        public async Task<IActionResult> UpdateBook(Guid id, [FromBody] UpdateBookDto dto)
         {
             var existingBook = await _context.Books.FindAsync(id);
             if (existingBook == null)
@@ -131,7 +132,7 @@ namespace BookShop.ADMIN.ControllersAdmin
 
         // DELETE: api/books/{id}
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteBook(int id)
+        public async Task<IActionResult> DeleteBook(Guid id)
         {
             var book = await _context.Books.FindAsync(id);
             if (book == null)

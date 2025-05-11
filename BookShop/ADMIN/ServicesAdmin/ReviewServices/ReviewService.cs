@@ -13,7 +13,7 @@ public class ReviewService : IReviewService
         _context = context;
     }
 
-    public async Task AddReviewAsync(Guid userId, int bookId, string comment, int rating)
+    public async Task AddReviewAsync(Guid userId, Guid bookId, string comment, int rating)
     {
         if (userId == Guid.Empty)
         {
@@ -39,9 +39,8 @@ public class ReviewService : IReviewService
         await _context.SaveChangesAsync();
     }
 
-
-    // Получить все комментарии для книги
-    public async Task<IEnumerable<Review>> GetReviewsByBookAsync(int bookId)
+    
+    public async Task<IEnumerable<Review>> GetReviewsByBookAsync(Guid bookId)
     {
         return await _context.Reviews
             .Where(r => r.BookId == bookId)
@@ -49,7 +48,6 @@ public class ReviewService : IReviewService
             .ToListAsync();
     }
     
-    // Удалить комментарий по Id
     public async Task DeleteReviewByIdAsync(int reviewId, Guid userId, bool isAdmin = false)
     {
         var review = await _context.Reviews.FindAsync(reviewId);
@@ -58,7 +56,7 @@ public class ReviewService : IReviewService
             throw new Exception("Review not found.");
         }
 
-        // Если не админ, проверяем, что пользователь пытается удалить только свой комментарий
+       
         if (!isAdmin && review.UserId != userId)
         {
             throw new Exception("You can only delete your own reviews.");
@@ -69,7 +67,6 @@ public class ReviewService : IReviewService
     }
 
     
-    // Удалить все комментарии (для администраторов)
     public async Task DeleteAllReviewsAsync()
     {
         var reviews = await _context.Reviews.ToListAsync();
