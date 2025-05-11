@@ -57,18 +57,33 @@ namespace BookShop.Auth.ControllersAuth
             }
         }
 
+        /// <summary>
+        /// API endpoint returning JSON
+        /// POST /api/v1/Account/Register  
+        /// При регистрации сразу отправляется email для подтверждения
+        /// </summary>
+        [AllowAnonymous]
         [HttpPost("Register")]
         public async Task<IActionResult> Register([FromBody] RegisterRequest request)
         {
             var validator = new RegisterValidator();
             var result = validator.Validate(request);
-
             if (!result.IsValid)
                 return BadRequest(result.Errors);
-
+            
             await _accountService.RegisterAsync(request);
-            return Ok(new Result<string>(true, request.Username, "Successfully registered"));
+            
+            await _accountService.ConfirmEmailAsync(
+                new ConfirmRequest(request.Username)
+            );
+
+            return Ok(new Result<string>(
+                true,
+                request.Username,
+                "Successfully registered. Confirmation email has been sent."
+            ));
         }
+
 
         /// <summary>
         /// API endpoint returning JSON
@@ -123,12 +138,12 @@ namespace BookShop.Auth.ControllersAuth
         
         }
 
-        [AllowAnonymous]
-        [HttpPost("ConfirmEmail")]
-        public async Task<IActionResult> ConfirmEmailAsync([FromBody] ConfirmRequest request)
-        {
-            await _accountService.ConfirmEmailAsync(request);
-            return Ok(new Result<string>(true, request.username, "Email sent"));
-        }
+        // [AllowAnonymous]
+        // [HttpPost("ConfirmEmail")]
+        // public async Task<IActionResult> ConfirmEmailAsync([FromBody] ConfirmRequest request)
+        // {
+        //     await _accountService.ConfirmEmailAsync(request);
+        //     return Ok(new Result<string>(true, request.username, "Email sent"));
+        // }
     }
 }
