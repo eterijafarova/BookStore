@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\ASUS\\Downloads\\BookShop-main\\BookShop-main\\BookShop\\BookShop.csproj": {}
+    "C:\\Users\\ASUS\\RiderProjects\\BooksStore\\BookShop\\BookShop.csproj": {}
   },
   "projects": {
-    "C:\\Users\\ASUS\\Downloads\\BookShop-main\\BookShop-main\\BookShop\\BookShop.csproj": {
+    "C:\\Users\\ASUS\\RiderProjects\\BooksStore\\BookShop\\BookShop.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\ASUS\\Downloads\\BookShop-main\\BookShop-main\\BookShop\\BookShop.csproj",
+        "projectUniqueName": "C:\\Users\\ASUS\\RiderProjects\\BooksStore\\BookShop\\BookShop.csproj",
         "projectName": "BookShop",
-        "projectPath": "C:\\Users\\ASUS\\Downloads\\BookShop-main\\BookShop-main\\BookShop\\BookShop.csproj",
+        "projectPath": "C:\\Users\\ASUS\\RiderProjects\\BooksStore\\BookShop\\BookShop.csproj",
         "packagesPath": "C:\\Users\\ASUS\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\ASUS\\Downloads\\BookShop-main\\BookShop-main\\BookShop\\obj\\",
+        "outputPath": "C:\\Users\\ASUS\\RiderProjects\\BooksStore\\BookShop\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -48,6 +48,10 @@
             "AutoMapper": {
               "target": "Package",
               "version": "[13.0.1, )"
+            },
+            "Azure.Storage.Blobs": {
+              "target": "Package",
+              "version": "[12.24.0, )"
             },
             "BCrypt.Net-Next": {
               "target": "Package",

@@ -1,0 +1,7 @@
+git checkout main/bin/
+/obj/
+/publish/
+
+**/appsettings.json
+
+secrets.json

@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "AB6KmOrYN8Ktqb2Dp/msnBJeiL302Bcx9olLOaj0UtI=",
+  "Hash": "uXkgdrEueT7Wf2uM9NPG4FeBBRHkSCIxG0kJ981mK64=",
   "Source": "BookShop",
   "BasePath": "_content/BookShop",
   "Mode": "Default",
@@ -10,17 +10,17 @@
     {
       "Name": "BookShop\\wwwroot",
       "Source": "BookShop",
-      "ContentRoot": "C:\\Users\\ASUS\\Downloads\\BookShop-main\\BookShop-main\\BookShop\\wwwroot\\",
+      "ContentRoot": "C:\\Users\\ASUS\\RiderProjects\\BooksStore\\BookShop\\wwwroot\\",
       "BasePath": "_content/BookShop",
       "Pattern": "**"
     }
   ],
   "Assets": [
     {
-      "Identity": "C:\\Users\\ASUS\\Downloads\\BookShop-main\\BookShop-main\\BookShop\\wwwroot\\confirm-error.html",
+      "Identity": "C:\\Users\\ASUS\\RiderProjects\\BooksStore\\BookShop\\wwwroot\\confirm-error.html",
       "SourceId": "BookShop",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\ASUS\\Downloads\\BookShop-main\\BookShop-main\\BookShop\\wwwroot\\",
+      "ContentRoot": "C:\\Users\\ASUS\\RiderProjects\\BooksStore\\BookShop\\wwwroot\\",
       "BasePath": "_content/BookShop",
       "RelativePath": "confirm-error.html",
       "AssetKind": "All",
@@ -36,10 +36,10 @@
       "OriginalItemSpec": "wwwroot\\confirm-error.html"
     },
     {
-      "Identity": "C:\\Users\\ASUS\\Downloads\\BookShop-main\\BookShop-main\\BookShop\\wwwroot\\confirm-success.html",
+      "Identity": "C:\\Users\\ASUS\\RiderProjects\\BooksStore\\BookShop\\wwwroot\\confirm-success.html",
       "SourceId": "BookShop",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\ASUS\\Downloads\\BookShop-main\\BookShop-main\\BookShop\\wwwroot\\",
+      "ContentRoot": "C:\\Users\\ASUS\\RiderProjects\\BooksStore\\BookShop\\wwwroot\\",
       "BasePath": "_content/BookShop",
       "RelativePath": "confirm-success.html",
       "AssetKind": "All",
@@ -55,10 +55,10 @@
       "OriginalItemSpec": "wwwroot\\confirm-success.html"
     },
     {
-      "Identity": "C:\\Users\\ASUS\\Downloads\\BookShop-main\\BookShop-main\\BookShop\\wwwroot\\email.html",
+      "Identity": "C:\\Users\\ASUS\\RiderProjects\\BooksStore\\BookShop\\wwwroot\\email.html",
       "SourceId": "BookShop",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\ASUS\\Downloads\\BookShop-main\\BookShop-main\\BookShop\\wwwroot\\",
+      "ContentRoot": "C:\\Users\\ASUS\\RiderProjects\\BooksStore\\BookShop\\wwwroot\\",
       "BasePath": "_content/BookShop",
       "RelativePath": "email.html",
       "AssetKind": "All",
@@ -74,10 +74,10 @@
       "OriginalItemSpec": "wwwroot\\email.html"
     },
     {
-      "Identity": "C:\\Users\\ASUS\\Downloads\\BookShop-main\\BookShop-main\\BookShop\\wwwroot\\reset-password.html",
+      "Identity": "C:\\Users\\ASUS\\RiderProjects\\BooksStore\\BookShop\\wwwroot\\reset-password.html",
       "SourceId": "BookShop",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\ASUS\\Downloads\\BookShop-main\\BookShop-main\\BookShop\\wwwroot\\",
+      "ContentRoot": "C:\\Users\\ASUS\\RiderProjects\\BooksStore\\BookShop\\wwwroot\\",
       "BasePath": "_content/BookShop",
       "RelativePath": "reset-password.html",
       "AssetKind": "All",

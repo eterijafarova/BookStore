@@ -1,19 +1,19 @@
 {
   "Files": [
     {
-      "Id": "C:\\Users\\ASUS\\Downloads\\BookShop-main\\BookShop-main\\BookShop\\wwwroot\\confirm-error.html",
+      "Id": "C:\\Users\\ASUS\\RiderProjects\\BooksStore\\BookShop\\wwwroot\\confirm-error.html",
       "PackagePath": "staticwebassets\\confirm-error.html"
     },
     {
-      "Id": "C:\\Users\\ASUS\\Downloads\\BookShop-main\\BookShop-main\\BookShop\\wwwroot\\confirm-success.html",
+      "Id": "C:\\Users\\ASUS\\RiderProjects\\BooksStore\\BookShop\\wwwroot\\confirm-success.html",
       "PackagePath": "staticwebassets\\confirm-success.html"
     },
     {
-      "Id": "C:\\Users\\ASUS\\Downloads\\BookShop-main\\BookShop-main\\BookShop\\wwwroot\\email.html",
+      "Id": "C:\\Users\\ASUS\\RiderProjects\\BooksStore\\BookShop\\wwwroot\\email.html",
       "PackagePath": "staticwebassets\\email.html"
     },
     {
-      "Id": "C:\\Users\\ASUS\\Downloads\\BookShop-main\\BookShop-main\\BookShop\\wwwroot\\reset-password.html",
+      "Id": "C:\\Users\\ASUS\\RiderProjects\\BooksStore\\BookShop\\wwwroot\\reset-password.html",
       "PackagePath": "staticwebassets\\reset-password.html"
     },
     {

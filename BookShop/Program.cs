@@ -1,5 +1,6 @@
 using System.Text;
 using System.Globalization;
+using Azure.Storage.Blobs;      
 using BookShop.ADMIN.ServicesAdmin.AdminServices;
 using BookShop.ADMIN.ServicesAdmin.ReviewServices;
 using BookShop.ADMIN.ServicesAdmin.WarehouseServices;
@@ -8,6 +9,7 @@ using BookShop.Auth.JWT;
 using BookShop.Auth.ServicesAuth.Classes;
 using BookShop.Auth.ServicesAuth.Interfaces;
 using BookShop.Auth.SharedAuth;
+using BookShop.BlobStorage;                 
 using BookShop.Data.Contexts;
 using BookShop.Mappings;
 using BookShop.Services.Implementations;
@@ -29,6 +31,20 @@ builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 builder.Services.AddDbContext<LibraryContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+
+var blobSection = builder.Configuration.GetSection("AzureBlobStorage");
+string blobConn = blobSection.GetValue<string>("ConnectionString");
+string blobContainer = blobSection.GetValue<string>("ContainerName");
+
+builder.Services.AddSingleton(new BlobServiceClient(blobConn));
+
+builder.Services.AddScoped<IBlobService>(sp =>
+{
+    var client = sp.GetRequiredService<BlobServiceClient>();
+    return new BlobService(client, blobContainer);
+});
+
 
 builder.Services.AddTransient<GlobalExceptionMiddleware>();
 

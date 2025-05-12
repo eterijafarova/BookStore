@@ -15,8 +15,6 @@ public class Book
 
     public int GenreId { get; set; }  
     public int? PublisherId { get; set; }  
-    public string GenreName { get; set; } = string.Empty;
-    public string PublisherName { get; set; } = string.Empty;
 
     public Genre Genre { get; set; } = null!;
     public Publisher Publisher { get; set; } = null!;

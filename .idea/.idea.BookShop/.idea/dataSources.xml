@@ -9,5 +9,13 @@
       <jdbc-url>jdbc:sqlserver://cheshire.database.windows.net:1433;databaseName=cheshire;encrypt=True;password={eh12345678!};trustServerCertificate=True;userName=Cheschire;</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
+    <data-source source="LOCAL" name="Microsoft SQL Server (JetBrains)" uuid="6e1f87e3-5c52-4202-a08e-6b8e5aeb0587">
+      <driver-ref>sqlserver.jb</driver-ref>
+      <synchronize>true</synchronize>
+      <configured-by-url>true</configured-by-url>
+      <jdbc-driver>com.jetbrains.jdbc.sqlserver.SqlServerDriver</jdbc-driver>
+      <jdbc-url>Server=tcp:cheshire.database.windows.net,1433;Initial Catalog=cheshire;Persist Security Info=False;User ID=Cheschire;Password=eh12345678!;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;Connection Timeout=60;</jdbc-url>
+      <working-dir>$ProjectFileDir$</working-dir>
+    </data-source>
   </component>
 </project>

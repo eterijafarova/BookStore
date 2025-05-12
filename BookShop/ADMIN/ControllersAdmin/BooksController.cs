@@ -1,6 +1,8 @@
 using BookShop.ADMIN.DTOs;
+using BookShop.BlobStorage;
 using BookShop.Data.Contexts;
 using BookShop.Data.Models;
+using BookShop.Shared.DTO.Requests;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,10 +13,12 @@ namespace BookShop.ADMIN.ControllersAdmin
     public class BooksController : ControllerBase
     {
         private readonly LibraryContext _context;
+        private readonly IBlobService _blobService;
 
-        public BooksController(LibraryContext context)
+        public BooksController(LibraryContext context, IBlobService blobService)
         {
             _context = context;
+            _blobService = blobService;
         }
 
         // GET: api/books
@@ -24,10 +28,10 @@ namespace BookShop.ADMIN.ControllersAdmin
             var query = _context.Books
                 .Include(b => b.Genre)
                 .Include(b => b.Publisher)
-                .Where(b => b.Title.Contains(search) || b.Author.Contains(search)); 
+                .Where(b => b.Title.Contains(search) || b.Author.Contains(search));
 
             var books = await query
-                .Skip((page - 1) * pageSize)  
+                .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .Select(b => new BookDto
                 {
@@ -40,7 +44,7 @@ namespace BookShop.ADMIN.ControllersAdmin
                     ImageUrl = b.ImageUrl,
                     GenreName = b.Genre.GenreName,
                     GenreId = b.GenreId,
-                    PublisherName = b.Publisher.Name 
+                    PublisherName = b.Publisher.Name
                 })
                 .ToListAsync();
 
@@ -48,45 +52,39 @@ namespace BookShop.ADMIN.ControllersAdmin
         }
 
         // GET: api/books/{id}
-        [HttpGet("{id}")]
-        public async Task<ActionResult<BookDto>> GetBook(Guid id)
+        [HttpGet("{id:guid}")]
+        public async Task<ActionResult<BookDto>> GetBookById(Guid id)
         {
-            var book = await _context.Books
-                .Include(b => b.Genre)
-                .Include(b => b.Publisher)
-                .FirstOrDefaultAsync(b => b.Id == id);
+            var b = await _context.Books
+                .Include(x => x.Genre)
+                .Include(x => x.Publisher)
+                .FirstOrDefaultAsync(x => x.Id == id);
 
-            if (book == null)
-            {
-                return NotFound(new { message = "Book not found" });
-            }
+            if (b == null) return NotFound();
 
-            var bookDto = new BookDto
+            var dto = new BookDto
             {
-                Id = book.Id,
-                Title = book.Title,
-                Author = book.Author,
-                Price = book.Price,
-                Stock = book.Stock,
-                Description = book.Description,
-                ImageUrl = book.ImageUrl,
-                GenreName = book.Genre.GenreName,
-                PublisherName = book.Publisher.Name
+                Id = b.Id,
+                Title = b.Title,
+                Author = b.Author,
+                Price = b.Price,
+                Stock = b.Stock,
+                Description = b.Description,
+                ImageUrl = b.ImageUrl,
+                GenreName = b.Genre.GenreName,
+                GenreId = b.GenreId,
+                PublisherName = b.Publisher.Name
             };
-
-            return Ok(bookDto);
+            return Ok(dto);
         }
 
         // POST: api/books
         [HttpPost]
-        public async Task<ActionResult<Book>> CreateBook([FromBody] CreateBookDto dto)
+        [DisableRequestSizeLimit]
+        public async Task<IActionResult> CreateBook(
+            [FromForm] BookCreateDto dto,
+            IFormFile? imageFile)
         {
-            var genre = await _context.Genres.FindAsync(dto.GenreId);
-            if (genre == null)
-            {
-                return BadRequest(new { message = "Genre not found" });
-            }
-
             var book = new Book
             {
                 Title = dto.Title,
@@ -94,27 +92,30 @@ namespace BookShop.ADMIN.ControllersAdmin
                 Price = dto.Price,
                 Stock = dto.Stock,
                 Description = dto.Description,
-                ImageUrl = dto.ImageUrl,
                 GenreId = dto.GenreId,
-                GenreName = genre.GenreName,
                 PublisherId = dto.PublisherId
             };
+
+            if (imageFile is not null)
+            {
+                book.ImageUrl = await _blobService.UploadFileAsync(imageFile);
+            }
 
             _context.Books.Add(book);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetBook), new { id = book.Id }, book);
+            return CreatedAtAction(nameof(GetBookById), new { id = book.Id }, book);
         }
 
         // PUT: api/books/{id}
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateBook(Guid id, [FromBody] UpdateBookDto dto)
+        [HttpPut("{id:guid}")]
+        public async Task<IActionResult> UpdateBook(
+            Guid id,
+            [FromBody] UpdateBookDto dto)
         {
             var existingBook = await _context.Books.FindAsync(id);
             if (existingBook == null)
-            {
                 return NotFound(new { message = "Book not found" });
-            }
 
             existingBook.Title = dto.Title;
             existingBook.Author = dto.Author;
@@ -126,23 +127,19 @@ namespace BookShop.ADMIN.ControllersAdmin
             existingBook.PublisherId = dto.PublisherId;
 
             await _context.SaveChangesAsync();
-
             return NoContent();
         }
 
         // DELETE: api/books/{id}
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:guid}")]
         public async Task<IActionResult> DeleteBook(Guid id)
         {
             var book = await _context.Books.FindAsync(id);
             if (book == null)
-            {
                 return NotFound(new { message = "Book not found" });
-            }
 
             _context.Books.Remove(book);
             await _context.SaveChangesAsync();
-
             return NoContent();
         }
     }
