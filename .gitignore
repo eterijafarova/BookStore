@@ -3,5 +3,7 @@ git checkout main/bin/
 /publish/
 
 **/appsettings.json
+/BookShop/appsettings.json
+
 
 secrets.json
