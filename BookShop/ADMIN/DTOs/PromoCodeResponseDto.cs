@@ -1,6 +1,6 @@
 namespace BookShop.ADMIN.DTOs
 {
-    public class PromoCodeResponseDTO
+    public class PromoCodeResponseDto
     {
         public int Id { get; set; }
         public string Code { get; set; }

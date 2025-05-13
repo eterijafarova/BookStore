@@ -105,6 +105,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IGenreService, GenreService>();
 builder.Services.AddScoped<IAdressService, AdressService>();
 builder.Services.AddScoped<ICardService, CardService>();
+builder.Services.AddScoped<IPromoCodeService, PromoCodeService>();
 
 builder.Services.AddScoped<SuperAdminInitializer>();
 

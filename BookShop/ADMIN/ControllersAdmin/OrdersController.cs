@@ -10,9 +10,14 @@ namespace BookShop.ADMIN.ControllersAdmin
     public class OrderController : ControllerBase
     {
         private readonly IOrderService _orderService;
-        public OrderController(IOrderService orderService)
+        private readonly IPromoCodeService _promoCodeService;
+
+        public OrderController(
+            IOrderService orderService,
+            IPromoCodeService promoCodeService)
         {
             _orderService = orderService;
+            _promoCodeService = promoCodeService;
         }
 
         /// <summary>
@@ -23,12 +28,19 @@ namespace BookShop.ADMIN.ControllersAdmin
         {
             try
             {
+                // Применяем промо-код, если указан
+                if (!string.IsNullOrEmpty(request.PromoCode))
+                {
+                    var applied = await _promoCodeService.ApplyPromoCodeAsync(request.PromoCode, request.UserId);
+                    if (!applied)
+                        return BadRequest("Invalid or expired promo code");
+                }
+
                 var result = await _orderService.CreateOrderAsync(request);
                 return CreatedAtAction(
                     nameof(GetById),
                     new { orderId = result.Id },
-                    result
-                );
+                    result);
             }
             catch (Exception ex)
             {

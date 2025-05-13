@@ -14,99 +14,87 @@ namespace BookShop.Services.Implementations
         {
             _context = context;
         }
-        
-        public async Task<PromoCodeResponseDTO> CreatePromoCodeAsync(CreatePromoCodeDTO dto)
-        {
-            var existingPromoCode = await _context.PromoCodes
-                .FirstOrDefaultAsync(pc => pc.Code == dto.Code);
-            
-            if (existingPromoCode != null)
-            {
-                throw new Exception("Promo code already exists.");
-            }
 
-            // Создание нового промокода
-            var promoCode = new PromoCode
+        public async Task<PromoCodeResponseDto> CreatePromoCodeAsync(CreatePromoCodeDTO dto)
+        {
+            var normalizedCode = dto.Code.Trim().ToLower();
+            
+            var exists = await _context.PromoCodes
+                .AnyAsync(pc => pc.Code.ToLower() == normalizedCode);
+
+            if (exists)
+                throw new InvalidOperationException("Promo code already exists.");
+
+            var promo = new PromoCode
             {
-                Code = dto.Code,
-                Discount = dto.Discount,
+                Code       = dto.Code.Trim(),
+                Discount   = dto.Discount,
                 ExpiryDate = dto.ExpiryDate,
-                IsActive = true  
+                IsActive   = true
             };
 
-            // Добавление промокода в базу данных
-            _context.PromoCodes.Add(promoCode);
+            _context.PromoCodes.Add(promo);
             await _context.SaveChangesAsync();
 
-            return new PromoCodeResponseDTO
+            return new PromoCodeResponseDto
             {
-                Id = promoCode.Id,
-                Code = promoCode.Code,
-                Discount = promoCode.Discount,
-                ExpiryDate = promoCode.ExpiryDate,
-                IsActive = true 
+                Id         = promo.Id,
+                Code       = promo.Code,
+                Discount   = promo.Discount,
+                ExpiryDate = promo.ExpiryDate,
+                IsActive   = promo.IsActive
             };
         }
 
-
-        public async Task<PromoCodeResponseDTO> GetPromoCodeAsync(string code)
+        public async Task<PromoCodeResponseDto?> GetPromoCodeAsync(string code)
         {
-            var promoCode = await _context.PromoCodes
-                .FirstOrDefaultAsync(pc => pc.Code == code);
+            var normalizedCode = code.Trim().ToLower();
+            var promo = await _context.PromoCodes
+                .FirstOrDefaultAsync(pc => pc.Code.ToLower() == normalizedCode);
 
-            if (promoCode == null)
-                return null; 
+            if (promo == null)
+                return null;
 
-            return new PromoCodeResponseDTO
+            return new PromoCodeResponseDto
             {
-                Id = promoCode.Id,
-                Code = promoCode.Code,
-                Discount = promoCode.Discount,
-                ExpiryDate = promoCode.ExpiryDate,
-                IsActive = promoCode.IsActive 
+                Id         = promo.Id,
+                Code       = promo.Code,
+                Discount   = promo.Discount,
+                ExpiryDate = promo.ExpiryDate,
+                IsActive   = promo.IsActive && promo.ExpiryDate > DateTime.UtcNow
             };
         }
 
-        // Применение промокода
-        public async Task<bool> ApplyPromoCodeAsync(string code, int userId)
+        public async Task<bool> ApplyPromoCodeAsync(string code, Guid userId)
         {
-            var promoCode = await _context.PromoCodes
-                .FirstOrDefaultAsync(pc => pc.Code == code);
+            var normalizedCode = code.Trim().ToLower();
+            var promo = await _context.PromoCodes
+                .FirstOrDefaultAsync(pc => pc.Code.ToLower() == normalizedCode);
 
-            // Проверка наличия промокода и его действительности
-            if (promoCode == null || promoCode.ExpiryDate < DateTime.UtcNow || !promoCode.IsActive)
+            if (promo == null || !promo.IsActive || promo.ExpiryDate <= DateTime.UtcNow)
                 return false;
-
-            // Логика применения скидки в зависимости от бизнес-логики (например, в заказе)
-            // В этой части можно будет добавить логику для скидки в заказ или применение к конкретному пользователю.
-
             
             return true;
         }
-        
-        public async Task<bool> DeletePromoCodeAsync(int promoCodeId)
+
+        public async Task<bool> DeactivatePromoCodeAsync(Guid promoCodeId)
         {
-            var promoCode = await _context.PromoCodes.FindAsync(promoCodeId);
+            var promo = await _context.PromoCodes.FindAsync(promoCodeId);
+            if (promo == null) return false;
 
-            if (promoCode == null)
-                return false; 
-
-            _context.PromoCodes.Remove(promoCode);  
+            promo.IsActive = false;
             await _context.SaveChangesAsync();
-            return true; 
+            return true;
         }
-        
-   
-        public async Task<bool> DeactivatePromoCodeAsync(int promoCodeId)
+
+        public async Task<bool> DeletePromoCodeAsync(Guid promoCodeId)
         {
-            var promoCode = await _context.PromoCodes.FindAsync(promoCodeId);
+            var promo = await _context.PromoCodes.FindAsync(promoCodeId);
+            if (promo == null) return false;
 
-            if (promoCode == null)
-                return false; 
-
-            promoCode.IsActive = false;  
+            _context.PromoCodes.Remove(promo);
             await _context.SaveChangesAsync();
-            return true;  
+            return true;
         }
     }
 }

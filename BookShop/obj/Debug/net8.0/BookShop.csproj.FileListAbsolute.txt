@@ -190,6 +190,8 @@ C:\Users\ASUS\RiderProjects\BooksStore\BookShop\bin\Debug\net8.0\BookShop.pdb
 C:\Users\ASUS\RiderProjects\BooksStore\BookShop\bin\Debug\net8.0\AutoMapper.dll
 C:\Users\ASUS\RiderProjects\BooksStore\BookShop\bin\Debug\net8.0\Azure.Core.dll
 C:\Users\ASUS\RiderProjects\BooksStore\BookShop\bin\Debug\net8.0\Azure.Identity.dll
+C:\Users\ASUS\RiderProjects\BooksStore\BookShop\bin\Debug\net8.0\Azure.Storage.Blobs.dll
+C:\Users\ASUS\RiderProjects\BooksStore\BookShop\bin\Debug\net8.0\Azure.Storage.Common.dll
 C:\Users\ASUS\RiderProjects\BooksStore\BookShop\bin\Debug\net8.0\BCrypt.Net-Next.dll
 C:\Users\ASUS\RiderProjects\BooksStore\BookShop\bin\Debug\net8.0\FluentValidation.dll
 C:\Users\ASUS\RiderProjects\BooksStore\BookShop\bin\Debug\net8.0\FluentValidation.AspNetCore.dll
@@ -252,6 +254,7 @@ C:\Users\ASUS\RiderProjects\BooksStore\BookShop\bin\Debug\net8.0\System.Diagnost
 C:\Users\ASUS\RiderProjects\BooksStore\BookShop\bin\Debug\net8.0\System.Drawing.Common.dll
 C:\Users\ASUS\RiderProjects\BooksStore\BookShop\bin\Debug\net8.0\System.Formats.Asn1.dll
 C:\Users\ASUS\RiderProjects\BooksStore\BookShop\bin\Debug\net8.0\System.IdentityModel.Tokens.Jwt.dll
+C:\Users\ASUS\RiderProjects\BooksStore\BookShop\bin\Debug\net8.0\System.IO.Hashing.dll
 C:\Users\ASUS\RiderProjects\BooksStore\BookShop\bin\Debug\net8.0\System.IO.Pipelines.dll
 C:\Users\ASUS\RiderProjects\BooksStore\BookShop\bin\Debug\net8.0\System.Memory.Data.dll
 C:\Users\ASUS\RiderProjects\BooksStore\BookShop\bin\Debug\net8.0\System.Runtime.Caching.dll
@@ -360,6 +363,3 @@ C:\Users\ASUS\RiderProjects\BooksStore\BookShop\obj\Debug\net8.0\refint\BookShop
 C:\Users\ASUS\RiderProjects\BooksStore\BookShop\obj\Debug\net8.0\BookShop.pdb
 C:\Users\ASUS\RiderProjects\BooksStore\BookShop\obj\Debug\net8.0\BookShop.genruntimeconfig.cache
 C:\Users\ASUS\RiderProjects\BooksStore\BookShop\obj\Debug\net8.0\ref\BookShop.dll
-C:\Users\ASUS\RiderProjects\BooksStore\BookShop\bin\Debug\net8.0\Azure.Storage.Blobs.dll
-C:\Users\ASUS\RiderProjects\BooksStore\BookShop\bin\Debug\net8.0\Azure.Storage.Common.dll
-C:\Users\ASUS\RiderProjects\BooksStore\BookShop\bin\Debug\net8.0\System.IO.Hashing.dll
