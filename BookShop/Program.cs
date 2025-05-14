@@ -106,6 +106,7 @@ builder.Services.AddScoped<IGenreService, GenreService>();
 builder.Services.AddScoped<IAdressService, AdressService>();
 builder.Services.AddScoped<ICardService, CardService>();
 builder.Services.AddScoped<IPromoCodeService, PromoCodeService>();
+builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 builder.Services.AddScoped<SuperAdminInitializer>();
 

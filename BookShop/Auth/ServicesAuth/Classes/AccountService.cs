@@ -113,8 +113,8 @@ namespace BookShop.Auth.ServicesAuth.Classes
 
     var message = new MailMessage
     {
-        From = new MailAddress(smtpUser, "BookShop Team"),
-        Subject = "Password Reset Request",
+        From = new MailAddress(smtpUser, "CheshireSchelf Team"),
+        Subject = "Reset Password",
         IsBodyHtml = true
     };
     message.AlternateViews.Add(
@@ -234,7 +234,7 @@ public async Task<bool> ValidatePasswordResetTokenAsync(string token)
 
             var message = new MailMessage
             {
-                From       = new MailAddress(smtpUser, "BookShop Team"),
+                From       = new MailAddress(smtpUser, "CheshireShelf Team"),
                 Subject    = "Confirm your email",
                 IsBodyHtml = true
             };

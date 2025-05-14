@@ -43,5 +43,12 @@ namespace BookShop.Services.Interfaces
         /// <param name="status">Новый статус заказа.</param>
         /// <returns>True, если обновление прошло успешно; иначе — false.</returns>
         Task<bool> UpdateOrderStatusAsync(Guid orderId, Order.OrderStatus status);
+        
+        
+        /// <summary>
+        /// Возвращает все заказы в системе.
+        /// </summary>
+        Task<IEnumerable<OrderResponseDto>> GetAllOrdersAsync();
+
     }
 }

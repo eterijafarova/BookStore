@@ -1,3 +1,4 @@
+using AutoMapper;
 using BookShop.ADMIN.DTOs.OrderDto;
 using BookShop.Data.Contexts;
 using BookShop.Data.Models;
@@ -10,11 +11,13 @@ namespace BookShop.Services.Implementations
     {
         private readonly LibraryContext _context;
         private readonly IPromoCodeService _promoService;
+        private readonly IMapper _mapper;
 
-        public OrderService(LibraryContext context, IPromoCodeService promoService)
+        public OrderService(LibraryContext context, IPromoCodeService promoService, IMapper mapper)
         {
-            _context      = context;
+            _context = context;
             _promoService = promoService;
+            _mapper = mapper;
         }
 
         public async Task<OrderResponseDto> CreateOrderAsync(OrderRequestDto orderRequest)
@@ -23,14 +26,14 @@ namespace BookShop.Services.Implementations
                 .AnyAsync(a => a.Id == orderRequest.UserAddressId && a.UserId == orderRequest.UserId);
             if (!addressExists)
                 throw new KeyNotFoundException("Address not found or does not belong to user.");
-            
-            
+
+
             var cardExists = await _context.BankCards
                 .AnyAsync(c => c.Id == orderRequest.UserBankCardId && c.UserId == orderRequest.UserId);
             if (!cardExists)
                 throw new KeyNotFoundException("Bank card not found or does not belong to user.");
-            
-            
+
+
             decimal originalPrice = 0m;
             var items = new List<OrderItem>();
             foreach (var item in orderRequest.OrderItems)
@@ -41,17 +44,17 @@ namespace BookShop.Services.Implementations
                     throw new InvalidOperationException($"Not enough stock for '{book.Title}'");
 
                 originalPrice += book.Price * item.Quantity;
-                book.Stock    -= item.Quantity;
+                book.Stock -= item.Quantity;
 
                 items.Add(new OrderItem
                 {
-                    BookId   = item.BookId,
+                    BookId = item.BookId,
                     Quantity = item.Quantity,
-                    Price    = book.Price
+                    Price = book.Price
                 });
             }
 
-            
+
             decimal discountAmount = 0m;
             if (!string.IsNullOrEmpty(orderRequest.PromoCode))
             {
@@ -61,22 +64,22 @@ namespace BookShop.Services.Implementations
 
                 discountAmount = Math.Round(originalPrice * promo.Discount / 100m, 2);
             }
-            
+
             decimal finalPrice = originalPrice - discountAmount;
 
-            
+
             var order = new Order
             {
-                UserId         = orderRequest.UserId,
-                UserAdressId   = orderRequest.UserAddressId,
+                UserId = orderRequest.UserId,
+                UserAdressId = orderRequest.UserAddressId,
                 UserBankCardId = orderRequest.UserBankCardId,
 
-                OriginalPrice  = originalPrice,
-                PromoCode      = orderRequest.PromoCode,
+                OriginalPrice = originalPrice,
+                PromoCode = orderRequest.PromoCode,
                 DiscountAmount = discountAmount,
-                FinalPrice     = finalPrice,
+                FinalPrice = finalPrice,
 
-                Status    = Order.OrderStatus.Pending,
+                Status = Order.OrderStatus.Pending,
                 OrderDate = DateTime.UtcNow,
                 OrderItems = items
             };
@@ -86,21 +89,23 @@ namespace BookShop.Services.Implementations
 
             return new OrderResponseDto
             {
-                Id             = order.Id,
-                OriginalPrice  = order.OriginalPrice,
-                PromoCode      = order.PromoCode,
+                Id = order.Id,
+                UserAddressId = order.UserAdressId,
+                UserBankCardId = order.UserBankCardId,
+                OriginalPrice = order.OriginalPrice,
+                PromoCode = order.PromoCode,
                 DiscountAmount = order.DiscountAmount,
-                FinalPrice     = order.FinalPrice,
-                Status         = order.Status.ToString(),
-                OrderDate      = order.OrderDate,
-                OrderItems     = order.OrderItems
-                                   .Select(i => new OrderItemResponseDto
-                                   {
-                                       BookId    = i.BookId,
-                                       Quantity  = i.Quantity,
-                                       UnitPrice = i.Price
-                                   })
-                                   .ToList()
+                FinalPrice = order.FinalPrice,
+                Status = order.Status.ToString(),
+                OrderDate = order.OrderDate,
+                OrderItems = order.OrderItems
+                    .Select(i => new OrderItemResponseDto
+                    {
+                        BookId = i.BookId,
+                        Quantity = i.Quantity,
+                        UnitPrice = i.Price
+                    })
+                    .ToList()
             };
         }
 
@@ -115,21 +120,23 @@ namespace BookShop.Services.Implementations
 
             return new OrderResponseDto
             {
-                Id             = order.Id,
-                OriginalPrice  = order.OriginalPrice,
-                PromoCode      = order.PromoCode,
+                Id = order.Id,
+                UserAddressId = order.UserAdressId,
+                UserBankCardId = order.UserBankCardId,
+                OriginalPrice = order.OriginalPrice,
+                PromoCode = order.PromoCode,
                 DiscountAmount = order.DiscountAmount,
-                FinalPrice     = order.FinalPrice,
-                Status         = order.Status.ToString(),
-                OrderDate      = order.OrderDate,
-                OrderItems     = order.OrderItems
-                                   .Select(i => new OrderItemResponseDto
-                                   {
-                                       BookId    = i.BookId,
-                                       Quantity  = i.Quantity,
-                                       UnitPrice = i.Price
-                                   })
-                                   .ToList()
+                FinalPrice = order.FinalPrice,
+                Status = order.Status.ToString(),
+                OrderDate = order.OrderDate,
+                OrderItems = order.OrderItems
+                    .Select(i => new OrderItemResponseDto
+                    {
+                        BookId = i.BookId,
+                        Quantity = i.Quantity,
+                        UnitPrice = i.Price
+                    })
+                    .ToList()
             };
         }
 
@@ -142,21 +149,23 @@ namespace BookShop.Services.Implementations
 
             return orders.Select(order => new OrderResponseDto
             {
-                Id             = order.Id,
-                OriginalPrice  = order.OriginalPrice,
-                PromoCode      = order.PromoCode,
+                Id = order.Id,
+                UserAddressId = order.UserAdressId,
+                UserBankCardId = order.UserBankCardId,
+                OriginalPrice = order.OriginalPrice,
+                PromoCode = order.PromoCode,
                 DiscountAmount = order.DiscountAmount,
-                FinalPrice     = order.FinalPrice,
-                Status         = order.Status.ToString(),
-                OrderDate      = order.OrderDate,
-                OrderItems     = order.OrderItems
-                                   .Select(i => new OrderItemResponseDto
-                                   {
-                                       BookId    = i.BookId,
-                                       Quantity  = i.Quantity,
-                                       UnitPrice = i.Price
-                                   })
-                                   .ToList()
+                FinalPrice = order.FinalPrice,
+                Status = order.Status.ToString(),
+                OrderDate = order.OrderDate,
+                OrderItems = order.OrderItems
+                    .Select(i => new OrderItemResponseDto
+                    {
+                        BookId = i.BookId,
+                        Quantity = i.Quantity,
+                        UnitPrice = i.Price
+                    })
+                    .ToList()
             });
         }
 
@@ -180,6 +189,37 @@ namespace BookShop.Services.Implementations
             order.Status = status;
             await _context.SaveChangesAsync();
             return true;
+        }
+
+        public async Task<IEnumerable<OrderResponseDto>> GetAllOrdersAsync()
+        {
+            var orders = await _context.Orders
+                .Include(o => o.OrderItems)
+                .ToListAsync();
+            
+            var result = orders.Select(o => new OrderResponseDto
+            {
+                Id             = o.Id,
+                OriginalPrice  = o.OriginalPrice,
+                PromoCode      = o.PromoCode,
+                DiscountAmount = o.DiscountAmount,
+                FinalPrice     = o.FinalPrice,
+                OrderDate      = o.OrderDate,
+                Status         = o.Status.ToString(),
+                UserAddressId  = o.UserAdressId,
+                UserBankCardId = o.UserBankCardId,
+
+                OrderItems = o.OrderItems
+                    .Select(oi => new OrderItemResponseDto
+                    {
+                        BookId    = oi.BookId,
+                        Quantity  = oi.Quantity,
+                        UnitPrice = oi.Price
+                    })
+                    .ToList()
+            });
+
+            return result;
         }
     }
 }

@@ -1,6 +1,7 @@
 using BookShop.ADMIN.DTOs.OrderDto;
 using BookShop.Data.Models;
 using BookShop.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BookShop.ADMIN.ControllersAdmin
@@ -97,6 +98,19 @@ namespace BookShop.ADMIN.ControllersAdmin
             var success = await _orderService.UpdateOrderStatusAsync(orderId, dto.Status);
             if (!success) return NotFound();
             return NoContent();
+        }
+        
+        
+  
+        /// <summary>
+        /// Получить все заказы — доступно Admin и SuperAdmin
+        /// </summary>
+        [Authorize(Roles = "Admin,SuperAdmin")]
+        [HttpGet("get-all-orders")]
+        public async Task<ActionResult<IEnumerable<OrderResponseDto>>> GetAllOrders()
+        {
+            var orders = await _orderService.GetAllOrdersAsync();
+            return Ok(orders);
         }
     }
 }

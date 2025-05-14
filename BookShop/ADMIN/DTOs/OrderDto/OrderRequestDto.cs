@@ -1,6 +1,5 @@
 namespace BookShop.ADMIN.DTOs.OrderDto
 {
-    // DTO для запроса на создание заказа
     public class OrderRequestDto
     {
         public Guid UserId { get; set; }

@@ -1,5 +1,6 @@
 using BookShop.ADMIN.DTOs;
 using BookShop.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BookShop.ADMIN.ControllersAdmin
@@ -60,6 +61,16 @@ namespace BookShop.ADMIN.ControllersAdmin
             return Ok(new { message = "Promo code deactivated successfully" });
         }
         
+        /// <summary>
+        /// Получить все промокоды — доступно Admin и SuperAdmin
+        /// </summary>
+        [Authorize(Roles = "Admin,SuperAdmin")]
+        [HttpGet("get-all")]
+        public async Task<ActionResult<IEnumerable<PromoCodeResponseDto>>> GetAll()
+        {
+            var list = await _promoCodeService.GetAllPromoCodesAsync();
+            return Ok(list);
+        }
         
         [HttpDelete("Delete/{promoCodeId:guid}")]
         public async Task<IActionResult> DeletePromoCode(Guid promoCodeId)
@@ -71,6 +82,8 @@ namespace BookShop.ADMIN.ControllersAdmin
         }
     }
 
+    
+    
     public class ApplyPromoCodeRequest
     {
         public string Code { get; set; } = string.Empty;

@@ -28,5 +28,10 @@ namespace BookShop.Services.Interfaces
         /// Удаляет промокод из базы данных.
         /// </summary>
         Task<bool> DeletePromoCodeAsync(Guid promoCodeId);
+        
+        /// <summary>
+        /// Возвращает все промокоды.
+        /// </summary>
+        Task<IEnumerable<PromoCodeResponseDto>> GetAllPromoCodesAsync();
     }
 }

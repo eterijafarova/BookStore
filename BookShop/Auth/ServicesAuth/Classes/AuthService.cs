@@ -25,7 +25,7 @@ namespace BookShop.Auth.ServicesAuth.Classes
             var user = await _context.Users
                 .Where(x => x.UserName == request.username)
                 .Include(u => u.UserRoles) 
-                .ThenInclude(ur => ur.Role) 
+                .ThenInclude(ur => ur.Role)
                 .FirstOrDefaultAsync();
 
             if (user == null)
@@ -43,13 +43,14 @@ namespace BookShop.Auth.ServicesAuth.Classes
             var accessToken = await _tokenService.CreateTokenAsync(request.username);
             var refreshToken = Guid.NewGuid().ToString();
             var refreshTokenExpiration = DateTime.UtcNow.AddDays(7);
+            var userId = user.Id;
 
             user.RefreshToken = refreshToken;
             user.RefreshTokenExpiration = refreshTokenExpiration;
 
             await _context.SaveChangesAsync();
             
-            return new LoginResponse(accessToken, refreshToken, role);
+            return new LoginResponse(accessToken, refreshToken, role, userId);
         }
 
         public async Task<RefreshTokenResponse> RefreshTokenAsync(RefreshTokenRequest request)

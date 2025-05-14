@@ -96,5 +96,21 @@ namespace BookShop.Services.Implementations
             await _context.SaveChangesAsync();
             return true;
         }
+        
+        public async Task<IEnumerable<PromoCodeResponseDto>> GetAllPromoCodesAsync()
+        {
+            var codes = await _context.PromoCodes
+                .AsNoTracking()
+                .ToListAsync();
+
+            return codes.Select(c => new PromoCodeResponseDto
+            {
+                Id         = c.Id,
+                Code       = c.Code,
+                Discount   = c.Discount,
+                IsActive   = c.IsActive,
+                ExpiryDate = c.ExpiryDate
+            });
+        }
     }
 }
