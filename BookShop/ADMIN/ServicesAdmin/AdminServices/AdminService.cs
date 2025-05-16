@@ -1,9 +1,7 @@
+using BookShop.ADMIN.DTOs;
 using BookShop.Data.Contexts;
 using BookShop.Data.Models;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 using BookShop.Auth.ModelsAuth;
 
 namespace BookShop.ADMIN.ServicesAdmin.AdminServices
@@ -16,7 +14,7 @@ namespace BookShop.ADMIN.ServicesAdmin.AdminServices
         {
             _context = context;
         }
-        
+
         public async Task DeleteCommentAsync(int commentId)
         {
             var comment = await _context.Reviews.FindAsync(commentId);
@@ -29,7 +27,7 @@ namespace BookShop.ADMIN.ServicesAdmin.AdminServices
             await _context.SaveChangesAsync();
         }
 
-        
+
         public async Task ChangeOrderStatusAsync(int orderId, Order.OrderStatus newStatus)
         {
             var order = await _context.Orders.FindAsync(orderId);
@@ -41,8 +39,8 @@ namespace BookShop.ADMIN.ServicesAdmin.AdminServices
             order.Status = newStatus;
             await _context.SaveChangesAsync();
         }
-        
-        
+
+
         public async Task UpdateStockAsync(int bookId, int quantity)
         {
             var book = await _context.Books.FindAsync(bookId);
@@ -51,11 +49,11 @@ namespace BookShop.ADMIN.ServicesAdmin.AdminServices
                 throw new Exception("Book not found.");
             }
 
-            book.Stock += quantity;  
+            book.Stock += quantity;
             await _context.SaveChangesAsync();
         }
 
-  
+
         public async Task DeleteUserByNameAsync(string userName)
         {
             var user = await _context.Users
@@ -66,7 +64,7 @@ namespace BookShop.ADMIN.ServicesAdmin.AdminServices
                 throw new Exception("User not found.");
             }
 
-  
+
             var userRoles = await _context.UserRoles
                 .Where(ur => ur.UserId == user.Id)
                 .ToListAsync();
@@ -77,7 +75,7 @@ namespace BookShop.ADMIN.ServicesAdmin.AdminServices
             await _context.SaveChangesAsync();
         }
 
-      
+
         public async Task AssignAdminRoleByNameAsync(string userName)
         {
             var user = await _context.Users
@@ -112,7 +110,7 @@ namespace BookShop.ADMIN.ServicesAdmin.AdminServices
             }
         }
 
-      
+
         public async Task RemoveAdminRoleByNameAsync(string userName)
         {
             var user = await _context.Users
@@ -159,10 +157,24 @@ namespace BookShop.ADMIN.ServicesAdmin.AdminServices
                 throw new Exception("User does not have 'Admin' role.");
             }
         }
-        public async Task<IEnumerable<User>> GetAllUsersAsync()
+
+        public async Task<IEnumerable<UsersGetDto>> GetAllUsersAsync()
         {
+            var users = await _context.Users
+                .Include(u => u.UserRoles!)
+                .ThenInclude(ur => ur.Role!)
+                .ToListAsync();
             
-            return await _context.Users.ToListAsync(); 
+            return users.Select(u => new UsersGetDto()
+            {
+                Id = u.Id,
+                UserName = u.UserName,
+                Email = u.Email,
+                IsEmailConfirmed = u.IsEmailConfirmed,
+                Roles = u.UserRoles
+                    .Select(ur => ur.Role!.RoleName)
+                    .ToList()
+            });
         }
     }
 }

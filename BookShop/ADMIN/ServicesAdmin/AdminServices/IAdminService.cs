@@ -1,3 +1,4 @@
+using BookShop.ADMIN.DTOs;
 using BookShop.Auth.ModelsAuth;
 using BookShop.Data.Models;
 
@@ -12,5 +13,5 @@ public interface IAdminService
     Task DeleteCommentAsync(int commentId);
     Task ChangeOrderStatusAsync(int orderId, Order.OrderStatus newStatus);
     Task UpdateStockAsync(int bookId, int quantity);
-    Task<IEnumerable<User>> GetAllUsersAsync();  
+    Task<IEnumerable<UsersGetDto>> GetAllUsersAsync();
 }

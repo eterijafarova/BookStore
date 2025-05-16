@@ -52,13 +52,27 @@ namespace BookShop.ADMIN.ControllersAdmin
         }
         
         
-        [HttpPost("Deactivate/{promoCodeId:guid}")]
-        public async Task<IActionResult> DeactivatePromoCode(Guid promoCodeId)
+        [HttpPost("Deactivate")]
+        public async Task<IActionResult> DeactivatePromoCode(string code)
         {
-            var result = await _promoCodeService.DeactivatePromoCodeAsync(promoCodeId);
+            var result = await _promoCodeService.DeactivatePromoCodeAsync(code);
             if (!result)
                 return NotFound(new { message = "Promo code not found" });
             return Ok(new { message = "Promo code deactivated successfully" });
+        }
+        
+        
+        /// <summary>
+        /// Активировать промокод по его тексту.
+        /// </summary>
+        [HttpPost("Activate")]
+        public async Task<IActionResult> Activate([FromQuery] string code)
+        {
+            var ok = await _promoCodeService.ActivatePromoCodeAsync(code);
+            if (!ok)
+                return NotFound(new { message = $"Promo code '{code}' not found" });
+
+            return Ok(new { message = "Promo code activated" });
         }
         
         /// <summary>
@@ -72,10 +86,10 @@ namespace BookShop.ADMIN.ControllersAdmin
             return Ok(list);
         }
         
-        [HttpDelete("Delete/{promoCodeId:guid}")]
-        public async Task<IActionResult> DeletePromoCode(Guid promoCodeId)
+        [HttpDelete("Delete")]
+        public async Task<IActionResult> DeletePromoCode(string code)
         {
-            var result = await _promoCodeService.DeletePromoCodeAsync(promoCodeId);
+            var result = await _promoCodeService.DeletePromoCodeAsync(code);
             if (!result)
                 return NotFound(new { message = "Promo code not found" });
             return Ok(new { message = "Promo code deleted successfully" });

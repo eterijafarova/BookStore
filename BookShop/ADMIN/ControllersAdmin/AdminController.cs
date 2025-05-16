@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;
+using BookShop.ADMIN.DTOs;
 
 namespace BookShop.ADMIN.ControllersAdmin
 {
@@ -95,22 +96,14 @@ namespace BookShop.ADMIN.ControllersAdmin
         }
 
         /// <summary>
-        /// Получить всех пользователей
-        /// Доступно Admin и SuperAdmin
+        /// Получить всех пользователей вместе с их ролями
+        /// GET /api/v1/Admin/get-all-users
         /// </summary>
-        [Authorize(Roles = "Admin,SuperAdmin")]
         [HttpGet("get-all-users")]
         public async Task<IActionResult> GetAllUsers()
         {
-            try
-            {
-                var users = await _adminService.GetAllUsersAsync();  
-                return Ok(users);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
+            IEnumerable<UsersGetDto> users = await _adminService.GetAllUsersAsync();
+            return Ok(users);
         }
         
         /// <summary>

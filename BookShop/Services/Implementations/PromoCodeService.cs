@@ -77,22 +77,39 @@ namespace BookShop.Services.Implementations
             return true;
         }
 
-        public async Task<bool> DeactivatePromoCodeAsync(Guid promoCodeId)
+        public async Task<bool> DeactivatePromoCodeAsync(string code)
         {
-            var promo = await _context.PromoCodes.FindAsync(promoCodeId);
-            if (promo == null) return false;
+            var promo = await _context.PromoCodes
+                .FirstOrDefaultAsync(p => p.Code == code);
+            if (promo == null)
+                return false;
 
             promo.IsActive = false;
             await _context.SaveChangesAsync();
             return true;
         }
 
-        public async Task<bool> DeletePromoCodeAsync(Guid promoCodeId)
+        
+        public async Task<bool> DeletePromoCodeAsync(string code)
         {
-            var promo = await _context.PromoCodes.FindAsync(promoCodeId);
-            if (promo == null) return false;
+            var promo = await _context.PromoCodes
+                .FirstOrDefaultAsync(p => p.Code == code);
+            if (promo == null)
+                return false;
 
             _context.PromoCodes.Remove(promo);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+        
+        public async Task<bool> ActivatePromoCodeAsync(string code)
+        {
+            var promo = await _context.PromoCodes
+                .FirstOrDefaultAsync(p => p.Code == code);
+            if (promo == null)
+                return false;
+
+            promo.IsActive = true;
             await _context.SaveChangesAsync();
             return true;
         }

@@ -22,16 +22,23 @@ namespace BookShop.Services.Interfaces
         /// <summary>
         /// Деактивирует промокод, устанавливая IsActive = false.
         /// </summary>
-        Task<bool> DeactivatePromoCodeAsync(Guid promoCodeId);
+        Task<bool> DeactivatePromoCodeAsync(string code);
 
+        
+        /// <summary>
+        /// Активирует промокод, устанавливая IsActive = false.
+        /// </summary>
+        Task<bool> ActivatePromoCodeAsync(string code);
+        
         /// <summary>
         /// Удаляет промокод из базы данных.
         /// </summary>
-        Task<bool> DeletePromoCodeAsync(Guid promoCodeId);
+        Task<bool> DeletePromoCodeAsync(string code);
         
         /// <summary>
         /// Возвращает все промокоды.
         /// </summary>
         Task<IEnumerable<PromoCodeResponseDto>> GetAllPromoCodesAsync();
+        
     }
 }
