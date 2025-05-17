@@ -5,65 +5,84 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Email Confirmed</title>
     <style>
+        :root {
+            --primary: #2a9d8f;
+            --secondary: #1b4332;
+            --bg-start: #a8edea;
+            --bg-end: #fed6e3;
+            --card-bg: #ffffff;
+            --text-main: #264653;
+            --text-light: #333;
+            --promo-start: #b2f7ef;
+            --promo-end: #ade8f4;
+        }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
-            height: 100vh;
+            background: linear-gradient(135deg, var(--bg-start), var(--bg-end));
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #333;
+            min-height: 100vh;
+            color: var(--text-light);
         }
         .card {
-            background: #ffffff;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            max-width: 400px;
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            max-width: 380px;
             width: 90%;
             text-align: center;
-            padding: 40px 20px;
+            padding: 40px 30px;
             position: relative;
             overflow: hidden;
+            animation: fadeIn 0.8s ease-out;
         }
         .card::before {
             content: '';
             position: absolute;
             top: -50%; left: -50%;
             width: 200%; height: 200%;
-            background: radial-gradient(circle at center, rgba(42, 157, 143, 0.3) 0%, transparent 70%);
+            background: radial-gradient(circle at 50% 50%, var(--primary) 33%, transparent 70%);
             transform: rotate(45deg);
+            opacity: 0.2;
+        }
+        @keyframes fadeIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
         }
         .icon {
             font-size: 4rem;
-            color: #2a9d8f;
+            color: var(--primary);
             margin-bottom: 20px;
         }
         h1 {
-            font-size: 1.8rem;
-            margin-bottom: 20px;
-            color: #264653;
+            font-size: 1.75rem;
+            margin-bottom: 16px;
+            color: var(--text-main);
         }
         p {
             font-size: 1rem;
-            margin-bottom: 20px;
             line-height: 1.5;
+            margin-bottom: 20px;
         }
-        .link {
+        .promo {
+            background: linear-gradient(90deg, var(--promo-start), var(--promo-end));
+            color: var(--secondary);
             display: inline-block;
-            margin-top: 20px;
-            font-size: 1rem;
-            color: #457b9d;
-            text-decoration: none;
-            border-bottom: 1px dashed #457b9d;
-            transition: color 0.3s ease;
+            padding: 16px 24px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            letter-spacing: 0.5px;
+            margin-top: 16px;
+            margin-bottom: 0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
-        .link:hover {
-            color: #1d3557;
-        }
-        @media (max-width: 480px) {
-            .card { padding: 30px 15px; }
-            h1 { font-size: 1.5rem; }
+        .promo span.label {
+            margin-right: 8px;
+            font-weight: normal;
+            color: var(--text-main);
         }
     </style>
 </head>
@@ -71,7 +90,8 @@
 <div class="card">
     <div class="icon">✔️</div>
     <h1>Email Confirmed!</h1>
-    <p>Thank you for verifying your email address. Your account is now active and ready to use.</p>
+    <p>Thank you for confirming your email address. Your account is now active and ready to use.</p>
+    <div class="promo"><span class="label">Your promo code:</span>CHESHIRE25</div>
 </div>
 </body>
 </html>

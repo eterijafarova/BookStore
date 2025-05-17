@@ -23,5 +23,6 @@ public class Book
 
     public Warehouse? Warehouse { get; set; }
     public ICollection<Review> Reviews { get; set; } = new List<Review>();
+    public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
     public ICollection<BookAttributeValue> BookAttributeValues { get; set; } = new List<BookAttributeValue>();
 }

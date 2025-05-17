@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace BookShop.ADMIN.DTOs
 {
     public class BookDto
@@ -36,5 +38,19 @@ namespace BookShop.ADMIN.DTOs
         public string ImageUrl { get; set; }
         public int GenreId { get; set; }
         public int? PublisherId { get; set; }
+    }
+    
+    public class UpdatePriceDto
+    {
+        [Required]
+        [Range(0.0, double.MaxValue, ErrorMessage = "Price must be non-negative")]
+        public decimal Price { get; set; }
+    }
+    
+    public class UpdateStockDto
+    {
+        [Required]
+        [Range(0, int.MaxValue)]
+        public int Stock { get; set; }
     }
 }

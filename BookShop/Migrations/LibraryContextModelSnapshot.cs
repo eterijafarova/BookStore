@@ -424,6 +424,9 @@ namespace BookShop.Migrations
                     b.Property<Guid>("BookId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("BookId1")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid>("OrderId")
                         .HasColumnType("uniqueidentifier");
 
@@ -437,6 +440,8 @@ namespace BookShop.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("BookId");
+
+                    b.HasIndex("BookId1");
 
                     b.HasIndex("OrderId");
 
@@ -731,6 +736,10 @@ namespace BookShop.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("BookShop.Data.Models.Book", null)
+                        .WithMany("OrderItems")
+                        .HasForeignKey("BookId1");
+
                     b.HasOne("BookShop.Data.Models.Order", "Order")
                         .WithMany("OrderItems")
                         .HasForeignKey("OrderId")
@@ -793,6 +802,8 @@ namespace BookShop.Migrations
             modelBuilder.Entity("BookShop.Data.Models.Book", b =>
                 {
                     b.Navigation("BookAttributeValues");
+
+                    b.Navigation("OrderItems");
 
                     b.Navigation("Reviews");
 

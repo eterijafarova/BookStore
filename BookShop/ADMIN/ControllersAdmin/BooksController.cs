@@ -2,6 +2,7 @@ using BookShop.ADMIN.DTOs;
 using BookShop.BlobStorage;
 using BookShop.Data.Contexts;
 using BookShop.Data.Models;
+using BookShop.Services.Interfaces;
 using BookShop.Shared.DTO.Requests;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -14,11 +15,13 @@ namespace BookShop.ADMIN.ControllersAdmin
     {
         private readonly LibraryContext _context;
         private readonly IBlobService _blobService;
+        private readonly IBookService _bookService;
 
-        public BooksController(LibraryContext context, IBlobService blobService)
+        public BooksController(LibraryContext context, IBlobService blobService ,IBookService bookService)
         {
             _context = context;
             _blobService = blobService;
+            _bookService = bookService;
         }
 
         // GET: api/books
@@ -130,16 +133,41 @@ namespace BookShop.ADMIN.ControllersAdmin
             return NoContent();
         }
 
-        // DELETE: api/books/{id}
+        // PATCH api/books/{id}/stock
+        [HttpPatch("{id:guid}/stock")]
+        public async Task<IActionResult> UpdateStock(Guid id, [FromBody] UpdateStockDto dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var ok = await _bookService.UpdateStockAsync(id, dto.Stock);
+            if (!ok) return NotFound(new { message = "Book not found" });
+            return NoContent();
+        }
+
+        // PATCH api/books/{id}/price
+        [HttpPatch("{id:guid}/price")]
+        public async Task<IActionResult> UpdatePrice(Guid id, [FromBody] UpdatePriceDto dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var ok = await _bookService.UpdatePriceAsync(id, dto.Price);
+            if (!ok) return NotFound(new { message = "Book not found" });
+            return NoContent();
+        }
+
+        
+        
+        // DELETE api/books/{id}
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> DeleteBook(Guid id)
         {
-            var book = await _context.Books.FindAsync(id);
-            if (book == null)
+            var deleted = await _bookService.DeleteBookAsync(id);
+            if (!deleted)
+            {
                 return NotFound(new { message = "Book not found" });
-
-            _context.Books.Remove(book);
-            await _context.SaveChangesAsync();
+            }
             return NoContent();
         }
     }

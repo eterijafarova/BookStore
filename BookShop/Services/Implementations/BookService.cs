@@ -149,18 +149,38 @@ namespace BookShop.Services.Implementations
             };
         }
         
+        public async Task<bool> UpdateStockAsync(Guid bookId, int newStock)
+        {
+            var book = await _context.Books.FindAsync(bookId);
+            if (book == null) return false;
+            book.Stock = newStock;
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> UpdatePriceAsync(Guid bookId, decimal newPrice)
+        {
+            var book = await _context.Books.FindAsync(bookId);
+            if (book == null) return false;
+            book.Price = newPrice;
+            await _context.SaveChangesAsync();
+            return true;
+        }
+        
         public async Task<bool> DeleteBookAsync(Guid id)
         {
             var book = await _context.Books.FindAsync(id);
-            if (book == null)
-            {
-                return false;
-            }
+            if (book == null) return false;
+            
+            var orders = _context.OrderItems.Where(oi => oi.BookId == id);
+            _context.OrderItems.RemoveRange(orders);
 
             _context.Books.Remove(book);
             await _context.SaveChangesAsync();
-
             return true;
         }
+
+
+
     }
 }
