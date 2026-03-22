@@ -32,46 +32,66 @@ namespace BookShop.ADMIN.ControllersAdmin
             return Ok(genres);
         }
         
+        
         [HttpPost("createParent")]
         public async Task<ActionResult<GenreDto>> CreateParentGenre(CreateGenreDto dto)
         {
             if (_context.Genres.Any(g => g.GenreName == dto.Name))
             {
-                _logger.LogWarning("Attempted to create a parent genre with an existing name: {Name}", dto.Name);
-                return BadRequest("Genre with this name already exists.");
+                _logger.LogWarning("Genre exists: {Name}", dto.Name);
+                return BadRequest("Genre already exists");
             }
 
-            var genre = new Genre { GenreName = dto.Name };
+            var genre = new Genre
+            {
+                GenreName = dto.Name
+            };
+
             _context.Genres.Add(genre);
             await _context.SaveChangesAsync();
-            _logger.LogInformation("Parent genre created successfully with name: {Name}", dto.Name);
 
-            var genreDto = _mapper.Map<GenreDto>(genre);
+            var genreDto = new GenreDto
+            {
+                Id = genre.Id,
+                GenreName = genre.GenreName,
+                ParentGenreId = genre.ParentGenreId,
+                SubGenres = new(),
+                Books = new()
+            };
+
             return CreatedAtAction(nameof(GetGenreById), new { id = genre.Id }, genreDto);
         }
-
-        // POST: api/genres/createSub
+        
+        
         [HttpPost("createSub")]
         public async Task<ActionResult<GenreDto>> CreateSubGenre(CreateSubGenreDto dto)
         {
             if (_context.Genres.Any(g => g.GenreName == dto.Name))
-                return BadRequest("A genre with this name already exists.");
+                return BadRequest("Genre already exists");
 
-            var parentGenre = await _context.Genres.FirstOrDefaultAsync(g => g.Id == dto.ParentGenreId);
-            if (parentGenre == null)
-                return BadRequest("Parent genre not found.");
+            var parent = await _context.Genres.FindAsync(dto.ParentGenreId);
+            if (parent == null)
+                return BadRequest("Parent genre not found");
 
             var subGenre = new Genre
             {
                 GenreName = dto.Name,
-                ParentGenre = parentGenre
+                ParentGenreId = dto.ParentGenreId
             };
 
             _context.Genres.Add(subGenre);
             await _context.SaveChangesAsync();
 
-            var subGenreDto = _mapper.Map<GenreDto>(subGenre);
-            return CreatedAtAction(nameof(GetGenreById), new { id = subGenre.Id }, subGenreDto);
+            var dtoResult = new GenreDto
+            {
+                Id = subGenre.Id,
+                GenreName = subGenre.GenreName,
+                ParentGenreId = subGenre.ParentGenreId,
+                SubGenres = new(),
+                Books = new()
+            };
+
+            return CreatedAtAction(nameof(GetGenreById), new { id = subGenre.Id }, dtoResult);
         }
         
         

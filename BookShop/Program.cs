@@ -30,7 +30,7 @@ CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo(culture);
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 builder.Services.AddDbContext<LibraryContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlite("Data Source=bookshop.db"));
 
 
 var blobSection = builder.Configuration.GetSection("AzureBlobStorage");
@@ -106,6 +106,9 @@ builder.Services.AddScoped<IAdressService, AdressService>();
 builder.Services.AddScoped<ICardService, CardService>();
 builder.Services.AddScoped<IPromoCodeService, PromoCodeService>();
 builder.Services.AddAutoMapper(typeof(MappingProfile));
+builder.Services.AddScoped<CloudinaryService>();
+builder.Services.AddScoped<IBookService, BookService>();
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 builder.Services.AddScoped<SuperAdminInitializer>();
 

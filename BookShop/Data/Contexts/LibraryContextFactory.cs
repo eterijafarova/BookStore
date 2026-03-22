@@ -13,7 +13,7 @@ namespace BookShop.Data.Contexts
                 .Build();
 
             var optionsBuilder = new DbContextOptionsBuilder<LibraryContext>();
-            optionsBuilder.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
+            optionsBuilder.UseSqlite("Data Source=bookshop.db");
 
             return new LibraryContext(optionsBuilder.Options);
         }

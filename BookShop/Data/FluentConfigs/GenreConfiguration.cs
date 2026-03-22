@@ -11,7 +11,6 @@ public class GenreConfiguration : IEntityTypeConfiguration<Genre>
         builder.HasKey(g => g.Id);
         
         builder.Property(g => g.Id)
-            .HasColumnType("int")
             .ValueGeneratedOnAdd();
 
         builder.Property(g => g.GenreName)

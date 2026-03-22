@@ -1,11 +1,17 @@
 namespace BookShop.Data.Models
 {
+    using System.ComponentModel.DataAnnotations;
+    using System.ComponentModel.DataAnnotations.Schema;
+
     public class Genre
     {
-        public int Id { get; set; } 
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public int Id { get; set; }
+
         public string GenreName { get; set; } = string.Empty;
 
-        public int? ParentGenreId { get; set; }  
+        public int? ParentGenreId { get; set; }
         public Genre? ParentGenre { get; set; }
 
         public ICollection<Genre> SubGenres { get; set; } = new List<Genre>();

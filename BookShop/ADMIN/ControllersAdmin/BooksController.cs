@@ -1,5 +1,4 @@
 using BookShop.ADMIN.DTOs;
-using BookShop.BlobStorage;
 using BookShop.Data.Contexts;
 using BookShop.Data.Models;
 using BookShop.Services.Interfaces;
@@ -14,13 +13,16 @@ namespace BookShop.ADMIN.ControllersAdmin
     public class BooksController : ControllerBase
     {
         private readonly LibraryContext _context;
-        private readonly IBlobService _blobService;
+        private readonly CloudinaryService _cloudinaryService;
         private readonly IBookService _bookService;
 
-        public BooksController(LibraryContext context, IBlobService blobService ,IBookService bookService)
+        public BooksController(
+            LibraryContext context,
+            CloudinaryService cloudinaryService,
+            IBookService bookService)
         {
             _context = context;
-            _blobService = blobService;
+            _cloudinaryService = cloudinaryService;
             _bookService = bookService;
         }
 
@@ -47,7 +49,7 @@ namespace BookShop.ADMIN.ControllersAdmin
                     ImageUrl = b.ImageUrl,
                     GenreName = b.Genre.GenreName,
                     GenreId = b.GenreId,
-                    PublisherName = b.Publisher.Name
+                    PublisherName = b.Publisher != null ? b.Publisher.Name : null
                 })
                 .ToListAsync();
 
@@ -84,52 +86,55 @@ namespace BookShop.ADMIN.ControllersAdmin
         // POST: api/books
         [HttpPost]
         [DisableRequestSizeLimit]
-        public async Task<IActionResult> CreateBook(
-            [FromForm] BookCreateDto dto,
-            IFormFile? imageFile)
+        public async Task<IActionResult> CreateBook([FromForm] CreateBookDto dto)
         {
+            var imageUrl = dto.Image != null
+                ? await _cloudinaryService.UploadImageAsync(dto.Image)
+                : null;
+
             var book = new Book
             {
+                Id = Guid.NewGuid(),
                 Title = dto.Title,
                 Author = dto.Author,
                 Price = dto.Price,
                 Stock = dto.Stock,
                 Description = dto.Description,
                 GenreId = dto.GenreId,
-                PublisherId = dto.PublisherId
+                PublisherId = dto.PublisherId,
+                ImageUrl = imageUrl
             };
-
-            if (imageFile is not null)
-            {
-                book.ImageUrl = await _blobService.UploadFileAsync(imageFile);
-            }
 
             _context.Books.Add(book);
             await _context.SaveChangesAsync();
 
             return CreatedAtAction(nameof(GetBookById), new { id = book.Id }, book);
         }
-
+        
         // PUT: api/books/{id}
         [HttpPut("{id:guid}")]
-        public async Task<IActionResult> UpdateBook(
-            Guid id,
-            [FromBody] UpdateBookDto dto)
+        public async Task<IActionResult> UpdateBook(Guid id, [FromForm] UpdateBookDto dto)
         {
             var existingBook = await _context.Books.FindAsync(id);
             if (existingBook == null)
-                return NotFound(new { message = "Book not found" });
+                return NotFound();
 
             existingBook.Title = dto.Title;
             existingBook.Author = dto.Author;
             existingBook.Price = dto.Price;
             existingBook.Stock = dto.Stock;
             existingBook.Description = dto.Description;
-            existingBook.ImageUrl = dto.ImageUrl;
             existingBook.GenreId = dto.GenreId;
             existingBook.PublisherId = dto.PublisherId;
 
+            if (dto.Image != null)
+            {
+                var imageUrl = await _cloudinaryService.UploadImageAsync(dto.Image);
+                existingBook.ImageUrl = imageUrl;
+            }
+
             await _context.SaveChangesAsync();
+
             return NoContent();
         }
 

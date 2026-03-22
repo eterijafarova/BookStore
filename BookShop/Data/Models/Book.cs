@@ -11,7 +11,7 @@ public class Book
     public decimal Price { get; set; }
     public int Stock { get; set; }
     public string Description { get; set; } = string.Empty;
-    public string ImageUrl { get; set; } = string.Empty;
+    public string? ImageUrl { get; set; }
 
     public int GenreId { get; set; }  
     public int? PublisherId { get; set; }  
