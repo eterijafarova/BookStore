@@ -3,6 +3,7 @@ using BookShop.ADMIN.DTOs.OrderDto;
 using BookShop.Data.Contexts;
 using BookShop.Data.Models;
 using BookShop.Services.Interfaces;
+using BookShop.Shared.DTO.Response;
 using Microsoft.EntityFrameworkCore;
 
 namespace BookShop.Services.Implementations
@@ -140,33 +141,34 @@ namespace BookShop.Services.Implementations
             };
         }
 
-        public async Task<IEnumerable<OrderResponseDto>> GetOrdersByUserIdAsync(Guid userId)
+        public async Task<PaginatedResponse<OrderResponseDto>> GetOrdersByUserIdAsync(Guid userId, int page, int pageSize)
         {
-            var orders = await _context.Orders
+            var query = _context.Orders
                 .Where(o => o.UserId == userId)
                 .Include(o => o.OrderItems)
-                .ToListAsync();
+                .Select(order => new OrderResponseDto
+                {
+                    Id = order.Id,
+                    UserAddressId = order.UserAdressId,
+                    UserBankCardId = order.UserBankCardId,
+                    OriginalPrice = order.OriginalPrice,
+                    PromoCode = order.PromoCode,
+                    DiscountAmount = order.DiscountAmount,
+                    FinalPrice = order.FinalPrice,
+                    Status = order.Status.ToString(),
+                    OrderDate = order.OrderDate,
+                    OrderItems = order.OrderItems
+                        .Select(i => new OrderItemResponseDto
+                        {
+                            BookId = i.BookId,
+                            Quantity = i.Quantity,
+                            UnitPrice = i.Price
+                        })
+                        .ToList()
+                })
+                .AsQueryable();
 
-            return orders.Select(order => new OrderResponseDto
-            {
-                Id = order.Id,
-                UserAddressId = order.UserAdressId,
-                UserBankCardId = order.UserBankCardId,
-                OriginalPrice = order.OriginalPrice,
-                PromoCode = order.PromoCode,
-                DiscountAmount = order.DiscountAmount,
-                FinalPrice = order.FinalPrice,
-                Status = order.Status.ToString(),
-                OrderDate = order.OrderDate,
-                OrderItems = order.OrderItems
-                    .Select(i => new OrderItemResponseDto
-                    {
-                        BookId = i.BookId,
-                        Quantity = i.Quantity,
-                        UnitPrice = i.Price
-                    })
-                    .ToList()
-            });
+            return await PaginatedResponse<OrderResponseDto>.CreateAsync(query, page, pageSize);
         }
 
         public async Task<bool> DeleteOrderAsync(Guid orderId)
@@ -191,35 +193,34 @@ namespace BookShop.Services.Implementations
             return true;
         }
 
-        public async Task<IEnumerable<OrderResponseDto>> GetAllOrdersAsync()
+        public async Task<PaginatedResponse<OrderResponseDto>> GetAllOrdersAsync(int page, int pageSize)
         {
-            var orders = await _context.Orders
+            var query = _context.Orders
                 .Include(o => o.OrderItems)
-                .ToListAsync();
-            
-            var result = orders.Select(o => new OrderResponseDto
-            {
-                Id             = o.Id,
-                OriginalPrice  = o.OriginalPrice,
-                PromoCode      = o.PromoCode,
-                DiscountAmount = o.DiscountAmount,
-                FinalPrice     = o.FinalPrice,
-                OrderDate      = o.OrderDate,
-                Status         = o.Status.ToString(),
-                UserAddressId  = o.UserAdressId,
-                UserBankCardId = o.UserBankCardId,
+                .Select(o => new OrderResponseDto
+                {
+                    Id             = o.Id,
+                    OriginalPrice  = o.OriginalPrice,
+                    PromoCode      = o.PromoCode,
+                    DiscountAmount = o.DiscountAmount,
+                    FinalPrice     = o.FinalPrice,
+                    OrderDate      = o.OrderDate,
+                    Status         = o.Status.ToString(),
+                    UserAddressId  = o.UserAdressId,
+                    UserBankCardId = o.UserBankCardId,
 
-                OrderItems = o.OrderItems
-                    .Select(oi => new OrderItemResponseDto
-                    {
-                        BookId    = oi.BookId,
-                        Quantity  = oi.Quantity,
-                        UnitPrice = oi.Price
-                    })
-                    .ToList()
-            });
+                    OrderItems = o.OrderItems
+                        .Select(oi => new OrderItemResponseDto
+                        {
+                            BookId    = oi.BookId,
+                            Quantity  = oi.Quantity,
+                            UnitPrice = oi.Price
+                        })
+                        .ToList()
+                })
+                .AsQueryable();
 
-            return result;
+            return await PaginatedResponse<OrderResponseDto>.CreateAsync(query, page, pageSize);
         }
     }
 }

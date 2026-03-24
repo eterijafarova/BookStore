@@ -17,5 +17,15 @@
       <jdbc-url>Server=tcp:cheshire.database.windows.net,1433;Initial Catalog=cheshire;Persist Security Info=False;User ID=Cheschire;Password=eh12345678!;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;Connection Timeout=60;</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
+    <data-source source="LOCAL" name="bookshop" uuid="6757ef23-75e4-46ff-9aa8-bbd3bb18372d">
+      <driver-ref>sqlite.xerial</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
+      <jdbc-url>jdbc:sqlite:C:\Users\ASUS\RiderProjects\BooksStore\BookShop\bookshop.db</jdbc-url>
+      <jdbc-additional-properties>
+        <property name="com.intellij.clouds.kubernetes.db.enabled" value="false" />
+      </jdbc-additional-properties>
+      <working-dir>$ProjectFileDir$</working-dir>
+    </data-source>
   </component>
 </project>

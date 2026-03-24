@@ -1,6 +1,7 @@
 using BookShop.ADMIN.DTOs.OrderDto;
 using BookShop.Data.Models;
 using BookShop.Services.Interfaces;
+using BookShop.Shared.DTO.Response;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -64,9 +65,12 @@ namespace BookShop.ADMIN.ControllersAdmin
         /// Получить все заказы пользователя.
         /// </summary>
         [HttpGet("user/{userId:guid}")]
-        public async Task<ActionResult<IEnumerable<OrderResponseDto>>> GetByUser(Guid userId)
+        public async Task<ActionResult<PaginatedResponse<OrderResponseDto>>> GetByUser(
+            Guid userId,
+            int page = 1,
+            int pageSize = 10)
         {
-            var results = await _orderService.GetOrdersByUserIdAsync(userId);
+            var results = await _orderService.GetOrdersByUserIdAsync(userId, page, pageSize);
             return Ok(results);
         }
 
@@ -107,9 +111,11 @@ namespace BookShop.ADMIN.ControllersAdmin
         /// </summary>
         [Authorize(Roles = "Admin,SuperAdmin")]
         [HttpGet("get-all-orders")]
-        public async Task<ActionResult<IEnumerable<OrderResponseDto>>> GetAllOrders()
+        public async Task<ActionResult<PaginatedResponse<OrderResponseDto>>> GetAllOrders(
+            int page = 1,
+            int pageSize = 10)
         {
-            var orders = await _orderService.GetAllOrdersAsync();
+            var orders = await _orderService.GetAllOrdersAsync(page, pageSize);
             return Ok(orders);
         }
     }

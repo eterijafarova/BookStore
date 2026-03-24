@@ -3,6 +3,7 @@ using BookShop.Data.Contexts;
 using BookShop.Data.Models;
 using Microsoft.EntityFrameworkCore;
 using BookShop.Auth.ModelsAuth;
+using BookShop.Shared.DTO.Response;
 
 namespace BookShop.ADMIN.ServicesAdmin.AdminServices
 {
@@ -158,23 +159,24 @@ namespace BookShop.ADMIN.ServicesAdmin.AdminServices
             }
         }
 
-        public async Task<IEnumerable<UsersGetDto>> GetAllUsersAsync()
+        public async Task<PaginatedResponse<UsersGetDto>> GetAllUsersAsync(int page, int pageSize)
         {
-            var users = await _context.Users
+            var query = _context.Users
                 .Include(u => u.UserRoles!)
                 .ThenInclude(ur => ur.Role!)
-                .ToListAsync();
-            
-            return users.Select(u => new UsersGetDto()
-            {
-                Id = u.Id,
-                UserName = u.UserName,
-                Email = u.Email,
-                IsEmailConfirmed = u.IsEmailConfirmed,
-                Roles = u.UserRoles
-                    .Select(ur => ur.Role!.RoleName)
-                    .ToList()
-            });
+                .Select(u => new UsersGetDto()
+                {
+                    Id = u.Id,
+                    UserName = u.UserName,
+                    Email = u.Email,
+                    IsEmailConfirmed = u.IsEmailConfirmed,
+                    Roles = u.UserRoles
+                        .Select(ur => ur.Role!.RoleName)
+                        .ToList()
+                })
+                .AsQueryable();
+
+            return await PaginatedResponse<UsersGetDto>.CreateAsync(query, page, pageSize);
         }
     }
 }

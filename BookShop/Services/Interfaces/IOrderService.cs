@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using BookShop.ADMIN.DTOs.OrderDto;
 using BookShop.Data.Models;
+using BookShop.Shared.DTO.Response;
 
 namespace BookShop.Services.Interfaces
 {
@@ -27,7 +28,7 @@ namespace BookShop.Services.Interfaces
         /// </summary>
         /// <param name="userId">Идентификатор пользователя.</param>
         /// <returns>Список DTO с информацией о заказах пользователя.</returns>
-        Task<IEnumerable<OrderResponseDto>> GetOrdersByUserIdAsync(Guid userId);
+        Task<PaginatedResponse<OrderResponseDto>> GetOrdersByUserIdAsync(Guid userId, int page, int pageSize);
 
         /// <summary>
         /// Удаляет заказ по его идентификатору.
@@ -48,7 +49,7 @@ namespace BookShop.Services.Interfaces
         /// <summary>
         /// Возвращает все заказы в системе.
         /// </summary>
-        Task<IEnumerable<OrderResponseDto>> GetAllOrdersAsync();
+        Task<PaginatedResponse<OrderResponseDto>> GetAllOrdersAsync(int page, int pageSize);
 
     }
 }

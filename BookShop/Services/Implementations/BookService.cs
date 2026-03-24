@@ -3,6 +3,7 @@ using BookShop.ADMIN.DTOs;
 using BookShop.Data.Contexts;
 using BookShop.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using BookShop.Shared.DTO.Response;
 
 namespace BookShop.Services.Implementations
 {
@@ -104,29 +105,27 @@ namespace BookShop.Services.Implementations
             };
         }
 
-        public async Task<IEnumerable<BookDto>> GetBooksAsync(int page = 1, int pageSize = 20)
+        public async Task<PaginatedResponse<BookDto>> GetBooksAsync(int page = 1, int pageSize = 20)
         {
-            var books = await _context.Books
+            var query = _context.Books
                 .Include(b => b.Genre)
                 .Include(b => b.Publisher)
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
+                .Select(book => new BookDto
+                {
+                    Id = book.Id,
+                    Title = book.Title,
+                    Author = book.Author,
+                    Price = book.Price,
+                    Stock = book.Stock,
+                    Description = book.Description,
+                    ImageUrl = book.ImageUrl,
+                    GenreName = book.Genre.GenreName,
+                    PublisherName = book.Publisher.Name
+                })
+                .AsQueryable();
 
-            return books.Select(book => new BookDto
-            {
-                Id = book.Id,
-                Title = book.Title,
-                Author = book.Author,
-                Price = book.Price,
-                Stock = book.Stock,
-                Description = book.Description,
-                ImageUrl = book.ImageUrl,
-                GenreName = book.Genre?.GenreName,
-                PublisherName = book.Publisher?.Name
-            });
+            return await PaginatedResponse<BookDto>.CreateAsync(query, page, pageSize);
         }
-
         public async Task<BookDto> UpdateBookAsync(Guid id, UpdateBookDto dto)
         {
             var book = await _context.Books.FindAsync(id);
@@ -140,8 +139,7 @@ namespace BookShop.Services.Implementations
             book.Description = dto.Description;
             book.GenreId = dto.GenreId;
             book.PublisherId = dto.PublisherId;
-
-            // 🔥 обновление картинки
+            
             if (dto.Image != null)
             {
                 var imageUrl = await _cloudinaryService.UploadImageAsync(dto.Image);

@@ -100,12 +100,11 @@ namespace BookShop.ADMIN.ControllersAdmin
         /// GET /api/v1/Admin/get-all-users
         /// </summary>
         [HttpGet("get-all-users")]
-        public async Task<IActionResult> GetAllUsers()
+        public async Task<IActionResult> GetAllUsers(int page = 1, int pageSize = 10)
         {
-            IEnumerable<UsersGetDto> users = await _adminService.GetAllUsersAsync();
-            return Ok(users);
+            var result = await _adminService.GetAllUsersAsync(page, pageSize);
+            return Ok(result);
         }
-        
         /// <summary>
         /// Удалить пользователя по имени
         /// Доступно Admin и SuperAdmin
