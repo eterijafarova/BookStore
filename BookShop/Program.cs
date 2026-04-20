@@ -155,16 +155,22 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-builder.WebHost.UseUrls(
-    "http://localhost:13779",
-    "https://localhost:44308"
-);
+// builder.WebHost.UseUrls(
+//     "http://localhost:13779",
+//     "https://localhost:44308"
+// );
+builder.WebHost.UseUrls("http://+:13779");
 
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
+    var dbContext = services.GetRequiredService<LibraryContext>();
+    
+    // Создаёт базу данных и все таблицы
+    await dbContext.Database.EnsureCreatedAsync();
+    
     var superAdminInitializer = services.GetRequiredService<SuperAdminInitializer>();
     await superAdminInitializer.CreateSuperAdminAsync();  
 }
@@ -180,7 +186,13 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-app.UseHttpsRedirection();
+//
+// app.UseHttpsRedirection();
+//
+// if (!app.Environment.IsEnvironment("Docker"))
+// {
+//     app.UseHttpsRedirection();
+// }
 app.UseCors("AllowFrontend");
 
 app.UseStaticFiles();

@@ -1,0 +1,10 @@
+version: "3.9"
+
+services:
+  api:
+    build:
+      context: ./BookShop
+    ports:
+      - "13779:13779"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
