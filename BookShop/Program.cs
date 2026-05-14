@@ -1,206 +1,701 @@
-using System.Text;
+// using System.Text;
+// using System.Globalization;
+// using Azure.Storage.Blobs;      
+// using BookShop.ADMIN.ServicesAdmin.AdminServices;
+// using BookShop.ADMIN.ServicesAdmin.ReviewServices;
+// using BookShop.ADMIN.ServicesAdmin.WarehouseServices;
+// using BookShop.Auth.DataAuth.Validators;
+// using BookShop.Auth.JWT;
+// using BookShop.Auth.ServicesAuth.Classes;
+// using BookShop.Auth.ServicesAuth.Interfaces;
+// using BookShop.Auth.SharedAuth;
+// using BookShop.BlobStorage;                 
+// using BookShop.Data.Contexts;
+// using BookShop.Mappings;
+// using BookShop.Services.Implementations;
+// using BookShop.Services.Interfaces;
+// using FluentValidation;
+// using FluentValidation.AspNetCore;
+// using Microsoft.AspNetCore.Authentication.JwtBearer;
+// using Microsoft.EntityFrameworkCore;
+// using Microsoft.IdentityModel.Tokens;
+// using Microsoft.OpenApi.Models;
+//
+// var builder = WebApplication.CreateBuilder(args);
+//
+// var culture = builder.Configuration.GetValue<string>("Culture") ?? "en-US";
+// CultureInfo.DefaultThreadCurrentCulture = new CultureInfo(culture);
+// CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo(culture);
+//
+// builder.Services.AddAutoMapper(typeof(MappingProfile));
+//
+// builder.Services.AddDbContext<LibraryContext>(options =>
+//     options.UseSqlite("Data Source=bookshop.db"));
+//
+//
+// var blobSection = builder.Configuration.GetSection("AzureBlobStorage");
+// string blobConn = blobSection.GetValue<string>("ConnectionString");
+// string blobContainer = blobSection.GetValue<string>("ContainerName");
+//
+// builder.Services.AddSingleton(new BlobServiceClient(blobConn));
+//
+// builder.Services.AddScoped<IBlobService>(sp =>
+// {
+//     var client = sp.GetRequiredService<BlobServiceClient>();
+//     return new BlobService(client, blobContainer);
+// });
+//
+//
+// builder.Services.AddTransient<GlobalExceptionMiddleware>();
+//
+// builder.Services.AddControllers()
+//     .AddJsonOptions(options =>
+//     {
+//         options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
+//     });
+//
+// builder.Services.AddFluentValidationAutoValidation();
+// builder.Services.AddValidatorsFromAssemblyContaining<RegisterValidator>();
+//
+// var jwtSettings = builder.Configuration.GetSection("JWT").Get<JwtOptions>();
+// if (jwtSettings == null || string.IsNullOrEmpty(jwtSettings.SecretKey))
+// {
+//     throw new InvalidOperationException("JWT configuration is missing or SecretKey is not set.");
+// }
+// var key = Encoding.UTF8.GetBytes(jwtSettings.SecretKey);
+//
+// builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+//     .AddJwtBearer(options =>
+//     {
+//         options.TokenValidationParameters = new TokenValidationParameters
+//         {
+//             ValidateIssuer = true,
+//             ValidateAudience = true,
+//             ValidateLifetime = true,
+//             ValidateIssuerSigningKey = true,
+//             ValidIssuer = jwtSettings.Issuer,
+//             ValidAudience = jwtSettings.Audience,
+//             IssuerSigningKey = new SymmetricSecurityKey(key),
+//             ClockSkew = TimeSpan.Zero
+//         };
+//     });
+//
+// // CORS
+// builder.Services.AddCors(options =>
+// {
+//     options.AddPolicy("AllowFrontend", policy =>
+//     {
+//         policy
+//             .WithOrigins("http://localhost:5174") 
+//             .AllowAnyHeader()
+//             .AllowAnyMethod()
+//             .AllowCredentials(); 
+//     });
+// });
+//
+// builder.Services.AddScoped<ITokenService, TokenService>();
+// builder.Services.AddScoped<IOrderService, OrderService>();
+// builder.Services.AddScoped<IReviewService, ReviewService>();
+// builder.Services.AddScoped<IAdminService, AdminService>();
+// builder.Services.AddScoped<IBookService, BookService>();
+// builder.Services.AddScoped<IPublisherService, PublisherService>();
+// builder.Services.AddScoped<IAccountService, AccountService>();
+// builder.Services.AddScoped<IAuthService, AuthService>();
+// builder.Services.AddScoped<IGenreService, GenreService>();
+// builder.Services.AddScoped<IAdressService, AdressService>();
+// builder.Services.AddScoped<ICardService, CardService>();
+// builder.Services.AddScoped<IPromoCodeService, PromoCodeService>();
+// builder.Services.AddAutoMapper(typeof(MappingProfile));
+// builder.Services.AddScoped<CloudinaryService>();
+// builder.Services.AddScoped<IBookService, BookService>();
+// builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+// builder.Services.AddScoped<IUserService, UserService>();
+// builder.Services.AddScoped<SuperAdminInitializer>();
+//
+// builder.Services.AddLogging(options =>
+// {
+//     options.AddConsole(); 
+//     options.AddDebug();  
+// });
+//
+// // JWT авторизация
+// builder.Services.AddAuthorization(options =>
+// {
+//     options.AddPolicy("UserPolicy", policy => policy.RequireRole("User"));
+//     options.AddPolicy("AdminPolicy", policy => policy.RequireRole("Admin"));
+// });
+//
+// // Swagger
+// builder.Services.AddEndpointsApiExplorer();
+// builder.Services.AddSwaggerGen(c =>
+// {
+//     c.SwaggerDoc("v1", new OpenApiInfo { Title = "BookShop API", Version = "v1" });
+//     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+//     {
+//         Name = "Authorization",
+//         Type = SecuritySchemeType.Http,
+//         Scheme = "Bearer",
+//         BearerFormat = "JWT",
+//         In = ParameterLocation.Header,
+//         Description = "Enter the token in the format: Bearer {your_token}"
+//     });
+//     c.AddSecurityRequirement(new OpenApiSecurityRequirement
+//     {
+//         {
+//             new OpenApiSecurityScheme 
+//             {
+//                 Reference = new OpenApiReference 
+//                 { 
+//                     Type = ReferenceType.SecurityScheme, 
+//                     Id = "Bearer" 
+//                 }
+//             },
+//             Array.Empty<string>()
+//         }
+//     });
+// });
+//
+// // builder.WebHost.UseUrls(
+// //     "http://localhost:13779",
+// //     "https://localhost:44308"
+// // );
+// builder.WebHost.UseUrls("http://+:13779");
+//
+// var app = builder.Build();
+//
+// using (var scope = app.Services.CreateScope())
+// {
+//     var services = scope.ServiceProvider;
+//     var dbContext = services.GetRequiredService<LibraryContext>();
+//     
+//     // Создаёт базу данных и все таблицы
+//     await dbContext.Database.EnsureCreatedAsync();
+//     
+//     var superAdminInitializer = services.GetRequiredService<SuperAdminInitializer>();
+//     await superAdminInitializer.CreateSuperAdminAsync();  
+// }
+//
+// app.UseMiddleware<GlobalExceptionMiddleware>();
+//
+// if (app.Environment.IsDevelopment())
+// {
+//     app.UseSwagger();
+//     app.UseSwaggerUI(c =>
+//     {
+//         c.SwaggerEndpoint("/swagger/v1/swagger.json", "BookShop API v1");
+//     });
+// }
+//
+//
+// // Закрыла HTTPS для работы DOCKER
+//
+// //
+// // app.UseHttpsRedirection();
+// //
+// // if (!app.Environment.IsEnvironment("Docker"))
+// // {
+// //     app.UseHttpsRedirection();
+// // }
+// app.UseCors("AllowFrontend");
+//
+// app.UseStaticFiles();
+//
+// app.UseRouting();
+// app.UseAuthentication();
+// app.UseAuthorization();
+//
+// app.MapControllers();
+//
+// app.Run();
+
+
+
+// 3
+//
+//
+// using System.Text;
+// using System.Globalization;
+// using Azure.Storage.Blobs;      
+// using BookShop.ADMIN.ServicesAdmin.AdminServices;
+// using BookShop.ADMIN.ServicesAdmin.ReviewServices;
+// using BookShop.ADMIN.ServicesAdmin.WarehouseServices;
+// using BookShop.Auth.DataAuth.Validators;
+// using BookShop.Auth.JWT;
+// using BookShop.Auth.ServicesAuth.Classes;
+// using BookShop.Auth.ServicesAuth.Interfaces;
+// using BookShop.Auth.SharedAuth;
+// using BookShop.BlobStorage;                 
+// using BookShop.Data.Contexts;
+// using BookShop.Helpers;
+// using BookShop.Hubs;
+// using BookShop.Mappings;
+// using BookShop.Services.Implementations;
+// using BookShop.Services.Interfaces;
+// using FluentValidation;
+// using FluentValidation.AspNetCore;
+// using Microsoft.AspNetCore.Authentication.JwtBearer;
+// using Microsoft.EntityFrameworkCore;
+// using Microsoft.IdentityModel.Tokens;
+// using Microsoft.OpenApi.Models;
+// using BookShop.Hubs;
+// using Microsoft.AspNetCore.SignalR;
+//
+// var builder = WebApplication.CreateBuilder(args);
+//
+// var culture = builder.Configuration.GetValue<string>("Culture") ?? "en-US";
+// CultureInfo.DefaultThreadCurrentCulture = new CultureInfo(culture);
+// CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo(culture);
+//
+// builder.Services.AddAutoMapper(typeof(MappingProfile));
+//
+// builder.Services.AddDbContext<LibraryContext>(options =>
+//     options.UseSqlite("Data Source=bookshop.db"));
+//
+//
+// var blobSection = builder.Configuration.GetSection("AzureBlobStorage");
+// // string blobConn = blobSection.GetValue<string>("ConnectionString");
+// // string blobContainer = blobSection.GetValue<string>("ContainerName");
+//
+// // builder.Services.AddSingleton(new BlobServiceClient(blobConn));
+// //
+// // builder.Services.AddScoped<IBlobService>(sp =>
+// // {
+// //     var client = sp.GetRequiredService<BlobServiceClient>();
+// //     return new BlobService(client, blobContainer);
+// // });
+//
+//
+// builder.Services.AddTransient<GlobalExceptionMiddleware>();
+//
+// builder.Services.AddControllers()
+//     .AddJsonOptions(options =>
+//     {
+//         options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
+//     });
+//
+// builder.Services.AddFluentValidationAutoValidation();
+// builder.Services.AddValidatorsFromAssemblyContaining<RegisterValidator>();
+//
+// var jwtSettings = builder.Configuration.GetSection("JWT").Get<JwtOptions>();
+// if (jwtSettings == null || string.IsNullOrEmpty(jwtSettings.SecretKey))
+// {
+//     throw new InvalidOperationException("JWT configuration is missing or SecretKey is not set.");
+// }
+// var key = Encoding.UTF8.GetBytes(jwtSettings.SecretKey);
+//
+// builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+//     .AddJwtBearer(options =>
+//     {
+//         options.TokenValidationParameters = new TokenValidationParameters
+//         {
+//             ValidateIssuer = true,
+//             ValidateAudience = true,
+//             ValidateLifetime = true,
+//             ValidateIssuerSigningKey = true,
+//             ValidIssuer = jwtSettings.Issuer,
+//             ValidAudience = jwtSettings.Audience,
+//             IssuerSigningKey = new SymmetricSecurityKey(key),
+//             ClockSkew = TimeSpan.Zero
+//         };
+//     });
+//
+// // SignalIR
+//
+// builder.Services.AddSignalR();
+//
+// // CORS
+// // builder.Services.AddCors(options =>
+// // {
+// //     options.AddPolicy("AllowFrontend", policy =>
+// //     {
+// //         policy
+// //             .WithOrigins("http://localhost:5174") 
+// //             .AllowAnyHeader()
+// //             .AllowAnyMethod()
+// //             .AllowCredentials(); 
+// //     });
+// // });
+//
+// builder.Services.AddCors(options =>
+// {
+//     options.AddPolicy("AllowFrontend", policy =>
+//     {
+//         policy
+//             .AllowAnyOrigin()
+//             .AllowAnyHeader()
+//             .AllowAnyMethod();
+//     });
+// });
+//
+// builder.Services.AddScoped<ITokenService, TokenService>();
+// builder.Services.AddScoped<IOrderService, OrderService>();
+// builder.Services.AddScoped<IReviewService, ReviewService>();
+// builder.Services.AddScoped<IAdminService, AdminService>();
+// builder.Services.AddScoped<IBookService, BookService>();
+// builder.Services.AddScoped<IPublisherService, PublisherService>();
+// builder.Services.AddScoped<IAccountService, AccountService>();
+// builder.Services.AddScoped<IAuthService, AuthService>();
+// builder.Services.AddScoped<IGenreService, GenreService>();
+// builder.Services.AddScoped<IAdressService, AdressService>();
+// builder.Services.AddScoped<ICardService, CardService>();
+// builder.Services.AddScoped<IPromoCodeService, PromoCodeService>();
+// builder.Services.AddAutoMapper(typeof(MappingProfile));
+// builder.Services.AddScoped<CloudinaryService>();
+// builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+//  
+// builder.Services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();  // SignalIR
+// builder.Services.AddSignalR();
+//
+// builder.Services.AddScoped<SuperAdminInitializer>();
+//
+// builder.Services.AddLogging(options =>
+// {
+//     options.AddConsole(); 
+//     options.AddDebug();  
+// });
+//
+// // JWT авторизация
+// builder.Services.AddAuthorization(options =>
+// {
+//     options.AddPolicy("UserPolicy", policy => policy.RequireRole("User"));
+//     options.AddPolicy("AdminPolicy", policy => policy.RequireRole("Admin"));
+// });
+//
+// // Swagger
+// builder.Services.AddEndpointsApiExplorer();
+// builder.Services.AddSwaggerGen(c =>
+// {
+//     c.SwaggerDoc("v1", new OpenApiInfo { Title = "BookShop API", Version = "v1" });
+//     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+//     {
+//         Name = "Authorization",
+//         Type = SecuritySchemeType.Http,
+//         Scheme = "Bearer",
+//         BearerFormat = "JWT",
+//         In = ParameterLocation.Header,
+//         Description = "Enter the token in the format: Bearer {your_token}"
+//     });
+//     c.AddSecurityRequirement(new OpenApiSecurityRequirement
+//     {
+//         {
+//             new OpenApiSecurityScheme 
+//             {
+//                 Reference = new OpenApiReference 
+//                 { 
+//                     Type = ReferenceType.SecurityScheme, 
+//                     Id = "Bearer" 
+//                 }
+//             },
+//             Array.Empty<string>()
+//         }
+//     });
+// });
+//
+// // builder.WebHost.UseUrls(
+// //     "http://localhost:13779",
+// //     "https://localhost:44308"
+// // );
+//
+// builder.WebHost.UseUrls("http://0.0.0.0:13779");
+//
+// var app = builder.Build();
+//
+// using (var scope = app.Services.CreateScope())
+// {
+//     var services = scope.ServiceProvider;
+//     var superAdminInitializer = services.GetRequiredService<SuperAdminInitializer>();
+//     await superAdminInitializer.CreateSuperAdminAsync();  
+// }
+//
+// app.UseMiddleware<GlobalExceptionMiddleware>();
+//
+// if (app.Environment.IsDevelopment())
+// {
+//     app.UseSwagger();
+//     app.UseSwaggerUI(c =>
+//     {
+//         c.SwaggerEndpoint("/swagger/v1/swagger.json", "BookShop API v1");
+//     });
+// }
+//
+// // app.UseHttpsRedirection();
+// app.UseCors("AllowFrontend");
+//
+// app.UseStaticFiles();
+//
+// app.UseRouting();
+// app.UseAuthentication();
+// app.UseAuthorization();
+//
+// app.MapHub<SupportHub>("/supportHub");
+//
+// app.MapControllers();
+//
+// app.Run();
+//
+
+
+
+// 3
 using System.Globalization;
-using Azure.Storage.Blobs;      
+using System.Text;
 using BookShop.ADMIN.ServicesAdmin.AdminServices;
 using BookShop.ADMIN.ServicesAdmin.ReviewServices;
-using BookShop.ADMIN.ServicesAdmin.WarehouseServices;
-using BookShop.Auth.DataAuth.Validators;
 using BookShop.Auth.JWT;
 using BookShop.Auth.ServicesAuth.Classes;
 using BookShop.Auth.ServicesAuth.Interfaces;
-using BookShop.Auth.SharedAuth;
-using BookShop.BlobStorage;                 
+using BookShop.BlobStorage;
 using BookShop.Data.Contexts;
-using BookShop.Mappings;
+using BookShop.Helpers;
+using BookShop.Hubs;
 using BookShop.Services.Implementations;
 using BookShop.Services.Interfaces;
-using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using AutoMapper;
 
 var builder = WebApplication.CreateBuilder(args);
+
+
+// CULTURE
+
 
 var culture = builder.Configuration.GetValue<string>("Culture") ?? "en-US";
 CultureInfo.DefaultThreadCurrentCulture = new CultureInfo(culture);
 CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo(culture);
 
-builder.Services.AddAutoMapper(typeof(MappingProfile));
+
+// DATABASE
 
 builder.Services.AddDbContext<LibraryContext>(options =>
-    options.UseSqlite("Data Source=bookshop.db"));
+    options.UseSqlite(
+        builder.Configuration.GetConnectionString("DefaultConnection")));
 
 
-var blobSection = builder.Configuration.GetSection("AzureBlobStorage");
-string blobConn = blobSection.GetValue<string>("ConnectionString");
-string blobContainer = blobSection.GetValue<string>("ContainerName");
+// AUTOMAPPER
 
-builder.Services.AddSingleton(new BlobServiceClient(blobConn));
-
-builder.Services.AddScoped<IBlobService>(sp =>
-{
-    var client = sp.GetRequiredService<BlobServiceClient>();
-    return new BlobService(client, blobContainer);
-});
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 
-builder.Services.AddTransient<GlobalExceptionMiddleware>();
+// CONTROLLERS
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
-        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
+        options.JsonSerializerOptions.ReferenceHandler =
+            System.Text.Json.Serialization.ReferenceHandler.Preserve;
     });
 
-builder.Services.AddFluentValidationAutoValidation();
-builder.Services.AddValidatorsFromAssemblyContaining<RegisterValidator>();
 
-var jwtSettings = builder.Configuration.GetSection("JWT").Get<JwtOptions>();
+// HTTP CONTEXT
+
+builder.Services.AddHttpContextAccessor();
+
+
+// SERVICES
+
+builder.Services.AddScoped<IEmailService, EmailService>();
+
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IAccountService, AccountService>();
+builder.Services.AddScoped<ITokenService, TokenService>();
+
+builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IBookService, BookService>();
+builder.Services.AddScoped<IPublisherService, PublisherService>();
+builder.Services.AddScoped<IGenreService, GenreService>();
+builder.Services.AddScoped<IAdressService, AdressService>();
+builder.Services.AddScoped<ICardService, CardService>();
+builder.Services.AddScoped<IPromoCodeService, PromoCodeService>();
+
+builder.Services.AddScoped<IReviewService, ReviewService>();
+builder.Services.AddScoped<IAdminService, AdminService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<CloudinaryService>();
+
+
+
+// VALIDATION
+
+builder.Services.AddFluentValidationAutoValidation();
+
+
+// JWT
+
+var jwtSettings = builder.Configuration
+    .GetSection("JWT")
+    .Get<JwtOptions>();
+
 if (jwtSettings == null || string.IsNullOrEmpty(jwtSettings.SecretKey))
 {
-    throw new InvalidOperationException("JWT configuration is missing or SecretKey is not set.");
+    throw new InvalidOperationException("JWT configuration is missing.");
 }
+
 var key = Encoding.UTF8.GetBytes(jwtSettings.SecretKey);
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-        options.TokenValidationParameters = new TokenValidationParameters
+        options.TokenValidationParameters =
+            new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+
+                ValidIssuer = jwtSettings.Issuer,
+                ValidAudience = jwtSettings.Audience,
+
+                IssuerSigningKey =
+                    new SymmetricSecurityKey(key),
+
+                ClockSkew = TimeSpan.Zero
+            };
+
+        options.Events = new JwtBearerEvents
         {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = jwtSettings.Issuer,
-            ValidAudience = jwtSettings.Audience,
-            IssuerSigningKey = new SymmetricSecurityKey(key),
-            ClockSkew = TimeSpan.Zero
+            OnMessageReceived = context =>
+            {
+                var accessToken =
+                    context.Request.Query["access_token"];
+
+                var path = context.HttpContext.Request.Path;
+
+                if (!string.IsNullOrEmpty(accessToken)
+                    && path.StartsWithSegments("/supportHub"))
+                {
+                    context.Token = accessToken;
+                }
+
+                return Task.CompletedTask;
+            }
         };
     });
 
+
+// SIGNALR
+
+builder.Services.AddSignalR();
+
+builder.Services.AddSingleton<IUserIdProvider,
+    CustomUserIdProvider>();
+
+
 // CORS
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
         policy
-            .WithOrigins("http://localhost:5174") 
+            .AllowAnyOrigin()
             .AllowAnyHeader()
-            .AllowAnyMethod()
-            .AllowCredentials(); 
+            .AllowAnyMethod();
     });
 });
 
-builder.Services.AddScoped<ITokenService, TokenService>();
-builder.Services.AddScoped<IOrderService, OrderService>();
-builder.Services.AddScoped<IReviewService, ReviewService>();
-builder.Services.AddScoped<IAdminService, AdminService>();
-builder.Services.AddScoped<IBookService, BookService>();
-builder.Services.AddScoped<IPublisherService, PublisherService>();
-builder.Services.AddScoped<IAccountService, AccountService>();
-builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IGenreService, GenreService>();
-builder.Services.AddScoped<IAdressService, AdressService>();
-builder.Services.AddScoped<ICardService, CardService>();
-builder.Services.AddScoped<IPromoCodeService, PromoCodeService>();
-builder.Services.AddAutoMapper(typeof(MappingProfile));
-builder.Services.AddScoped<CloudinaryService>();
-builder.Services.AddScoped<IBookService, BookService>();
-builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
-builder.Services.AddScoped<SuperAdminInitializer>();
+// AUTHORIZATION
 
-builder.Services.AddLogging(options =>
-{
-    options.AddConsole(); 
-    options.AddDebug();  
-});
-
-// JWT авторизация
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("UserPolicy", policy => policy.RequireRole("User"));
-    options.AddPolicy("AdminPolicy", policy => policy.RequireRole("Admin"));
+    options.AddPolicy("UserPolicy",
+        policy => policy.RequireRole("User"));
+
+    options.AddPolicy("AdminPolicy",
+        policy => policy.RequireRole("Admin"));
 });
 
-// Swagger
+
+// SWAGGER
+
 builder.Services.AddEndpointsApiExplorer();
+
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "BookShop API", Version = "v1" });
-    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-    {
-        Name = "Authorization",
-        Type = SecuritySchemeType.Http,
-        Scheme = "Bearer",
-        BearerFormat = "JWT",
-        In = ParameterLocation.Header,
-        Description = "Enter the token in the format: Bearer {your_token}"
-    });
-    c.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
+    c.SwaggerDoc("v1",
+        new OpenApiInfo
         {
-            new OpenApiSecurityScheme 
+            Title = "BookShop API",
+            Version = "v1"
+        });
+
+    c.AddSecurityDefinition("Bearer",
+        new OpenApiSecurityScheme
+        {
+            Name = "Authorization",
+            Type = SecuritySchemeType.Http,
+            Scheme = "Bearer",
+            BearerFormat = "JWT",
+            In = ParameterLocation.Header,
+            Description = "Bearer {token}"
+        });
+
+    c.AddSecurityRequirement(
+        new OpenApiSecurityRequirement
+        {
             {
-                Reference = new OpenApiReference 
-                { 
-                    Type = ReferenceType.SecurityScheme, 
-                    Id = "Bearer" 
-                }
-            },
-            Array.Empty<string>()
-        }
-    });
+                new OpenApiSecurityScheme
+                {
+                    Reference =
+                        new OpenApiReference
+                        {
+                            Type = ReferenceType.SecurityScheme,
+                            Id = "Bearer"
+                        }
+                },
+                Array.Empty<string>()
+            }
+        });
 });
 
-// builder.WebHost.UseUrls(
-//     "http://localhost:13779",
-//     "https://localhost:44308"
-// );
-builder.WebHost.UseUrls("http://+:13779");
+
+// URL
+
+builder.WebHost.UseUrls("http://localhost:13779");
+
+
+// BUILD
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
-{
-    var services = scope.ServiceProvider;
-    var dbContext = services.GetRequiredService<LibraryContext>();
-    
-    // Создаёт базу данных и все таблицы
-    await dbContext.Database.EnsureCreatedAsync();
-    
-    var superAdminInitializer = services.GetRequiredService<SuperAdminInitializer>();
-    await superAdminInitializer.CreateSuperAdminAsync();  
-}
 
-app.UseMiddleware<GlobalExceptionMiddleware>();
+// MIDDLEWARE
 
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "BookShop API v1");
-    });
+    app.UseSwaggerUI();
 }
 
-//
-// app.UseHttpsRedirection();
-//
-// if (!app.Environment.IsEnvironment("Docker"))
-// {
-//     app.UseHttpsRedirection();
-// }
-app.UseCors("AllowFrontend");
 
 app.UseStaticFiles();
 
+app.UseCors("AllowFrontend");
+
 app.UseRouting();
+
 app.UseAuthentication();
+
 app.UseAuthorization();
 
+
+// SIGNALR
+
+app.MapHub<SupportHub>("/supportHub");
+
+
+// CONTROLLERS
+
 app.MapControllers();
+
+
+// RUN
 
 app.Run();

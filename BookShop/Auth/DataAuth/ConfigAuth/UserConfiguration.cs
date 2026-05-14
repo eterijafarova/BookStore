@@ -76,6 +76,8 @@ namespace BookShop.Auth.DataAuth.ConfigAuth
                 .WithOne(b => b.User)
                 .HasForeignKey(b => b.UserId)
                 .OnDelete(DeleteBehavior.Cascade);  // Cascade для удаления карт при удалении пользователя
+            
+            
         }
     }
 }

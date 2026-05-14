@@ -348,6 +348,34 @@ namespace BookShop.Migrations
                     b.ToTable("Genres");
                 });
 
+            modelBuilder.Entity("BookShop.Data.Models.Message", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("ChatId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("SenderId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("SentAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ChatId");
+
+                    b.HasIndex("SenderId");
+
+                    b.ToTable("Messages");
+                });
+
             modelBuilder.Entity("BookShop.Data.Models.Order", b =>
                 {
                     b.Property<Guid>("Id")
@@ -585,6 +613,43 @@ namespace BookShop.Migrations
                     b.ToTable("Warehouses");
                 });
 
+            modelBuilder.Entity("Chat", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("AdminId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("UserId1")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("UserId2")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AdminId");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("UserId1");
+
+                    b.HasIndex("UserId2");
+
+                    b.ToTable("Chats");
+                });
+
             modelBuilder.Entity("BookShop.Auth.ModelsAuth.UserRole", b =>
                 {
                     b.HasOne("BookShop.Auth.ModelsAuth.Role", "Role")
@@ -673,6 +738,25 @@ namespace BookShop.Migrations
                     b.Navigation("ParentGenre");
                 });
 
+            modelBuilder.Entity("BookShop.Data.Models.Message", b =>
+                {
+                    b.HasOne("Chat", "Chat")
+                        .WithMany("Messages")
+                        .HasForeignKey("ChatId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BookShop.Auth.ModelsAuth.User", "Sender")
+                        .WithMany()
+                        .HasForeignKey("SenderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Chat");
+
+                    b.Navigation("Sender");
+                });
+
             modelBuilder.Entity("BookShop.Data.Models.Order", b =>
                 {
                     b.HasOne("BookShop.Data.Models.PromoCode", null)
@@ -757,6 +841,32 @@ namespace BookShop.Migrations
                     b.Navigation("Book");
                 });
 
+            modelBuilder.Entity("Chat", b =>
+                {
+                    b.HasOne("BookShop.Auth.ModelsAuth.User", "Admin")
+                        .WithMany()
+                        .HasForeignKey("AdminId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("BookShop.Auth.ModelsAuth.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("BookShop.Auth.ModelsAuth.User", null)
+                        .WithMany("AdminChats")
+                        .HasForeignKey("UserId1");
+
+                    b.HasOne("BookShop.Auth.ModelsAuth.User", null)
+                        .WithMany("UserChats")
+                        .HasForeignKey("UserId2");
+
+                    b.Navigation("Admin");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("BookShop.Auth.ModelsAuth.Role", b =>
                 {
                     b.Navigation("UserRoles");
@@ -764,6 +874,8 @@ namespace BookShop.Migrations
 
             modelBuilder.Entity("BookShop.Auth.ModelsAuth.User", b =>
                 {
+                    b.Navigation("AdminChats");
+
                     b.Navigation("Adresses");
 
                     b.Navigation("BankCards");
@@ -771,6 +883,8 @@ namespace BookShop.Migrations
                     b.Navigation("Orders");
 
                     b.Navigation("Reviews");
+
+                    b.Navigation("UserChats");
 
                     b.Navigation("UserRoles");
                 });
@@ -811,6 +925,11 @@ namespace BookShop.Migrations
             modelBuilder.Entity("BookShop.Data.Models.Publisher", b =>
                 {
                     b.Navigation("Books");
+                });
+
+            modelBuilder.Entity("Chat", b =>
+                {
+                    b.Navigation("Messages");
                 });
 #pragma warning restore 612, 618
         }

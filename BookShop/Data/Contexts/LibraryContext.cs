@@ -26,13 +26,17 @@ public class LibraryContext : DbContext
     public DbSet<PasswordResetToken> PasswordResetTokens { get; set; }
     public DbSet<Adress> Adresses { get; set; }
     public DbSet<BankCard> BankCards { get; set; }
+    
+    public DbSet<Chat> Chats { get; set; }
+    public DbSet<Message> Messages { get; set; }
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.ApplyConfigurationsFromAssembly(typeof(LibraryContext).Assembly);
         base.OnModelCreating(modelBuilder);
-        
+
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(LibraryContext).Assembly);
+
         modelBuilder.Entity<Role>().HasData(
             new Role 
             { 

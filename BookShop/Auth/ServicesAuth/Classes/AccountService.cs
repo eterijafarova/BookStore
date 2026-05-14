@@ -227,23 +227,31 @@ public async Task<bool> ValidatePasswordResetTokenAsync(string token)
             var htmlBody = template
                 .Replace("{username}", request.username)
                 .Replace("{link}", link);
-            var plainBody =
-                $"Hello, {request.username}!\n\n" +
-                $"You have received this email because you have registered on our website. Please confirm your email by clicking the button below:\n{link}\n\n" +
-                "If you haven't registered for the \"Cheshire Shelf\" - book shop - just ignore this email.";
+            
+         //   var plainBody =
+           //     $"Hello, {request.username}!\n\n" +
+             //   $"You have received this email because you have registered on our website. Please confirm your email by clicking the button below:\n{link}\n\n" +
+               // "If you haven't registered for the \"Cheshire Shelf\" - book shop - just ignore this email.";
 
+            //var message = new MailMessage
+            //{
+              //  From       = new MailAddress(smtpUser, "CheshireShelf Team"),
+                //Subject    = "Confirm your email",
+                //IsBodyHtml = true
+            //};
             var message = new MailMessage
             {
-                From       = new MailAddress(smtpUser, "CheshireShelf Team"),
-                Subject    = "Confirm your email",
+                From = new MailAddress(smtpUser, "CheshireShelf Team"),
+                Subject = "Confirm your email",
+                Body = htmlBody,
                 IsBodyHtml = true
             };
             message.AlternateViews.Add(
                 AlternateView.CreateAlternateViewFromString(htmlBody, Encoding.UTF8, "text/html")
             );
-            message.AlternateViews.Add(
-                AlternateView.CreateAlternateViewFromString(plainBody, Encoding.UTF8, "text/plain")
-            );
+            //message.AlternateViews.Add(
+              //  AlternateView.CreateAlternateViewFromString(plainBody, Encoding.UTF8, "text/plain")
+            //);
             message.Headers.Add("MIME-Version", "1.0");
             message.Headers.Add("X-Priority", "3");
             message.Headers.Add("Content-Transfer-Encoding", "7bit");

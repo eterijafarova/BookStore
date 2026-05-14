@@ -21,6 +21,9 @@ public class User
     public ICollection<Order> Orders { get; set; } = new List<Order>();
     public ICollection<Review> Reviews { get; set; } = new List<Review>();
     
+    // SignalIR
+    public ICollection<Chat> UserChats { get; set; }
+    public ICollection<Chat> AdminChats { get; set; }
 
     
     public List<Adress> Adresses { get; set; } = new List<Adress>();  

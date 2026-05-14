@@ -13,38 +13,49 @@ namespace BookShop.Services.Implementations
         private readonly LibraryContext _context;
         private readonly IPromoCodeService _promoService;
         private readonly IMapper _mapper;
+        private readonly IEmailService _emailService;
 
-        public OrderService(LibraryContext context, IPromoCodeService promoService, IMapper mapper)
+        public OrderService(
+            LibraryContext context,
+            IPromoCodeService promoService,
+            IMapper mapper,
+            IEmailService emailService)
         {
             _context = context;
             _promoService = promoService;
             _mapper = mapper;
+            _emailService = emailService;
         }
 
         public async Task<OrderResponseDto> CreateOrderAsync(OrderRequestDto orderRequest)
         {
             var addressExists = await _context.Adresses
                 .AnyAsync(a => a.Id == orderRequest.UserAddressId && a.UserId == orderRequest.UserId);
+
             if (!addressExists)
                 throw new KeyNotFoundException("Address not found or does not belong to user.");
 
-
             var cardExists = await _context.BankCards
                 .AnyAsync(c => c.Id == orderRequest.UserBankCardId && c.UserId == orderRequest.UserId);
+
             if (!cardExists)
                 throw new KeyNotFoundException("Bank card not found or does not belong to user.");
 
-
             decimal originalPrice = 0m;
+
             var items = new List<OrderItem>();
+
             foreach (var item in orderRequest.OrderItems)
             {
                 var book = await _context.Books.FindAsync(item.BookId)
                            ?? throw new Exception("Book not found");
+
                 if (book.Stock < item.Quantity)
-                    throw new InvalidOperationException($"Not enough stock for '{book.Title}'");
+                    throw new InvalidOperationException(
+                        $"Not enough stock for '{book.Title}'");
 
                 originalPrice += book.Price * item.Quantity;
+
                 book.Stock -= item.Quantity;
 
                 items.Add(new OrderItem
@@ -55,19 +66,23 @@ namespace BookShop.Services.Implementations
                 });
             }
 
-
             decimal discountAmount = 0m;
+
             if (!string.IsNullOrEmpty(orderRequest.PromoCode))
             {
-                var promo = await _promoService.GetPromoCodeAsync(orderRequest.PromoCode);
-                if (promo == null || !promo.IsActive)
-                    throw new InvalidOperationException("Invalid or expired promo code");
+                var promo = await _promoService
+                    .GetPromoCodeAsync(orderRequest.PromoCode);
 
-                discountAmount = Math.Round(originalPrice * promo.Discount / 100m, 2);
+                if (promo == null || !promo.IsActive)
+                    throw new InvalidOperationException(
+                        "Invalid or expired promo code");
+
+                discountAmount = Math.Round(
+                    originalPrice * promo.Discount / 100m,
+                    2);
             }
 
             decimal finalPrice = originalPrice - discountAmount;
-
 
             var order = new Order
             {
@@ -86,7 +101,11 @@ namespace BookShop.Services.Implementations
             };
 
             _context.Orders.Add(order);
+
             await _context.SaveChangesAsync();
+
+            // ✨ Отправка email чека
+            await _emailService.SendOrderReceiptAsync(order.Id);
 
             return new OrderResponseDto
             {
@@ -99,6 +118,7 @@ namespace BookShop.Services.Implementations
                 FinalPrice = order.FinalPrice,
                 Status = order.Status.ToString(),
                 OrderDate = order.OrderDate,
+
                 OrderItems = order.OrderItems
                     .Select(i => new OrderItemResponseDto
                     {
@@ -130,6 +150,7 @@ namespace BookShop.Services.Implementations
                 FinalPrice = order.FinalPrice,
                 Status = order.Status.ToString(),
                 OrderDate = order.OrderDate,
+
                 OrderItems = order.OrderItems
                     .Select(i => new OrderItemResponseDto
                     {
@@ -141,7 +162,8 @@ namespace BookShop.Services.Implementations
             };
         }
 
-        public async Task<PaginatedResponse<OrderResponseDto>> GetOrdersByUserIdAsync(Guid userId, int page, int pageSize)
+        public async Task<PaginatedResponse<OrderResponseDto>>
+            GetOrdersByUserIdAsync(Guid userId, int page, int pageSize)
         {
             var query = _context.Orders
                 .Where(o => o.UserId == userId)
@@ -157,6 +179,7 @@ namespace BookShop.Services.Implementations
                     FinalPrice = order.FinalPrice,
                     Status = order.Status.ToString(),
                     OrderDate = order.OrderDate,
+
                     OrderItems = order.OrderItems
                         .Select(i => new OrderItemResponseDto
                         {
@@ -168,59 +191,70 @@ namespace BookShop.Services.Implementations
                 })
                 .AsQueryable();
 
-            return await PaginatedResponse<OrderResponseDto>.CreateAsync(query, page, pageSize);
+            return await PaginatedResponse<OrderResponseDto>
+                .CreateAsync(query, page, pageSize);
         }
 
         public async Task<bool> DeleteOrderAsync(Guid orderId)
         {
             var order = await _context.Orders.FindAsync(orderId);
+
             if (order == null)
                 return false;
 
             _context.Orders.Remove(order);
+
             await _context.SaveChangesAsync();
+
             return true;
         }
 
-        public async Task<bool> UpdateOrderStatusAsync(Guid orderId, Order.OrderStatus status)
+        public async Task<bool> UpdateOrderStatusAsync(
+            Guid orderId,
+            Order.OrderStatus status)
         {
             var order = await _context.Orders.FindAsync(orderId);
+
             if (order == null)
                 return false;
 
             order.Status = status;
+
             await _context.SaveChangesAsync();
+
             return true;
         }
 
-        public async Task<PaginatedResponse<OrderResponseDto>> GetAllOrdersAsync(int page, int pageSize)
+        public async Task<PaginatedResponse<OrderResponseDto>>
+            GetAllOrdersAsync(int page, int pageSize)
         {
             var query = _context.Orders
                 .Include(o => o.OrderItems)
                 .Select(o => new OrderResponseDto
                 {
-                    Id             = o.Id,
-                    OriginalPrice  = o.OriginalPrice,
-                    PromoCode      = o.PromoCode,
+                    Id = o.Id,
+                    OriginalPrice = o.OriginalPrice,
+                    PromoCode = o.PromoCode,
                     DiscountAmount = o.DiscountAmount,
-                    FinalPrice     = o.FinalPrice,
-                    OrderDate      = o.OrderDate,
-                    Status         = o.Status.ToString(),
-                    UserAddressId  = o.UserAdressId,
+                    FinalPrice = o.FinalPrice,
+                    OrderDate = o.OrderDate,
+                    Status = o.Status.ToString(),
+                    UserAddressId = o.UserAdressId,
                     UserBankCardId = o.UserBankCardId,
 
                     OrderItems = o.OrderItems
                         .Select(oi => new OrderItemResponseDto
                         {
-                            BookId    = oi.BookId,
-                            Quantity  = oi.Quantity,
+                            BookId = oi.BookId,
+                            Quantity = oi.Quantity,
                             UnitPrice = oi.Price
                         })
                         .ToList()
                 })
                 .AsQueryable();
 
-            return await PaginatedResponse<OrderResponseDto>.CreateAsync(query, page, pageSize);
+            return await PaginatedResponse<OrderResponseDto>
+                .CreateAsync(query, page, pageSize);
         }
     }
 }

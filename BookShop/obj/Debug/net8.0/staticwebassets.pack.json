@@ -17,6 +17,14 @@
       "PackagePath": "staticwebassets\\reset-password.html"
     },
     {
+      "Id": "C:\\Users\\ASUS\\RiderProjects\\BooksStore\\BookShop\\wwwroot\\templates\\order-receipt.html",
+      "PackagePath": "staticwebassets\\templates\\order-receipt.html"
+    },
+    {
+      "Id": "C:\\Users\\ASUS\\RiderProjects\\BooksStore\\BookShop\\wwwroot\\test.html",
+      "PackagePath": "staticwebassets\\test.html"
+    },
+    {
       "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.BookShop.Microsoft.AspNetCore.StaticWebAssets.props",
       "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
     },

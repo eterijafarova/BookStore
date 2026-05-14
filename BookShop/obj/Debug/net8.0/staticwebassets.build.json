@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "uXkgdrEueT7Wf2uM9NPG4FeBBRHkSCIxG0kJ981mK64=",
+  "Hash": "/9kh3R71fvINK+gG/Z4M+7rctdt8TjpFSMLkXr3s0fU=",
   "Source": "BookShop",
   "BasePath": "_content/BookShop",
   "Mode": "Default",
@@ -91,6 +91,44 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\reset-password.html"
+    },
+    {
+      "Identity": "C:\\Users\\ASUS\\RiderProjects\\BooksStore\\BookShop\\wwwroot\\templates\\order-receipt.html",
+      "SourceId": "BookShop",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\ASUS\\RiderProjects\\BooksStore\\BookShop\\wwwroot\\",
+      "BasePath": "_content/BookShop",
+      "RelativePath": "templates/order-receipt.html",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\templates\\order-receipt.html"
+    },
+    {
+      "Identity": "C:\\Users\\ASUS\\RiderProjects\\BooksStore\\BookShop\\wwwroot\\test.html",
+      "SourceId": "BookShop",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\ASUS\\RiderProjects\\BooksStore\\BookShop\\wwwroot\\",
+      "BasePath": "_content/BookShop",
+      "RelativePath": "test.html",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\test.html"
     }
   ]
 }
