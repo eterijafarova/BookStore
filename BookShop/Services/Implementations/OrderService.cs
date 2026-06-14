@@ -104,7 +104,7 @@ namespace BookShop.Services.Implementations
 
             await _context.SaveChangesAsync();
 
-            // ✨ Отправка email чека
+            //  Отправка email чека
             await _emailService.SendOrderReceiptAsync(order.Id);
 
             return new OrderResponseDto
@@ -213,7 +213,9 @@ namespace BookShop.Services.Implementations
             Guid orderId,
             Order.OrderStatus status)
         {
-            var order = await _context.Orders.FindAsync(orderId);
+            var order = await _context.Orders
+                .Include(o => o.User)
+                .FirstOrDefaultAsync(o => o.Id == orderId);
 
             if (order == null)
                 return false;
@@ -221,6 +223,12 @@ namespace BookShop.Services.Implementations
             order.Status = status;
 
             await _context.SaveChangesAsync();
+
+            await _emailService.SendOrderStatusChangedAsync(
+                order.User.Email,
+                order.User.UserName,
+                order.Id,
+                status.ToString());
 
             return true;
         }

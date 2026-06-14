@@ -36,6 +36,21 @@ public class LibraryContext : DbContext
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(LibraryContext).Assembly);
+        
+        base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<Chat>()
+            .HasOne(c => c.User)
+            .WithMany(u => u.UserChats)
+            .HasForeignKey(c => c.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Chat>()
+            .HasOne(c => c.Admin)
+            .WithMany(u => u.AdminChats)
+            .HasForeignKey(c => c.AdminId)
+            .OnDelete(DeleteBehavior.Restrict);
+
 
         modelBuilder.Entity<Role>().HasData(
             new Role 

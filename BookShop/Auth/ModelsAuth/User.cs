@@ -24,6 +24,7 @@ public class User
     // SignalIR
     public ICollection<Chat> UserChats { get; set; }
     public ICollection<Chat> AdminChats { get; set; }
+    
 
     
     public List<Adress> Adresses { get; set; } = new List<Adress>();  

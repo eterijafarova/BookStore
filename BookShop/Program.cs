@@ -457,7 +457,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using AutoMapper;
-
+using BookShop.Services.Interfaces;
+using BookShop.Services.Implementations;
 var builder = WebApplication.CreateBuilder(args);
 
 
@@ -517,6 +518,8 @@ builder.Services.AddScoped<IAdminService, AdminService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<CloudinaryService>();
 
+builder.Services.AddScoped<IChatService, ChatService>();
+builder.Services.AddScoped<IMessageService, MessageService>();
 
 
 // VALIDATION
@@ -685,16 +688,13 @@ app.UseAuthentication();
 
 app.UseAuthorization();
 
-
-// SIGNALR
-
-app.MapHub<SupportHub>("/supportHub");
-
-
 // CONTROLLERS
 
 app.MapControllers();
 
+// CHAT
+
+app.MapHub<ChatHub>("/chatHub");
 
 // RUN
 

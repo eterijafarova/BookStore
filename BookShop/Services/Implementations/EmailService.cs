@@ -16,14 +16,14 @@ public class EmailService : IEmailService
 
     private static readonly List<string> CheshireQuotes =
     [
-        "Книга — это дверь. Вопрос лишь в том, решишься ли ты исчезнуть за ней.",
-        "Все дороги ведут куда-то, но только книги знают, куда именно.",
-        "Читать — это единственный способ исчезнуть и при этом остаться.",
-        "Ты ищешь ответы? Забавно… книги давно ищут тебя.",
-        "Если ты не знаешь, куда идти — открой книгу. Она знает дорогу.",
-        "Книга — это сон, который ты выбираешь наяву.",
-        "Некоторые страницы шепчут… но слышат их только те, кто готов читать.",
-        "Чем глубже ты читаешь, тем меньше хочется возвращаться обратно."
+        "A book is a door. The only question is whether you dare to disappear behind it.",
+        "All roads lead somewhere, but only books know exactly where.",
+        "Reading is the only way to disappear and still remain.",
+        "You’re looking for answers? Funny… books have been looking for you.",
+        "If you don’t know where to go, open a book. It knows the way.",
+        "A book is a dream you choose while awake.",
+        "Some pages whisper… but only those ready to read can hear them",
+        "The deeper you read, the less you want to return."
     ];
 
     public EmailService(
@@ -110,4 +110,108 @@ public class EmailService : IEmailService
 
         await smtp.DisconnectAsync(true);
     }
+    
+    public async Task SendOrderStatusChangedAsync(
+    string email,
+    string userName,
+    Guid orderId,
+    string status)
+{
+    var statusText = status switch
+    {
+        "Pending" =>
+            "Your order is waiting between the shelves.",
+
+        "Processing" =>
+            "The librarians are preparing your books.",
+
+        "Shipped" =>
+            "Your order has escaped the library.",
+
+        "Delivered" =>
+            "The story has finally reached you.",
+
+        "Cancelled" =>
+            "This story vanished before completion.",
+
+        _ =>
+            "Your order status has changed."
+    };
+
+    var body = $@"
+    <div style='
+        background:#12051f;
+        color:white;
+        padding:40px;
+        border-radius:25px;
+        font-family:Poppins,Arial,sans-serif;'>
+
+        <h1 style='
+            color:#f7a8ff;
+            margin-bottom:25px;'>
+
+            Cheshire BookShop
+
+        </h1>
+
+        <p>Hello, {userName}</p>
+
+        <p style='
+            color:rgba(255,255,255,0.75);
+            line-height:1.8;'>
+
+            {statusText}
+
+        </p>
+
+        <div style='
+            margin-top:30px;
+            padding:25px;
+            border-radius:20px;
+            background:rgba(255,255,255,0.05);'>
+
+            <p>
+                <b>Order ID:</b> {orderId}
+            </p>
+
+            <p>
+                <b>Status:</b> {status}
+            </p>
+
+        </div>
+
+    </div>";
+
+    var message = new MimeMessage();
+
+    message.From.Add(
+        MailboxAddress.Parse(
+            _configuration["Email:Smtp:User"]));
+
+    message.To.Add(
+        MailboxAddress.Parse(email));
+
+    message.Subject =
+        "Your order status changed";
+
+    message.Body = new TextPart("html")
+    {
+        Text = body
+    };
+
+    using var smtp = new SmtpClient();
+
+    await smtp.ConnectAsync(
+        _configuration["Email:Smtp:Host"],
+        int.Parse(_configuration["Email:Smtp:Port"]),
+        SecureSocketOptions.StartTls);
+
+    await smtp.AuthenticateAsync(
+        _configuration["Email:Smtp:User"],
+        _configuration["Email:Smtp:Pass"]);
+
+    await smtp.SendAsync(message);
+
+    await smtp.DisconnectAsync(true);
+}
 }

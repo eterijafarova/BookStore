@@ -1,12 +1,18 @@
 using BookShop.Data.Models;
 
-namespace BookShop.Services.Interfaces
+namespace BookShop.Services.Interfaces;
+
+public interface IChatService
 {
-    public interface IChatService
-    {
-        Task<Chat> CreateChatAsync(int userId);
-        Task<Message> SendMessageAsync(Guid chatId, int senderId, string text);
-        Task AssignAdminAsync(Guid chatId, int adminId);
-        Task CloseChatAsync(Guid chatId);
-    }
-    }
+    Task<Chat> CreateChatAsync(Guid userId);
+
+    Task<List<Chat>> GetWaitingChatsAsync();
+
+    Task<List<Chat>> GetUserChatsAsync(Guid userId);
+
+    Task<Chat?> GetChatByIdAsync(Guid chatId);
+
+    Task TakeChatAsync(Guid chatId, Guid adminId);
+
+    Task CloseChatAsync(Guid chatId);
+}
