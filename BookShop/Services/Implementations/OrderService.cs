@@ -5,6 +5,8 @@ using BookShop.Data.Models;
 using BookShop.Services.Interfaces;
 using BookShop.Shared.DTO.Response;
 using Microsoft.EntityFrameworkCore;
+using BookShop.Hubs;
+using Microsoft.AspNetCore.SignalR;
 
 namespace BookShop.Services.Implementations
 {
@@ -14,19 +16,21 @@ namespace BookShop.Services.Implementations
         private readonly IPromoCodeService _promoService;
         private readonly IMapper _mapper;
         private readonly IEmailService _emailService;
+        private readonly IHubContext<OrderHub> _hubContext;
 
         public OrderService(
             LibraryContext context,
             IPromoCodeService promoService,
             IMapper mapper,
-            IEmailService emailService)
+            IEmailService emailService,
+            IHubContext<OrderHub> hubContext)
         {
             _context = context;
             _promoService = promoService;
             _mapper = mapper;
             _emailService = emailService;
+            _hubContext = hubContext;
         }
-
         public async Task<OrderResponseDto> CreateOrderAsync(OrderRequestDto orderRequest)
         {
             var addressExists = await _context.Adresses
@@ -223,6 +227,12 @@ namespace BookShop.Services.Implementations
             order.Status = status;
 
             await _context.SaveChangesAsync();
+            
+            await _hubContext.Clients.User(order.UserId.ToString())
+                .SendAsync(
+                    "OrderStatusChanged",
+                    order.Id,
+                    status.ToString());
 
             await _emailService.SendOrderStatusChangedAsync(
                 order.User.Email,

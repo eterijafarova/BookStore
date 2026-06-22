@@ -143,8 +143,7 @@ namespace BookShop.Migrations
                         .HasColumnType("TEXT")
                         .HasColumnName("userId");
 
-                    b.HasKey("UserRoleId")
-                        .HasName("PK__UserRole__CD3149CCDE4D7241");
+                    b.HasKey("UserRoleId");
 
                     b.HasIndex("RoleId");
 
@@ -656,12 +655,14 @@ namespace BookShop.Migrations
                     b.HasOne("BookShop.Auth.ModelsAuth.Role", "Role")
                         .WithMany("UserRoles")
                         .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("FK_UserRoles_Role");
 
                     b.HasOne("BookShop.Auth.ModelsAuth.User", "User")
                         .WithMany("UserRoles")
                         .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("FK_UserRoles_User");
 

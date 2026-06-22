@@ -111,7 +111,7 @@ public class EmailService : IEmailService
         await smtp.DisconnectAsync(true);
     }
     
-    public async Task SendOrderStatusChangedAsync(
+   public async Task SendOrderStatusChangedAsync(
     string email,
     string userName,
     Guid orderId,
@@ -138,49 +138,34 @@ public class EmailService : IEmailService
             "Your order status has changed."
     };
 
-    var body = $@"
-    <div style='
-        background:#12051f;
-        color:white;
-        padding:40px;
-        border-radius:25px;
-        font-family:Poppins,Arial,sans-serif;'>
+    var statusIcon = status switch
+    {
+        "Pending" => "⌛ Pending",
+        "Processing" => "📚 Processing",
+        "Shipped" => "📦 Shipped",
+        "Delivered" => "🏠 Delivered",
+        "Cancelled" => "❌ Cancelled",
+        _ => "✨ Updated"
+    };
 
-        <h1 style='
-            color:#f7a8ff;
-            margin-bottom:25px;'>
+    // Красивый номер отслеживания
+    var trackingNumber =
+        $"CBS-{orderId.ToString()[..8].ToUpper()}";
+    
+    Console.WriteLine($"TRACKING = {trackingNumber}");
 
-            Cheshire BookShop
+    var templatePath = Path.Combine(
+        _environment.WebRootPath,
+        "templates",
+        "order-status.html");
 
-        </h1>
+    var html = await File.ReadAllTextAsync(templatePath);
 
-        <p>Hello, {userName}</p>
-
-        <p style='
-            color:rgba(255,255,255,0.75);
-            line-height:1.8;'>
-
-            {statusText}
-
-        </p>
-
-        <div style='
-            margin-top:30px;
-            padding:25px;
-            border-radius:20px;
-            background:rgba(255,255,255,0.05);'>
-
-            <p>
-                <b>Order ID:</b> {orderId}
-            </p>
-
-            <p>
-                <b>Status:</b> {status}
-            </p>
-
-        </div>
-
-    </div>";
+    html = html
+        .Replace("{{UserName}}", userName)
+        .Replace("{{Status}}", statusIcon)
+        .Replace("{{StatusText}}", statusText)
+        .Replace("{{TrackingNumber}}", trackingNumber);
 
     var message = new MimeMessage();
 
@@ -191,12 +176,11 @@ public class EmailService : IEmailService
     message.To.Add(
         MailboxAddress.Parse(email));
 
-    message.Subject =
-        "Your order status changed";
+    message.Subject = $"✨ Order {status}";
 
     message.Body = new TextPart("html")
     {
-        Text = body
+        Text = html
     };
 
     using var smtp = new SmtpClient();

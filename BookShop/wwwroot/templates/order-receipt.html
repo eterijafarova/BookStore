@@ -5,378 +5,318 @@
 
     <style>
 
-        body {
-
-            margin: 0;
-            padding: 40px;
-
+        body{
+            margin:0;
+            padding:40px;
             background:
                     radial-gradient(circle at top,
                     #24103f 0%,
                     #12051f 45%,
                     #05010d 100%);
-
-            font-family:
-                    'Poppins',
-                    Arial,
-                    sans-serif;
-
-            color: white;
+            font-family:'Poppins',Arial,sans-serif;
+            color:white;
         }
 
-        .container {
-
-            max-width: 760px;
-
-            margin: auto;
-
+        .container{
+            max-width:760px;
+            margin:auto;
             background:
                     linear-gradient(
                             180deg,
-                            rgba(18, 6, 35, 0.98),
-                            rgba(12, 3, 24, 0.98)
+                            rgba(18,6,35,.98),
+                            rgba(12,3,24,.98)
                     );
-
-            border:
-                    1px solid rgba(192,132,252,0.12);
-
-            border-radius: 36px;
-
-            overflow: hidden;
+            border:1px solid rgba(192,132,252,.12);
+            border-radius:36px;
+            overflow:hidden;
 
             box-shadow:
-                    0 0 60px rgba(168,85,247,0.18),
-                    0 0 140px rgba(91,33,182,0.12);
+                    0 0 60px rgba(168,85,247,.18),
+                    0 0 140px rgba(91,33,182,.12);
         }
 
-        .top-glow {
-
-            height: 140px;
+        .top-glow{
+            height:140px;
 
             background:
                     radial-gradient(
                             circle at center,
-                            rgba(168,85,247,0.18),
+                            rgba(168,85,247,.18),
                             transparent 72%
                     );
         }
 
-        .content {
-
-            padding: 0 55px 55px;
+        .content{
+            padding:0 55px 55px;
         }
 
-        .logo {
+        .logo{
+            text-align:center;
+            font-size:52px;
+            font-weight:800;
+            color:#f7a8ff;
 
-            text-align: center;
-
-            font-size: 52px;
-
-            font-weight: 800;
-
-            color: #f7a8ff;
-
-            letter-spacing: 1px;
-
-            margin-top: -30px;
-            margin-bottom: 12px;
+            margin-top:-30px;
+            margin-bottom:12px;
 
             text-shadow:
-                    0 0 30px rgba(247,168,255,0.28);
+                    0 0 30px rgba(247,168,255,.28);
         }
 
-        .subtitle {
-
-            text-align: center;
-
-            color: rgba(255,255,255,0.36);
-
-            letter-spacing: 4px;
-
-            font-size: 13px;
-
-            margin-bottom: 45px;
+        .subtitle{
+            text-align:center;
+            color:rgba(255,255,255,.36);
+            letter-spacing:4px;
+            font-size:13px;
+            margin-bottom:45px;
         }
 
-        .divider {
-
-            width: 100%;
-            height: 1px;
-
-            margin: 40px 0;
+        .divider{
+            width:100%;
+            height:1px;
+            margin:40px 0;
 
             background:
                     linear-gradient(
                             to right,
                             transparent,
-                            rgba(255,255,255,0.18),
+                            rgba(255,255,255,.18),
                             transparent
                     );
         }
 
-        .hello {
-
-            font-size: 20px;
-
-            color: rgba(255,255,255,0.92);
-
-            margin-bottom: 16px;
+        .hello{
+            font-size:20px;
+            color:rgba(255,255,255,.92);
+            margin-bottom:16px;
         }
 
-        .hello span {
-
-            color: #ff9de2;
-
-            font-weight: 700;
+        .hello span{
+            color:#ff9de2;
+            font-weight:700;
         }
 
-        .description {
-
-            color: rgba(255,255,255,0.6);
-
-            line-height: 2;
-
-            margin-bottom: 40px;
-
-            font-size: 15px;
+        .description{
+            color:rgba(255,255,255,.6);
+            line-height:2;
+            margin-bottom:40px;
+            font-size:15px;
         }
 
-        .info-card {
+        .info-card{
+            padding:32px;
+            border-radius:28px;
 
             background:
                     linear-gradient(
                             135deg,
-                            rgba(255,255,255,0.04),
-                            rgba(255,255,255,0.015)
+                            rgba(255,255,255,.04),
+                            rgba(255,255,255,.015)
                     );
 
-            border:
-                    1px solid rgba(192,132,252,0.08);
+            border:1px solid rgba(192,132,252,.08);
 
-            border-radius: 28px;
-
-            padding: 32px;
-
-            margin-bottom: 38px;
-
-            backdrop-filter: blur(14px);
-
-            box-shadow:
-                    inset 0 0 20px rgba(255,255,255,0.02);
+            margin-bottom:40px;
         }
 
-        .info-row {
-
-            margin-bottom: 18px;
-
-            color: rgba(255,255,255,0.82);
-
-            font-size: 15px;
+        .status-title{
+            color:rgba(255,255,255,.45);
+            letter-spacing:4px;
+            font-size:13px;
+            margin-bottom:22px;
         }
 
-        .info-row:last-child {
+        .status-box{
+            display:inline-block;
 
-            margin-bottom: 0;
-        }
+            padding:18px 36px;
 
-        .label {
-
-            color: #d8b4fe;
-
-            font-weight: 700;
-        }
-
-        table {
-
-            width: 100%;
-
-            border-collapse: collapse;
-
-            overflow: hidden;
-
-            border-radius: 28px;
-
-            background:
-                    rgba(255,255,255,0.03);
-
-            box-shadow:
-                    inset 0 0 20px rgba(255,255,255,0.02);
-        }
-
-        thead {
-
-            background:
-                    rgba(255,255,255,0.05);
-        }
-
-        th {
-
-            padding: 22px;
-
-            text-align: left;
-
-            font-size: 15px;
-
-            font-weight: 700;
-
-            color: #ff9de2;
-
-            border-bottom:
-                    1px solid rgba(255,255,255,0.08);
-        }
-
-        td {
-
-            padding: 22px;
-
-            color: rgba(255,255,255,0.84);
-
-            border-bottom:
-                    1px solid rgba(255,255,255,0.05);
-
-            font-size: 15px;
-        }
-
-        tr:last-child td {
-
-            border-bottom: none;
-        }
-
-        .total-box {
-
-            margin-top: 38px;
-
-            padding: 34px;
-
-            border-radius: 30px;
+            border-radius:100px;
 
             background:
                     linear-gradient(
                             135deg,
-                            rgba(124,58,237,0.24),
-                            rgba(192,132,252,0.08)
+                            rgba(168,85,247,.25),
+                            rgba(255,157,226,.15)
                     );
 
-            border:
-                    1px solid rgba(192,132,252,0.14);
+            border:1px solid rgba(255,157,226,.15);
 
-            text-align: right;
+            color:#ffb0eb;
+            font-size:22px;
+            font-weight:700;
 
-            box-shadow:
-                    inset 0 0 35px rgba(255,255,255,0.02),
-                    0 0 30px rgba(168,85,247,0.08);
+            margin-bottom:35px;
         }
 
-        .total-label {
-
-            font-size: 16px;
-
-            color: rgba(255,255,255,0.55);
-
-            letter-spacing: 1px;
+        .info-row{
+            margin-bottom:18px;
+            color:rgba(255,255,255,.82);
         }
 
-        .total-price {
-
-            margin-top: 10px;
-
-            font-size: 52px;
-
-            font-weight: 800;
-
-            color: #ff9de2;
-
-            text-shadow:
-                    0 0 25px rgba(255,157,226,0.22);
+        .label{
+            color:#d8b4fe;
+            font-weight:700;
         }
 
-        .quote {
+        .timeline{
+            margin-bottom:45px;
+        }
 
-            position: relative;
+        .step{
+            padding:18px 24px;
+            margin-bottom:16px;
 
-            margin-top: 45px;
-
-            padding: 55px;
-
-            border-radius: 36px;
+            border-radius:20px;
 
             background:
-                    linear-gradient(
-                            135deg,
-                            rgba(168,85,247,0.16),
-                            rgba(255,255,255,0.02)
-                    );
+                    rgba(255,255,255,.03);
 
             border:
-                    1px solid rgba(255,255,255,0.05);
-
-            backdrop-filter: blur(16px);
-
-            overflow: hidden;
-
-            text-align: center;
-
-            box-shadow:
-                    inset 0 0 35px rgba(255,255,255,0.02),
-                    0 0 40px rgba(168,85,247,0.06);
-        }
-
-        .quote::before {
-
-            content: "“";
-
-            position: absolute;
-
-            top: -65px;
-            left: 20px;
-
-            font-size: 180px;
+                    1px solid rgba(255,255,255,.05);
 
             color:
-                    rgba(255,255,255,0.04);
-
-            line-height: 1;
+                    rgba(255,255,255,.4);
         }
 
-        .quote-text {
-
-            position: relative;
-
-            font-size: 30px;
-
-            line-height: 2.1;
-
-            color: #ffd8f7;
-
-            font-style: italic;
-
-            font-family:
-                    "Georgia",
-                    serif;
-
-            text-shadow:
-                    0 0 18px rgba(255,216,247,0.06);
+        .completed{
+            color:#d8b4fe;
+            border:
+                    1px solid rgba(168,85,247,.18);
         }
 
-        .footer {
+        .current{
+            color:#ffb0eb;
 
-            margin-top: 55px;
+            background:
+                    linear-gradient(
+                            135deg,
+                            rgba(168,85,247,.2),
+                            rgba(255,157,226,.1)
+                    );
 
-            text-align: center;
+            border:
+                    1px solid rgba(255,157,226,.15);
+        }
 
-            color: rgba(255,255,255,0.28);
+        table{
+            width:100%;
+            border-collapse:collapse;
+            overflow:hidden;
+            border-radius:28px;
+            background:rgba(255,255,255,.03);
+        }
 
-            line-height: 2.2;
+        thead{
+            background:rgba(255,255,255,.05);
+        }
 
-            font-size: 13px;
+        th{
+            padding:22px;
+            text-align:left;
+            color:#ff9de2;
+        }
 
-            letter-spacing: 2px;
+        td{
+            padding:22px;
+            color:rgba(255,255,255,.84);
+            border-bottom:
+                    1px solid rgba(255,255,255,.05);
+        }
+
+        .total-box{
+            margin-top:38px;
+            padding:34px;
+
+            border-radius:30px;
+
+            background:
+                    linear-gradient(
+                            135deg,
+                            rgba(124,58,237,.24),
+                            rgba(192,132,252,.08)
+                    );
+
+            text-align:right;
+        }
+
+        .total-label{
+            color:rgba(255,255,255,.55);
+        }
+
+        .total-price{
+            font-size:52px;
+            color:#ff9de2;
+            font-weight:800;
+            margin-top:10px;
+        }
+
+        .shipping-card{
+            margin-top:40px;
+            padding:32px;
+
+            border-radius:28px;
+
+            background:
+                    linear-gradient(
+                            135deg,
+                            rgba(255,255,255,.04),
+                            rgba(255,255,255,.015)
+                    );
+
+            border:
+                    1px solid rgba(192,132,252,.08);
+        }
+
+        .shipping-title{
+            color:rgba(255,255,255,.45);
+            letter-spacing:4px;
+            font-size:13px;
+            margin-bottom:24px;
+        }
+
+        .shipping-row{
+            margin-bottom:18px;
+            color:rgba(255,255,255,.82);
+        }
+
+        .quote{
+            margin-top:45px;
+
+            padding:50px;
+
+            border-radius:32px;
+
+            background:
+                    linear-gradient(
+                            135deg,
+                            rgba(168,85,247,.16),
+                            rgba(255,255,255,.02)
+                    );
+
+            text-align:center;
+        }
+
+        .quote-text{
+            font-size:28px;
+            color:#ffd8f7;
+            font-style:italic;
+            line-height:2;
+            font-family:Georgia,serif;
+        }
+
+        .footer{
+            margin-top:55px;
+            text-align:center;
+            color:rgba(255,255,255,.28);
+            line-height:2;
+            font-size:13px;
+            letter-spacing:2px;
         }
 
     </style>
 
 </head>
-
 <body>
 
 <div class="container">
@@ -396,24 +336,26 @@
         <div class="divider"></div>
 
         <div class="hello">
-            Hello,
-            <span>{{UserName}}</span>
+            Hello, <span>{{UserName}</span>
         </div>
 
         <div class="description">
-            Your order has already slipped between forgotten shelves,
-            drifting deeper into the labyrinth of stories and shadows.
+            Your payment has been received successfully.
+            The books are now preparing for their journey through the shelves of Cheshire BookShop.
         </div>
 
         <div class="info-card">
 
-            <div class="info-row">
-                <span class="label">Order ID:</span>
-                {{OrderId}}
+            <div class="status-title">
+                ORDER STATUS
+            </div>
+
+            <div class="status-box">
+                Payed
             </div>
 
             <div class="info-row">
-                <span class="label">Date:</span>
+                <span class="label">Order Date:</span>
                 {{OrderDate}}
             </div>
 
@@ -429,16 +371,20 @@
 
         </div>
 
+        <div class="timeline">
+
+            {{Timeline}}
+
+        </div>
+
         <table>
 
             <thead>
-
             <tr>
                 <th>Book</th>
                 <th>Qty</th>
                 <th>Price</th>
             </tr>
-
             </thead>
 
             <tbody>
@@ -458,6 +404,21 @@
             <div class="total-price">
                 ${{Total}}
             </div>
+
+        </div>
+
+        <div class="shipping-card">
+
+            <div class="shipping-title">
+                DELIVERY INFORMATION
+            </div>
+
+            <div class="shipping-row">
+                <span class="label">Recipient:</span>
+                {{UserName}}
+            </div>
+
+
 
         </div>
 

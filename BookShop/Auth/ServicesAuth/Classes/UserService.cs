@@ -233,6 +233,10 @@ namespace BookShop.Auth.ServicesAuth.Classes
                 }
             }
 
+            // Удаляем связи UserRole
+            _context.UserRoles.RemoveRange(userRoles);
+
+            // Удаляем пользователя
             _context.Users.Remove(user);
 
             await _context.SaveChangesAsync();
