@@ -34,10 +34,11 @@ CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo(culture);
 
 // DATABASE
 
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<LibraryContext>(options =>
-    options.UseSqlite(
-        builder.Configuration.GetConnectionString("DefaultConnection")));
-
+    options.UseMySql(
+        connectionString,
+        ServerVersion.AutoDetect(connectionString)));
 
 // AUTOMAPPER
 
@@ -82,6 +83,7 @@ builder.Services.AddScoped<CloudinaryService>();
 
 builder.Services.AddScoped<IChatService, ChatService>();
 builder.Services.AddScoped<IMessageService, MessageService>();
+builder.Services.AddScoped<SuperAdminInitializer>();
 
 
 // VALIDATION
@@ -159,9 +161,9 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowFrontend", policy =>
     {
         policy
-            .AllowAnyOrigin()
+            .WithOrigins("http://cheshire-shelf-front.s3-website.eu-north-1.amazonaws.com")
             .AllowAnyHeader()
-            .AllowAnyMethod();
+            .AllowAnyMethod();  
     });
 });
 
@@ -223,21 +225,32 @@ builder.Services.AddSwaggerGen(c =>
 
 // URL
 
-builder.WebHost.UseUrls("http://localhost:13779");
-
-
 // BUILD
 
 var app = builder.Build();
 
 
+// DATABASE MIGRATIONS
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider
+        .GetRequiredService<LibraryContext>();
+
+    db.Database.Migrate();
+
+    var superAdminInitializer = scope.ServiceProvider
+        .GetRequiredService<SuperAdminInitializer>();
+
+    await superAdminInitializer.CreateSuperAdminAsync();
+}
+
+
 // MIDDLEWARE
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+app.UseSwagger();
+app.UseSwaggerUI();
+
 
 
 app.UseStaticFiles();
@@ -250,14 +263,17 @@ app.UseAuthentication();
 
 app.UseAuthorization();
 
+
 // CONTROLLERS
 
 app.MapControllers();
+
 
 // HUBS
 
 app.MapHub<ChatHub>("/chatHub");
 app.MapHub<OrderHub>("/orderHub");
+
 
 // RUN
 

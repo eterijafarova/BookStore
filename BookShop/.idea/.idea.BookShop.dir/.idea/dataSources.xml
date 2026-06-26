@@ -24,5 +24,12 @@
         </library>
       </libraries>
     </data-source>
+    <data-source source="LOCAL" name="BookShop@bookshopdb.ctsuokg6c0yd.eu-north-1.rds.amazonaws.com" uuid="46aff59a-c763-4179-b52d-04d2fc4d532c">
+      <driver-ref>mysql.8</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>com.mysql.cj.jdbc.Driver</jdbc-driver>
+      <jdbc-url>jdbc:mysql://bookshopdb.ctsuokg6c0yd.eu-north-1.rds.amazonaws.com:3306/BookShop</jdbc-url>
+      <working-dir>$ProjectFileDir$</working-dir>
+    </data-source>
   </component>
 </project>

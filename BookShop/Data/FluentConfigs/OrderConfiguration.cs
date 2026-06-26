@@ -8,45 +8,48 @@ namespace BookShop.Data.FluentConfigs
     {
         public void Configure(EntityTypeBuilder<Order> builder)
         {
+            builder.ToTable("Orders");
+
             builder.HasKey(o => o.Id);
-            
+
+            builder.Property(o => o.Id)
+                .IsRequired();
+
             builder.HasOne(o => o.User)
                 .WithMany(u => u.Orders)
                 .HasForeignKey(o => o.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
-            
+
             builder.HasOne(o => o.UserAdress)
                 .WithMany()
                 .HasForeignKey(o => o.UserAdressId)
                 .OnDelete(DeleteBehavior.Restrict);
-            
+
             builder.HasOne(o => o.UserBankCard)
                 .WithMany()
                 .HasForeignKey(o => o.UserBankCardId)
                 .OnDelete(DeleteBehavior.Restrict);
-            
+
             builder.Property(o => o.OriginalPrice)
-                .HasColumnType("decimal(18,2)")
+                .HasPrecision(18, 2)
                 .IsRequired();
-            
+
             builder.Property(o => o.PromoCode)
                 .HasMaxLength(50)
-                .IsUnicode(false)
                 .IsRequired(false);
-            
+
             builder.Property(o => o.DiscountAmount)
-                .HasColumnType("decimal(18,2)")
-                .HasDefaultValue(0);
-            
+                .HasPrecision(18, 2)
+                .HasDefaultValue(0m);
+
             builder.Property(o => o.FinalPrice)
-                .HasColumnType("decimal(18,2)")
+                .HasPrecision(18, 2)
                 .IsRequired();
-            
+
             builder.Property(o => o.Status)
                 .IsRequired();
-            
+
             builder.Property(o => o.OrderDate)
-                .HasColumnType("datetime2")
                 .IsRequired();
         }
     }

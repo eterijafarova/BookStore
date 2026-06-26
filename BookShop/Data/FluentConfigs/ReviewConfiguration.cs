@@ -6,10 +6,14 @@ namespace BookShop.Data.FluentConfigs;
 
 public class ReviewConfiguration : IEntityTypeConfiguration<Review>
 {
-    [Obsolete("Obsolete")]
     public void Configure(EntityTypeBuilder<Review> builder)
     {
+        builder.ToTable("Reviews");
+
         builder.HasKey(r => r.Id);
+
+        builder.Property(r => r.Id)
+            .IsRequired();
 
         builder.Property(r => r.Rating)
             .IsRequired();
@@ -17,7 +21,9 @@ public class ReviewConfiguration : IEntityTypeConfiguration<Review>
         builder.Property(r => r.Comment)
             .HasMaxLength(1000);
 
-        builder.HasCheckConstraint("CK_Review_Rating", "[Rating] >= 1 AND [Rating] <= 5");
+        builder.HasCheckConstraint(
+            "CK_Review_Rating",
+            "`Rating` >= 1 AND `Rating` <= 5");
 
         builder.HasOne(r => r.User)
             .WithMany(u => u.Reviews)

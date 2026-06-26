@@ -8,10 +8,12 @@ namespace BookShop.Data.FluentConfigs
     {
         public void Configure(EntityTypeBuilder<Adress> builder)
         {
+            builder.ToTable("Adresses");
+
             builder.HasKey(a => a.Id);
 
             builder.Property(a => a.Id)
-                .HasColumnType("uniqueidentifier"); 
+                .IsRequired();
 
             builder.Property(a => a.UserId)
                 .IsRequired();
@@ -35,6 +37,11 @@ namespace BookShop.Data.FluentConfigs
             builder.Property(a => a.Country)
                 .IsRequired()
                 .HasMaxLength(100);
+
+            builder.HasOne(a => a.User)
+                .WithMany(u => u.Adresses)
+                .HasForeignKey(a => a.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

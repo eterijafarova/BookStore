@@ -17,22 +17,24 @@ namespace BookShop.Auth.ServicesAuth.Classes
         private readonly IConfiguration _config;
         private readonly ITokenService _tokenService;
         private readonly string _webAppUrl;
+        private readonly IWebHostEnvironment _env;
 
         public AccountService(
             IMapper mapper,
             LibraryContext authContext,
             IConfiguration config,
-            ITokenService tokenService)
+            ITokenService tokenService,
+            IWebHostEnvironment env)
         {
-            _mapper       = mapper;
-            _context      = authContext;
-            _config       = config;
+            _mapper = mapper;
+            _context = authContext;
+            _config = config;
             _tokenService = tokenService;
-            
-            _webAppUrl = _config.GetValue<string>("AppSettings:WebAppUrl")
-                ?? throw new InvalidOperationException("AppSettings:WebAppUrl is not configured.");
-        }
+            _env = env;
 
+            _webAppUrl = _config.GetValue<string>("AppSettings:WebAppUrl")
+                         ?? throw new InvalidOperationException("AppSettings:WebAppUrl is not configured.");
+        }
         public async Task RegisterAsync(RegisterRequest request)
         {
             try
@@ -92,9 +94,7 @@ namespace BookShop.Auth.ServicesAuth.Classes
         Credentials = new NetworkCredential(smtpUser, smtpPass)
     };
 
-    var baseDir = AppContext.BaseDirectory;
-    var projectRoot = Path.GetFullPath(Path.Combine(baseDir, "..", "..", ".."));
-    var filePath = Path.Combine(projectRoot, "wwwroot", "email.html");
+    var filePath = Path.Combine(_env.WebRootPath, "email.html");
 
     if (!File.Exists(filePath))
         throw new FileNotFoundException($"Email template not found at {filePath}", filePath);
@@ -210,10 +210,7 @@ public async Task<bool> ValidatePasswordResetTokenAsync(string token)
                 Credentials = new NetworkCredential(smtpUser, smtpPass)
             };
 
-            var baseDir     = AppContext.BaseDirectory;
-            var projectRoot = Path.GetFullPath(Path.Combine(baseDir, "..", "..", ".."));
-            var filePath    = Path.Combine(projectRoot, "wwwroot", "email.html");
-
+            var filePath = Path.Combine(_env.WebRootPath, "email.html");
             if (!File.Exists(filePath))
                 throw new FileNotFoundException($"Email template not found at {filePath}", filePath);
 

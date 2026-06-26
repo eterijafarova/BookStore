@@ -13,7 +13,11 @@ namespace BookShop.Data.Contexts
                 .Build();
 
             var optionsBuilder = new DbContextOptionsBuilder<LibraryContext>();
-            optionsBuilder.UseSqlite("Data Source=bookshop.db");
+
+            optionsBuilder.UseMySql(
+                configuration.GetConnectionString("DefaultConnection"),
+                ServerVersion.AutoDetect(
+                    configuration.GetConnectionString("DefaultConnection")));
 
             return new LibraryContext(optionsBuilder.Options);
         }
