@@ -161,9 +161,12 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowFrontend", policy =>
     {
         policy
-            .WithOrigins("http://cheshire-shelf-front.s3-website.eu-north-1.amazonaws.com")
+            .WithOrigins(
+                "http://localhost:5173",
+                "http://cheshire-shelf-front.s3-website.eu-north-1.amazonaws.com"
+            )
             .AllowAnyHeader()
-            .AllowAnyMethod();  
+            .AllowAnyMethod();
     });
 });
 
