@@ -1,9 +1,5 @@
-git checkout main/bin/
-/obj/
-/publish/
-
-**/appsettings.json
-/BookShop/appsettings.json
-
+bin/
+obj/
+publish/
 
 secrets.json
