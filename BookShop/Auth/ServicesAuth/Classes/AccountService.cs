@@ -150,7 +150,11 @@ namespace BookShop.Auth.ServicesAuth.Classes
     await _context.PasswordResetTokens.AddAsync(passwordResetToken);
     await _context.SaveChangesAsync();
 }
-
+    
+public async Task<bool> UsernameExistsAsync(string username)
+{
+    return await _context.Users.AnyAsync(x => x.UserName == username);
+}
 
 public async Task<bool> ValidatePasswordResetTokenAsync(string token)
 {

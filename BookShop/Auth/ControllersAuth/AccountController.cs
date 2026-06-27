@@ -68,11 +68,21 @@ namespace BookShop.Auth.ControllersAuth
         {
             var validator = new RegisterValidator();
             var result = validator.Validate(request);
+
             if (!result.IsValid)
                 return BadRequest(result.Errors);
-            
+
+            if (await _accountService.UsernameExistsAsync(request.Username))
+            {
+                return BadRequest(new Result<string>(
+                    false,
+                    null,
+                    "Username is already taken."
+                ));
+            }
+
             await _accountService.RegisterAsync(request);
-            
+
             await _accountService.ConfirmEmailAsync(
                 new ConfirmRequest(request.Username)
             );
@@ -83,7 +93,6 @@ namespace BookShop.Auth.ControllersAuth
                 "Successfully registered. Confirmation email has been sent."
             ));
         }
-
 
         /// <summary>
         /// API endpoint returning JSON

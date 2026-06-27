@@ -12,6 +12,7 @@ namespace BookShop.Auth.ServicesAuth.Interfaces
         Task VerifyEmailAsync(string token);
         
         Task RequestPasswordResetAsync(string email);
+        Task<bool> UsernameExistsAsync(string username);
         
         Task ResetPasswordAsync(ResetPasswordRequest request);
         Task<bool> ValidatePasswordResetTokenAsync(string token);
