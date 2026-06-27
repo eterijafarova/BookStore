@@ -41,4 +41,4 @@ jobs:
           environment_name: ${{ secrets.EB_ENVIRONMENT }}
           region: ${{ secrets.AWS_REGION }}
           version_label: ${{ github.sha }}
-          deployment_package: deploy.zipыыы
+          deployment_package: deploy.zip
