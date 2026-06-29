@@ -164,6 +164,7 @@ builder.Services.AddCors(options =>
             .WithOrigins(
                 "http://localhost:5173", 
                 "http://0.0.0.0:13779",
+                "http://localhost:8081",
                 "http://cheshire-shelf-front.s3-website.eu-north-1.amazonaws.com"
             )
             .AllowAnyHeader()
