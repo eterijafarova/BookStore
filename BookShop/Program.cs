@@ -162,7 +162,8 @@ builder.Services.AddCors(options =>
     {
         policy
             .WithOrigins(
-                "http://localhost:5173",
+                "http://localhost:5173", 
+                "http://0.0.0.0:13779",
                 "http://cheshire-shelf-front.s3-website.eu-north-1.amazonaws.com"
             )
             .AllowAnyHeader()
