@@ -42,6 +42,8 @@
             pointer-events:none;
         }
 
+       
+        
         .stamp{
             position:absolute;
             top:8px;
@@ -54,6 +56,32 @@
             box-shadow:0 8px 18px rgba(0,0,0,.2);
         }
 
+        .postmark{
+            position:absolute;
+            top:75px;
+            right:30px;
+
+            padding:10px 18px;
+
+            border:3px solid rgba(165,35,35,.55);
+            color:rgba(165,35,35,.65);
+
+            background:rgba(255,255,255,.08);
+
+            font-family:Georgia,serif;
+            font-size:17px;
+            font-weight:bold;
+            letter-spacing:2px;
+            text-transform:uppercase;
+
+            transform:rotate(-22deg);
+
+            box-shadow:0 0 8px rgba(165,35,35,.12);
+
+            z-index:10;
+            pointer-events:none;
+        }
+        
         .stamp img{
             width:100%;
             display:block;
@@ -134,7 +162,10 @@
         <img src="/images/failed.png" alt="Cheshire Stamp">
     </div>
 
-
+    <div class="postmark">
+        LOST IN WONDERLAND
+    </div>
+    
     <h1>
         Confirmation<br>
         Failed
