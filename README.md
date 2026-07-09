@@ -1,99 +1,260 @@
-﻿# BookShop
-# 🎩 CheshireShelf 📚
+# 📚 Cheshire Shelf API
 
-## 🏷 Название проекта
+Backend API for **Cheshire Shelf** — a modern online bookstore inspired by the magical atmosphere of the Cheshire Cat. The API provides secure authentication, book management, shopping functionality, order processing, and user account management.
 
-CheshireShelf
+**Frontend:**
+http://cheshire-shelf-front.s3-website.eu-north-1.amazonaws.com/
 
-## 💬 Краткое описание
+---
 
-Виртуальный книжный магазин для удобного управления каталогом книг, заказами и пользователями. SPA на React + TypeScript (Vite) и RESTful API на ASP.NET Core (.NET 8).
+## Overview
 
-## 📋 Требования
+Cheshire Shelf API is built with **ASP.NET Core 8** following a layered architecture and RESTful design principles. It serves as the backend for the Cheshire Shelf web application, handling business logic, authentication, database operations, email communication, and image management.
 
-* 🔧 **.NET SDK 8.0**
-* 🔧 **Node.js v16+** и npm/yarn
-* 🔧 **SQL Server / LocalDB**
-* 🔧 **Azure Storage Account** (для обложек)
+---
 
-## 🛠 Использованные технологии
+## Features
 
-* **Backend:** ASP.NET Core (.NET 8), EF Core, SQL Server, FluentValidation, JWT, Swagger (Swashbuckle)
-* **Frontend:** React 18, TypeScript, Vite, Tailwind CSS, Redux Toolkit, Axios, React Router
-* **Хранение файлов:** Azure Blob Storage
-* **Тестирование:** xUnit, Moq, FluentAssertions
+### Authentication & Authorization
 
-## 🚀 Установка
+* JWT-based authentication
+* User registration and login
+* Email confirmation
+* Password recovery and reset
+* Role-based authorization
 
-1. **Клонирование репозиториев**
+### Books
 
-   ```bash
-   git clone https://github.com/eterijafarova/BookStore.git
-   git clone https://github.com/Dottdost/BookShopFront.git
-   ```
-2. **Backend**
+* Browse books
+* Search and filtering
+* Book details
+* Categories
 
-   ```bash
-   cd BookShop
-   dotnet restore        # Установка пакетов
-   dotnet ef database update  # Миграции БД
-   ```
-3. **Файл окружения (Backend)**
-   Создайте `BookShop/.env`:
+### User Account
 
-   ```env
-   ASPNETCORE_ENVIRONMENT=Development
-   ConnectionStrings__DefaultConnection="Server=.;Database=BookShop;Trusted_Connection=True;"
-   Jwt__Key="ваш_секрет"
-   Jwt__Issuer="CheshireShelf"
-   Jwt__Audience="CheshireShelfUsers"
-   Azure__Blob__ConnectionString="<AZURE_CONN_STRING>"
-   Azure__Blob__ContainerName="bookcovers"
-   ```
-4. **Frontend**
+* Profile management
+* Avatar upload
+* Saved payment cards
 
-   ```bash
-   cd ../BookShopFront
-   npm install           # Установка npm зависимостей
-   ```
-5. **Файл окружения (Frontend)**
-   Создайте `BookShopFront/.env`:
+### Shopping
 
-   ```env
-   VITE_API_URL="http://localhost:5000/api/v1"
-   ```
+* Shopping cart
+* Wishlist
+* Order creation
+* Order history
 
-## ⚡ Использование
+### Reviews
 
-* **Запуск API (Backend):**
+* Add reviews
+* Edit reviews
+* Delete reviews
+* Book ratings
 
-  ```bash
-  cd BookShop
-  dotnet run
-  ```
+### Administration
 
-  Доступно: `http://localhost:5000/api/v1`
+* Book management
+* Category management
+* Order management
+* User management
 
-* **Запуск UI (Frontend):**
+### Additional Features
 
-  ```bash
-  cd BookShopFront
-  npm run dev
-  ```
+* Cloudinary image storage
+* SMTP email service
+* Swagger API documentation
 
-  Доступно: `http://localhost:5173`
+---
 
-## 💻 Примеры команд
+# Technology Stack
 
-* Получить список книг:
+| Category          | Technologies              |
+| ----------------- | ------------------------- |
+| Framework         | ASP.NET Core 8            |
+| ORM               | Entity Framework Core     |
+| Database          | MySQL (Amazon RDS)        |
+| Authentication    | JWT Bearer Authentication |
+| Object Mapping    | AutoMapper                |
+| Email Service     | MailKit                   |
+| Image Storage     | Cloudinary                |
+| API Documentation | Swagger / OpenAPI         |
+| Deployment        | AWS Elastic Beanstalk     |
+| CI/CD             | GitHub Actions            |
 
-  ```bash
-  curl -X GET "http://localhost:5000/api/v1/books?page=1&pageSize=5" \
-    -H "Authorization: Bearer <TOKEN>"
-  ```
+---
 
-## 👤 Авторы
+# Project Structure
 
-Email : schelfsheshire@gmail.com
+```text
+BookShop.API
+│
+├── Controllers
+├── DTOs
+├── Entities
+├── Extensions
+├── Helpers
+├── Interfaces
+├── Mapping
+├── Middleware
+├── Migrations
+├── Repositories
+├── Services
+├── wwwroot
+└── Program.cs
+```
 
-*Спасибо за использование CheshireShelf!*
+---
+
+# Getting Started
+
+## Prerequisites
+
+Before running the project, ensure the following software is installed:
+
+* .NET 8 SDK
+* MySQL Server
+* Visual Studio 2022, Rider, or Visual Studio Code
+
+---
+
+## Clone the Repository
+
+```bash
+git clone https://github.com/your-username/CheshireShelf.git
+cd CheshireShelf
+```
+
+---
+
+## Configuration
+
+Create an **appsettings.json** file and configure the required settings.
+
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "YOUR_CONNECTION_STRING"
+  },
+
+  "Jwt": {
+    "Key": "YOUR_SECRET_KEY",
+    "Issuer": "YOUR_ISSUER",
+    "Audience": "YOUR_AUDIENCE"
+  },
+
+  "Cloudinary": {
+    "CloudName": "YOUR_CLOUD_NAME",
+    "ApiKey": "YOUR_API_KEY",
+    "ApiSecret": "YOUR_API_SECRET"
+  },
+
+  "EmailSettings": {
+    "Email": "YOUR_EMAIL",
+    "Password": "YOUR_PASSWORD",
+    "Host": "YOUR_SMTP_HOST",
+    "Port": 587
+  }
+}
+```
+
+---
+
+## Apply Database Migrations
+
+```bash
+dotnet ef database update
+```
+
+---
+
+## Run the Application
+
+```bash
+dotnet run
+```
+
+The API will be available locally at:
+
+```
+https://localhost:5001
+```
+
+Swagger documentation:
+
+```
+https://localhost:5001/swagger
+```
+
+---
+
+# Authentication
+
+The API uses **JWT Bearer Authentication**.
+
+Authentication flow:
+
+1. Register a new account
+2. Confirm email address
+3. Sign in
+4. Receive a JWT access token
+5. Include the token in the `Authorization` header
+
+```http
+Authorization: Bearer YOUR_ACCESS_TOKEN
+```
+
+---
+
+# Email Services
+
+The application supports:
+
+* Email confirmation
+* Password reset
+* Transactional email notifications
+
+SMTP functionality is implemented using **MailKit**.
+
+---
+
+# Image Management
+
+Images are uploaded and stored securely using **Cloudinary**.
+
+---
+
+# Deployment
+
+The application is deployed using Amazon Web Services.
+
+| Service                  | Purpose                             |
+| ------------------------ | ----------------------------------- |
+| Amazon Elastic Beanstalk | Backend hosting                     |
+| Amazon RDS               | MySQL database                      |
+| GitHub Actions           | Continuous Integration & Deployment |
+
+---
+
+# Frontend
+
+Frontend application:
+
+http://cheshire-shelf-front.s3-website.eu-north-1.amazonaws.com/
+
+---
+
+# Future Improvements
+
+* Payment gateway integration
+* Recommendation system
+* Inventory management
+* Real-time notifications
+* Analytics dashboard
+
+---
+
+
+
+# Author
+
+**Eteri Jafarova**
+
