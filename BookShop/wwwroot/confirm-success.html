@@ -4,94 +4,126 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Email Confirmed</title>
+
     <style>
-        :root {
-            --primary: #2a9d8f;
-            --secondary: #1b4332;
-            --bg-start: #a8edea;
-            --bg-end: #fed6e3;
-            --card-bg: #ffffff;
-            --text-main: #264653;
-            --text-light: #333;
-            --promo-start: #b2f7ef;
-            --promo-end: #ade8f4;
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
         }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, var(--bg-start), var(--bg-end));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            color: var(--text-light);
+
+        body{
+            font-family:Segoe UI,sans-serif;
+            background:linear-gradient(135deg,#2d1f4d,#5a3f85);
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            min-height:100vh;
+            padding:20px;
         }
-        .card {
-            background: var(--card-bg);
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            max-width: 380px;
-            width: 90%;
-            text-align: center;
-            padding: 40px 30px;
-            position: relative;
-            overflow: hidden;
-            animation: fadeIn 0.8s ease-out;
+
+        .card{
+            width:420px;
+            background:#faf7f0;
+            border-radius:18px;
+            padding:35px;
+            position:relative;
+            box-shadow:0 15px 40px rgba(0,0,0,.25);
         }
-        .card::before {
-            content: '';
-            position: absolute;
-            top: -50%; left: -50%;
-            width: 200%; height: 200%;
-            background: radial-gradient(circle at 50% 50%, var(--primary) 33%, transparent 70%);
-            transform: rotate(45deg);
-            opacity: 0.2;
+
+        .stamp{
+            position:absolute;
+            top:20px;
+            right:20px;
+            width:95px;
+            padding:6px;
+            background:white;
+            border:2px dashed #caa85a;
+            transform:rotate(8deg);
+            box-shadow:0 6px 15px rgba(0,0,0,.2);
         }
-        @keyframes fadeIn {
-            from { transform: translateY(20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+
+        .stamp img{
+            width:100%;
+            display:block;
         }
-        .icon {
-            font-size: 4rem;
-            color: var(--primary);
-            margin-bottom: 20px;
+
+        .postmark{
+            position:absolute;
+            top:40px;
+            right:5px;
+            width:95px;
+            height:95px;
+            border:2px solid rgba(120,80,40,.45);
+            border-radius:50%;
+            transform:rotate(-18deg);
+            font-size:11px;
+            color:#7b5d2d;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            pointer-events:none;
         }
-        h1 {
-            font-size: 1.75rem;
-            margin-bottom: 16px;
-            color: var(--text-main);
+
+        h1{
+            color:#4b2c6d;
+            margin-bottom:15px;
         }
-        p {
-            font-size: 1rem;
-            line-height: 1.5;
-            margin-bottom: 20px;
+
+        p{
+            color:#555;
+            line-height:1.6;
+            margin-bottom:30px;
         }
-        .promo {
-            background: linear-gradient(90deg, var(--promo-start), var(--promo-end));
-            color: var(--secondary);
-            display: inline-block;
-            padding: 16px 24px;
-            border-radius: 12px;
-            font-weight: bold;
-            font-size: 1.1rem;
-            letter-spacing: 0.5px;
-            margin-top: 16px;
-            margin-bottom: 0;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+
+        .promo{
+            background:#f5df8f;
+            border-radius:10px;
+            padding:15px;
+            text-align:center;
         }
-        .promo span.label {
-            margin-right: 8px;
-            font-weight: normal;
-            color: var(--text-main);
+
+        .promo small{
+            display:block;
+            color:#555;
+            margin-bottom:6px;
+        }
+
+        .code{
+            font-size:24px;
+            font-weight:bold;
+            letter-spacing:3px;
+            color:#6b3fa0;
         }
     </style>
+
 </head>
 <body>
+
 <div class="card">
-    <div class="icon">✔️</div>
-    <h1>Email Confirmed!</h1>
-    <p>Thank you for confirming your email address. Your account is now active and ready to use.</p>
-    <div class="promo"><span class="label">Your promo code:</span>CHESHIRE25</div>
+
+    <div class="stamp">
+        <img src="/images/email-confirmed.png" alt="Cheshire Stamp">
+    </div>
+
+    <div class="postmark">
+        CHESHIRE<br>POST
+    </div>
+
+    <h1>✨ Email Confirmed!</h1>
+
+    <p>
+        Welcome to <strong>Cheshire Shelf</strong>.<br>
+        Your email has been successfully verified, and the library doors are now open.
+        Enjoy your first magical discount!
+    </p>
+
+    <div class="promo">
+        <small>Your Promo Code</small>
+        <div class="code">CHESHIRE25</div>
+    </div>
+
 </div>
+
 </body>
 </html>
